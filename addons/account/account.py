@@ -278,7 +278,7 @@ class account_account(osv.osv):
             LEFT JOIN account_account child
                 ON parent.parent_left <= child.parent_left
                AND parent.parent_right >= child.parent_right
-            WHERE parent.id IN (%s)
+            WHERE parent.id IN %s
             ORDER by COALESCE(child.level, 0), child.parent_left
             """,
             (tuple(ids),)
