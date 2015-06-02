@@ -269,15 +269,21 @@ class account_account(osv.osv):
                 order, context=context, count=count)
 
     def _get_children_and_consol(self, cr, uid, ids, context=None):
-        #this function search for all the children and all consolidated children (recursively) of the given account ids
-        ids2 = self.search(cr, uid, [('parent_id', 'child_of', ids)], context=context)
-        ids3 = []
-        for rec in self.browse(cr, uid, ids2, context=context):
-            for child in rec.child_consol_ids:
-                ids3.append(child.id)
-        if ids3:
-            ids3 = self._get_children_and_consol(cr, uid, ids3, context)
-        return ids2 + ids3
+        if isinstance(ids, (int, long)):
+            ids = [ids]
+        cr.execute(
+            """
+            SELECT child.id
+            FROM account_account parent
+            LEFT JOIN account_account child
+                ON parent.parent_left <= child.parent_left
+               AND parent.parent_right >= child.parent_right
+            WHERE parent.id IN (%s)
+            ORDER by COALESCE(child.level, 0), child.parent_left
+            """,
+            (tuple(ids),)
+        )
+        return [r[0] for r in cr.fetchall()]
 
     def __compute(self, cr, uid, ids, field_names, arg=None, context=None,
                   query='', query_params=()):
