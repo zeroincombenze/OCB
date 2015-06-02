@@ -269,13 +269,20 @@ class account_account(osv.osv):
                 order, context=context, count=count)
 
     def _get_children_and_consol(self, cr, uid, ids, context=None):
+        res = self._query_children_and_consol(cr, uid, ids, context=context)
+        if ids and not res:
+            self._parent_store_compute(cr)
+            res = self._query_children_and_consol(cr, uid, ids, context=context)
+        return res
+
+    def _query_children_and_consol(self, cr, uid, ids, context=None):
         if isinstance(ids, (int, long)):
             ids = [ids]
         cr.execute(
             """
             SELECT child.id
             FROM account_account parent
-            LEFT JOIN account_account child
+            INNER JOIN account_account child
                 ON parent.parent_left <= child.parent_left
                AND parent.parent_right >= child.parent_right
             WHERE parent.id IN %s
