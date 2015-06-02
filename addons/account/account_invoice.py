@@ -1502,6 +1502,7 @@ class account_invoice_line(osv.osv):
             else:
                 return {'value': {'price_unit': 0.0}, 'domain':{'product_uom':[]}}
         part = self.pool.get('res.partner').browse(cr, uid, partner_id, context=context)
+        product_uom_obj = self.pool.get('product.uom')
         fpos_obj = self.pool.get('account.fiscal.position')
         fpos = fposition_id and fpos_obj.browse(cr, uid, fposition_id, context=context) or False
 
@@ -1534,7 +1535,12 @@ class account_invoice_line(osv.osv):
             result.update({'price_unit': res.list_price, 'invoice_line_tax_id': tax_id})
         result['name'] = res.partner_ref
 
-        result['uos_id'] = uom_id or res.uom_id.id
+        result['uos_id'] = res.uom_id.id
+        if uom_id:
+            uom = product_uom_obj.browse(cr, uid, uom_id)
+            if res.uom_id.category_id.id == uom.category_id.id:
+                result['uos_id'] = uom_id
+
         if res.description_sale and type and type.startswith('out_'):
             result['name'] += '\n'+res.description_sale
         if res.description_purchase and type and type.startswith('in_'):
