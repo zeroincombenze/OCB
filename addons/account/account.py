@@ -280,13 +280,19 @@ class account_account(osv.osv):
             ids = [ids]
         cr.execute(
             """
-            SELECT child.id
-            FROM account_account parent
-            INNER JOIN account_account child
-                ON parent.parent_left <= child.parent_left
-               AND parent.parent_right >= child.parent_right
-            WHERE parent.id IN %s
-            ORDER by COALESCE(child.level, 0), child.parent_left
+            WITH RECURSIVE account_children(id) AS (
+                SELECT id
+                FROM account_account
+                WHERE id IN %s
+            UNION
+                SELECT a.id
+                FROM account_account a, account_children ac
+                WHERE a.parent_id = ac.id OR a.id IN
+                    (SELECT parent_id
+                     FROM account_account_consol_rel a
+                     WHERE a.child_id = ac.id)
+            )
+            SELECT id FROM account_children
             """,
             (tuple(ids),)
         )
