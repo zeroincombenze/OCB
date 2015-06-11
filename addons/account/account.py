@@ -273,19 +273,25 @@ class account_account(osv.osv):
             ids = [ids]
         cr.execute(
             """
-            WITH RECURSIVE account_children(id) AS (
-                SELECT id
-                FROM account_account
-                WHERE id IN %s
-            UNION
-                SELECT a.id
-                FROM account_account a, account_children ac
-                WHERE a.parent_id = ac.id OR a.id IN
-                    (SELECT parent_id
-                     FROM account_account_consol_rel a
-                     WHERE a.child_id = ac.id)
-            )
-            SELECT id FROM account_children
+            SELECT id FROM (
+                WITH RECURSIVE account_children(id, depth) AS (
+                        SELECT id, 0 as depth
+                        FROM account_account
+                        WHERE id IN %s
+                UNION
+                        SELECT a.id, ac.depth + 1
+                        FROM account_account a, account_children ac
+                        WHERE a.parent_id = ac.id OR a.id IN
+                                (SELECT parent_id
+                                 FROM account_account_consol_rel a
+                                 WHERE a.child_id = ac.id)
+                )
+                SELECT DISTINCT id, depth,
+                     , max(depth) OVER (PARTITION BY id) as max_depth
+                FROM account_children
+                ORDER BY depth DESC
+            ) children
+            WHERE children.depth = children.max_depth
             """,
             (tuple(ids),)
         )
