@@ -289,7 +289,7 @@ class account_account(osv.osv):
                 SELECT DISTINCT id, depth
                      , max(depth) OVER (PARTITION BY id) as max_depth
                 FROM account_children
-                ORDER BY depth DESC
+                ORDER BY depth
             ) children
             WHERE children.depth = children.max_depth
             """,
