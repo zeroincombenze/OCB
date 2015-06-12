@@ -286,7 +286,7 @@ class account_account(osv.osv):
                                  FROM account_account_consol_rel a
                                  WHERE a.child_id = ac.id)
                 )
-                SELECT DISTINCT id, depth,
+                SELECT DISTINCT id, depth
                      , max(depth) OVER (PARTITION BY id) as max_depth
                 FROM account_children
                 ORDER BY depth DESC
