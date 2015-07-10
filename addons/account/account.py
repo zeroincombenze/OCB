@@ -304,7 +304,7 @@ class account_account(osv.osv):
             (tuple(ids),)
         )
         res_ids = [r[0] for r in cr.fetchall()]
-        return self.search(cr, uid, ('id', 'in', res_ids), context=context)
+        return self.search(cr, uid, [('id', 'in', res_ids)], context=context)
 
     def __compute(self, cr, uid, ids, field_names, arg=None, context=None,
                   query='', query_params=()):
