@@ -277,7 +277,7 @@ class account_account(osv.osv):
                 WITH RECURSIVE account_children(id, depth) AS (
                     SELECT id, 0 as depth
                     FROM account_account
-                    WHERE id IN (%s)
+                    WHERE id IN %s
                 UNION (
                     WITH account_children AS (
                         SELECT ac.id, ac.depth
