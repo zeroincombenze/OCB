@@ -275,19 +275,27 @@ class account_account(osv.osv):
             """
             SELECT id FROM (
                 WITH RECURSIVE account_children(id, depth) AS (
-                        SELECT id, 0 as depth
-                        FROM account_account
-                        WHERE id IN %s
-                UNION
-                        SELECT a.id, ac.depth + 1
-                        FROM account_account a, account_children ac
-                        WHERE a.parent_id = ac.id OR a.id IN
-                                (SELECT parent_id
-                                 FROM account_account_consol_rel a
-                                 WHERE a.child_id = ac.id)
-                )
-                SELECT DISTINCT id, depth
-                     , max(depth) OVER (PARTITION BY id) as max_depth
+                    SELECT id, 0 as depth
+                    FROM account_account
+                    WHERE id IN (%s)
+                UNION (
+                    WITH account_children AS (
+                        SELECT ac.id, ac.depth
+                        FROM account_children ac
+                    )
+                    SELECT aa.id, ac.depth + 1
+                    FROM account_children ac, account_account aa
+                    WHERE aa.parent_id = ac.id
+
+                    UNION
+
+                    SELECT aa_rel.parent_id, ac.depth + 1
+                    FROM account_account_consol_rel aa_rel, account_children ac
+                    WHERE aa_rel.child_id = ac.id
+                ))
+                SELECT DISTINCT
+                    id, depth,
+                    max(depth) OVER (PARTITION BY id) as max_depth
                 FROM account_children
                 ORDER BY depth
             ) children
@@ -295,7 +303,8 @@ class account_account(osv.osv):
             """,
             (tuple(ids),)
         )
-        return [r[0] for r in cr.fetchall()]
+        res_ids = [r[0] for r in cr.fetchall()]
+        return self.search(cr, uid, ('id', 'in', res_ids), context=context)
 
     def __compute(self, cr, uid, ids, field_names, arg=None, context=None,
                   query='', query_params=()):
