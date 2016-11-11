@@ -2,6 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import datetime
+from datetime import timedelta
 from dateutil import rrule
 from dateutil.relativedelta import relativedelta
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
@@ -330,14 +331,8 @@ class resource_calendar(osv.osv):
         working_intervals = []
         tz_info = fields.datetime.context_timestamp(cr, uid, work_dt, context=context).tzinfo
         for calendar_working_day in self.get_attendances_for_weekday(cr, uid, id, start_dt, context=context):
-            if context and context.get('no_round_hours'):
-                min_from = int((calendar_working_day.hour_from - int(calendar_working_day.hour_from)) * 60)
-                min_to = int((calendar_working_day.hour_to - int(calendar_working_day.hour_to)) * 60)
-                dt_f = work_dt.replace(hour=int(calendar_working_day.hour_from), minute=min_from)
-                dt_t = work_dt.replace(hour=int(calendar_working_day.hour_to), minute=min_to)
-            else:
-                dt_f = work_dt.replace(hour=int(calendar_working_day.hour_from))
-                dt_t = work_dt.replace(hour=int(calendar_working_day.hour_to))
+            dt_f = work_dt.replace(hour=0, minute=0, second=0) + timedelta(seconds=(calendar_working_day.hour_from * 3600))
+            dt_t = work_dt.replace(hour=0, minute=0, second=0) + timedelta(seconds=(calendar_working_day.hour_to * 3600))
 
             # adapt tz
             working_interval = (
@@ -648,7 +643,7 @@ class resource_calendar_attendance(osv.osv):
         'date_to': fields.date('End Date'),
         'hour_from' : fields.float('Work from', required=True, help="Start and End time of working.", select=True),
         'hour_to' : fields.float("Work to", required=True),
-        'calendar_id' : fields.many2one("resource.calendar", "Resource's Calendar", required=True),
+        'calendar_id' : fields.many2one("resource.calendar", "Resource's Calendar", required=True, ondelete='cascade'),
     }
 
     _order = 'dayofweek, hour_from'

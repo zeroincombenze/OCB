@@ -131,6 +131,8 @@ var ScreenWidget = PosBaseWidget.extend({
         this.pos.barcode_reader.set_action_callback({
             'cashier': _.bind(self.barcode_cashier_action, self),
             'product': _.bind(self.barcode_product_action, self),
+            'weight': _.bind(self.barcode_product_action, self),
+            'price': _.bind(self.barcode_product_action, self),
             'client' : _.bind(self.barcode_client_action, self),
             'discount': _.bind(self.barcode_discount_action, self),
             'error'   : _.bind(self.barcode_error_action, self),
@@ -295,6 +297,15 @@ var ScaleScreenWidget = ScreenWidget.extend({
         var product = this.get_product();
         return (product ? product.price : 0) || 0;
     },
+    get_product_uom: function(){
+        var product = this.get_product();
+
+        if(product){
+            return this.pos.units_by_id[product.uom_id[0]].name;
+        }else{
+            return '';
+        }
+    },
     set_weight: function(weight){
         this.weight = weight;
         this.$('.weight').text(this.get_product_weight_string());
@@ -313,7 +324,7 @@ var ScaleScreenWidget = ScreenWidget.extend({
         var unit = this.pos.units_by_id[unit_id[0]];
         var weight = round_pr(this.weight || 0, unit.rounding);
         var weightstr = weight.toFixed(Math.ceil(Math.log(1.0/unit.rounding) / Math.log(10) ));
-            weightstr += ' Kg';
+        weightstr += ' ' + unit.name;
         return weightstr;
     },
     get_computed_price_string: function(){
@@ -1023,7 +1034,9 @@ var ClientListScreenWidget = ScreenWidget.extend({
         if (this.editing_client) {
             this.$('.detail.barcode').val(code.code);
         } else if (this.pos.db.get_partner_by_barcode(code.code)) {
-            this.display_client_details('show',this.pos.db.get_partner_by_barcode(code.code));
+            var partner = this.pos.db.get_partner_by_barcode(code.code);
+            this.new_client = partner;
+            this.display_client_details('show', partner);
         }
     },
     perform_search: function(query, associate_result){
@@ -1800,11 +1813,9 @@ var PaymentScreenWidget = ScreenWidget.extend({
             self.$('.next').removeClass('highlight');
         }
     },
-    // Check if the order is paid, then sends it to the backend,
-    // and complete the sale process
-    validate_order: function(force_validation) {
-        var self = this;
 
+    order_is_valid: function(force_validation) {
+        var self = this;
         var order = this.pos.get_order();
 
         // FIXME: this check is there because the backend is unable to
@@ -1814,13 +1825,8 @@ var PaymentScreenWidget = ScreenWidget.extend({
                 'title': _t('Empty Order'),
                 'body':  _t('There must be at least one product in your order before it can be validated'),
             });
-            return;
+            return false;
         }
-
-        // get rid of payment lines with an amount of 0, because
-        // since accounting v9 we cannot have bank statement lines
-        // with an amount of 0
-        order.clean_empty_paymentlines();
 
         var plines = order.get_paymentlines();
         for (var i = 0; i < plines.length; i++) {
@@ -1829,12 +1835,12 @@ var PaymentScreenWidget = ScreenWidget.extend({
                     'message': _t('Negative Bank Payment'),
                     'comment': _t('You cannot have a negative amount in a Bank payment. Use a cash payment method to return money to the customer.'),
                 });
-                return;
+                return false;
             }
         }
 
         if (!order.is_paid() || this.invoicing) {
-            return;
+            return false;
         }
 
         // The exact amount must be paid if there is no cash payment method defined.
@@ -1848,12 +1854,12 @@ var PaymentScreenWidget = ScreenWidget.extend({
                     title: _t('Cannot return change without a cash payment method'),
                     body:  _t('There is no cash payment method available in this point of sale to handle the change.\n\n Please pay the exact amount or add a cash payment method in the point of sale configuration'),
                 });
-                return;
+                return false;
             }
         }
 
         // if the change is too large, it's probably an input error, make the user confirm.
-        if (!force_validation && (order.get_total_with_tax() * 1000 < order.get_total_paid())) {
+        if (!force_validation && order.get_total_with_tax() > 0 && (order.get_total_with_tax() * 1000 < order.get_total_paid())) {
             this.gui.show_popup('confirm',{
                 title: _t('Please Confirm Large Amount'),
                 body:  _t('Are you sure that the customer wants to  pay') + 
@@ -1869,13 +1875,22 @@ var PaymentScreenWidget = ScreenWidget.extend({
                     self.validate_order('confirm');
                 },
             });
-            return;
+            return false;
         }
+
+        return true;
+    },
+
+    finalize_validation: function() {
+        var self = this;
+        var order = this.pos.get_order();
 
         if (order.is_paid_with_cash() && this.pos.config.iface_cashdrawer) { 
 
                 this.pos.proxy.open_cashbox();
         }
+
+        order.initialize_validation_date();
 
         if (order.is_to_invoice()) {
             var invoiced = this.pos.push_and_invoice_order(order);
@@ -1916,6 +1931,14 @@ var PaymentScreenWidget = ScreenWidget.extend({
         } else {
             this.pos.push_order(order);
             this.gui.show_screen('receipt');
+        }
+    },
+
+    // Check if the order is paid, then sends it to the backend,
+    // and complete the sale process
+    validate_order: function(force_validation) {
+        if (this.order_is_valid(force_validation)) {
+            this.finalize_validation();
         }
     },
 });
@@ -1961,6 +1984,12 @@ return {
     NumpadWidget: NumpadWidget,
     ProductScreenWidget: ProductScreenWidget,
     ProductListWidget: ProductListWidget,
+    ClientListScreenWidget: ClientListScreenWidget,
+    ActionpadWidget: ActionpadWidget,
+    DomCache: DomCache,
+    ProductCategoriesWidget: ProductCategoriesWidget,
+    ScaleScreenWidget: ScaleScreenWidget,
+    set_fiscal_position_button: set_fiscal_position_button,
 };
 
 });

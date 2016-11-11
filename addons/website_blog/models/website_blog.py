@@ -254,7 +254,7 @@ class BlogPost(osv.Model):
             'type': 'ir.actions.act_url',
             'url': '/blog/%s/post/%s' % (post.blog_id.id, post.id),
             'target': 'self',
-            'res_id': self.id,
+            'res_id': post.id,
         }
 
     def _notification_get_recipient_groups(self, cr, uid, ids, message, recipients, context=None):
@@ -262,7 +262,7 @@ class BlogPost(osv.Model):
         on their notification email. It will lead on the website view of the
         post. """
         res = super(BlogPost, self)._notification_get_recipient_groups(cr, uid, ids, message, recipients, context=context)
-        access_action = self._notification_link_helper('view', model=message.model, res_id=message.res_id)
+        access_action = self._notification_link_helper(cr, uid, ids, 'view', model=message.model, res_id=message.res_id)
         for category, data in res.iteritems():
             res[category]['button_access'] = {'url': access_action, 'title': _('View Blog Post')}
         return res

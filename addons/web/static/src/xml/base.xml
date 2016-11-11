@@ -204,7 +204,9 @@
 </t>
 <t t-name="WebClient.DebugDropdown">
     <t t-if="active_view.type === 'form'">
-        <li class="oe_metadata"><a href="#" data-action="get_metadata">View Metadata</a></li>
+        <t t-if="active_view.controller.get_selected_ids().length == 1">
+            <li class="oe_metadata"><a href="#" data-action="get_metadata">View Metadata</a></li>
+        </t>
         <li class="oe_layout"><a href="#" data-action="toggle_layout_outline">Toggle Form Layout Outline</a></li>
         <li class="oe_defaults"><a href="#" data-action="set_defaults">Set Defaults</a></li>
     </t>
@@ -410,12 +412,20 @@
     </tfoot>
 </table>
 <t t-name="ListView.buttons">
-    <t t-if="!widget.no_leaf and widget.options.action_buttons !== false and widget.options.addable and widget.is_action_enabled('create')">
-    <div class="oe_list_buttons">
-        <button type="button" class="btn btn-sm btn-primary o_list_button_add" accesskey="C">
-            <t t-esc="widget.options.addable"/>
-        </button>
-    </div>
+    <t t-if="!widget.no_leaf and widget.options.action_buttons !== false">
+        <div class="oe_list_buttons">
+            <t t-if="widget.options.addable and widget.is_action_enabled('create')">
+                <button type="button" class="btn btn-sm btn-primary o_list_button_add" accesskey="C">
+                    <t t-esc="widget.options.addable"/>
+                </button>
+            </t>
+            <button type="button" class="btn btn-primary btn-sm o_list_button_save" accesskey="S">
+                Save
+            </button>
+            <button type="button" class="btn btn-default btn-sm o_list_button_discard" accesskey="D">
+                Discard
+            </button>
+        </div>
     </t>
 </t>
 <t t-name="ListView.pager" t-if="!widget.no_leaf and widget.options.pager !== false" t-call="ViewPager">
@@ -451,16 +461,6 @@
         <span name="delete" class="fa fa-trash-o"/>
     </td>
 </tr>
-<t t-extend="ListView.buttons">
-    <t t-jquery="button.o_list_button_add" t-operation="after">
-        <button type="button" class="btn btn-primary btn-sm o_list_button_save" accesskey="S">
-            Save
-        </button>
-        <button type="button" class="btn btn-default btn-sm o_list_button_discard" accesskey="D">
-            Discard
-        </button>
-    </t>
-</t>
 <button t-name="ListView.row.text_button" type="button"
         t-att-title="widget.string" t-att-disabled="disabled || undefined"
         t-att-class="disabled ? 'oe_list_button_disabled btn_txt oe_link' : 'btn_txt oe_link'"
@@ -626,7 +626,7 @@
                 <a><t t-esc="measure[1].string"/></a>
             </li>
             <li class="divider"></li>
-            <li data-field="__count__"><a>Quantity</a></li>
+            <li data-field="__count__"><a>Count</a></li>
         </ul>
     </div>
 </t>
@@ -658,7 +658,7 @@
                 <a><t t-esc="measure[1].string"/></a>
             </li>
             <li class="divider"></li>
-            <li data-field="__count__"><a>Quantity</a></li>
+            <li data-field="__count__"><a>Count</a></li>
         </ul>
     </div>
 </t>
@@ -792,7 +792,7 @@
         <span class="o_count"/>
         <button class="btn btn-link" type="button"
             t-att-accesskey="widget.node.attrs.accesskey"/>
-        <input t-if="widget.debug" type="text" class="o_form_input o_debug_input"/>
+        <input t-if="widget.debug" t-att-readonly="widget.get('effective_readonly')" type="text" class="o_form_input o_debug_input"/>
     </div>
 </t>
 <t t-name="web.datepicker">
@@ -1062,7 +1062,7 @@
                         <t t-raw="file.name || file.filename"/>
                     </span>
                     <t t-if="(!file.upload or file.percent_loaded&gt;=100)">
-                        <a class="o_image" t-att-href="file.url" t-attf-title="#{(file.name || file.filename) + (file.date?' \n('+file.date+')':'' )}" t-att-data-mimetype="file.mimetype" t-attf-data-src="/web/image/#{file.id}/100x80">
+                        <a class="o_image" target="_blank" t-att-href="file.url" t-attf-title="#{(file.name || file.filename) + (file.date?' \n('+file.date+')':'' )}" t-att-data-mimetype="file.mimetype" t-attf-data-src="/web/image/#{file.id}/100x80">
                             <t t-raw="file.name || file.filename"/>
                         </a>
                         <span class="fa fa-stack oe_delete" title="Delete this file" t-attf-data-id="#{file.id}">
@@ -1077,7 +1077,7 @@
             <t t-foreach="widget.get('value')" t-as="id">
                 <t t-set="file" t-value="widget.data[id]"/>
                 <div>
-                    <a t-att-href="file.url" t-attf-title="#{(file.name || file.filename) + (file.date?' \n('+file.date+')':'' )}">
+                    <a target="_blank" t-att-href="file.url" t-attf-title="#{(file.name || file.filename) + (file.date?' \n('+file.date+')':'' )}">
                         <t t-raw="file.name || file.filename"/>
                     </a>
                 </div>
@@ -1439,13 +1439,11 @@
 <t t-name="FieldMany2ManyCheckBoxes">
     <t t-foreach="widget.get('records')" t-as="record">
         <div>
-            <t t-if="widget.get('value').indexOf(record[0]) !== -1">
-                <input type="checkbox" t-att-data-record-id="JSON.stringify(record[0])" checked="true"/>
-            </t>
-            <t t-if="widget.get('value').indexOf(record[0]) === -1">
-                <input type="checkbox" t-att-data-record-id="JSON.stringify(record[0])"/>
-            </t>
-            <t t-esc="record[1]"/>
+            <label style="font-weight: normal">
+                <input type="checkbox" t-att-data-record-id="JSON.stringify(record[0])"
+                       t-att-checked="(widget.get('value').indexOf(record[0]) !== -1) or null"/>
+                <t t-esc="record[1]"/>
+            </label>
         </div>
     </t>
 </t>

@@ -2,6 +2,7 @@ odoo.define('im_livechat.im_livechat', function (require) {
 "use strict";
 
 var bus = require('bus.bus').bus;
+var config = require('web.config');
 var core = require('web.core');
 var session = require('web.session');
 var time = require('web.time');
@@ -23,7 +24,7 @@ var LivechatButton = Widget.extend({
     init: function (parent, server_url, options) {
         this._super(parent);
         this.options = _.defaults(options || {}, {
-            placeholder: _t('Ask something ...'),
+            input_placeholder: _t('Ask something ...'),
             default_username: _t("Visitor"),
             button_text: _t("Chat with one of our collaborators"),
             default_message: _t("How may I help you?"),
@@ -55,10 +56,11 @@ var LivechatButton = Widget.extend({
 
     start: function () {
         this.$el.text(this.options.button_text);
+        var small_screen = config.device.size_class === config.device.SIZES.XS;
         if (this.history) {
             _.each(this.history.reverse(), this.add_message.bind(this));
             this.open_chat();
-        } else if (this.rule.action === 'auto_popup') {
+        } else if (!small_screen && this.rule.action === 'auto_popup') {
             var auto_popup_cookie = utils.get_cookie('im_livechat_auto_popup');
             if (!auto_popup_cookie || JSON.parse(auto_popup_cookie)) {
                 this.auto_popup_timeout = setTimeout(this.open_chat.bind(this), this.rule.auto_popup_timer*1000);
@@ -91,10 +93,14 @@ var LivechatButton = Widget.extend({
         return $.when.apply($, defs);
     },
 
-    open_chat: function () {
+    open_chat: _.debounce(function () {
+        if (this.opening_chat) {
+            return;
+        }
         var self = this;
         var cookie = utils.get_cookie('im_livechat_session');
         var def;
+        this.opening_chat = true;
         clearTimeout(this.auto_popup_timeout);
         if (cookie) {
             def = $.when(JSON.parse(cookie));
@@ -120,13 +126,16 @@ var LivechatButton = Widget.extend({
                 utils.set_cookie('im_livechat_session', JSON.stringify(channel), 60*60);
                 utils.set_cookie('im_livechat_auto_popup', JSON.stringify(false), 60*60);
             }
+        }).always(function () {
+            self.opening_chat = false;
         });
-    },
+    }, 200, true),
 
     open_chat_window: function (channel) {
         var self = this;
         var options = {
             display_stars: false,
+            placeholder: this.options.input_placeholder || "",
         };
         var is_folded = (channel.state === 'folded');
         this.chat_window = new ChatWindow(this, channel.id, channel.name, is_folded, channel.message_unread_counter, options);
@@ -136,7 +145,10 @@ var LivechatButton = Widget.extend({
         });
         this.chat_window.on("close_chat_session", this, function () {
             var input_disabled = this.chat_window.$(".o_chat_input input").prop('disabled');
-            if (this.messages.length > 1 && !input_disabled) {
+            var ask_fb = !input_disabled && _.find(this.messages, function (msg) {
+                return msg.id !== '_welcome';
+            });
+            if (ask_fb) {
                 this.chat_window.toggle_fold(false);
                 this.ask_feedback();
             } else {
@@ -212,15 +224,17 @@ var LivechatButton = Widget.extend({
     },
 
     send_welcome_message: function () {
-        this.add_message({
-            id: 1,
-            attachment_ids: [],
-            author_id: this.channel.operator_pid,
-            body: this.options.default_message,
-            channel_ids: [this.channel.id],
-            date: time.datetime_to_str(new Date()),
-            tracking_value_ids: [],
-        }, {prepend: true});
+        if (this.options.default_message) {
+            this.add_message({
+                id: '_welcome',
+                attachment_ids: [],
+                author_id: this.channel.operator_pid,
+                body: this.options.default_message,
+                channel_ids: [this.channel.id],
+                date: time.datetime_to_str(new Date()),
+                tracking_value_ids: [],
+            }, {prepend: true});
+        }
     },
 
     ask_feedback: function () {

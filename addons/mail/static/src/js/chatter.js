@@ -11,6 +11,7 @@ var core = require('web.core');
 var data = require('web.data');
 var Dialog = require('web.Dialog');
 var form_common = require('web.form_common');
+var framework = require('web.framework');
 var session = require('web.session');
 
 var _t = core._t;
@@ -33,7 +34,6 @@ var Followers = form_common.AbstractField.extend({
         this.image = this.node.attrs.image || 'image_small';
         this.comment = this.node.attrs.help || false;
         this.ds_model = new data.DataSetSearch(this, this.view.model);
-        this.ds_users = new data.DataSetSearch(this, 'res.users');
 
         this.value = [];
         this.followers = [];
@@ -191,23 +191,9 @@ var Followers = form_common.AbstractField.extend({
     fetch_followers: function (value_) {
         this.value = value_ || [];
         return ajax.jsonRpc('/mail/read_followers', 'call', {'follower_ids': this.value})
-            .then(this.proxy('display_followers'), this.proxy('fetch_generic'))
+            .then(this.proxy('display_followers'), this.proxy('display_generic'))
             .then(this.proxy('display_buttons'))
             .then(this.proxy('fetch_subtypes'));
-    },
-
-    /** Read on res.partner failed: fall back on a generic case
-        - fetch current user partner_id (call because no other smart solution currently) FIXME
-        - then display a generic message about followers */
-    fetch_generic: function () {
-        var self = this;
-
-        return this.ds_users.call('read', [[session.uid], ['partner_id']])
-            .then(function (results) {
-                var pid = results[0].partner_id[0];
-                self.message_is_follower = (_.indexOf(self.value, pid) !== -1);
-            })
-            .then(self.proxy('display_generic'));
     },
 
     _format_followers: function (count){
@@ -222,9 +208,11 @@ var Followers = form_common.AbstractField.extend({
         return str;
     },
 
-    /* Display generic info about follower, for people not having access to res_partner */
+    /** Read on res.partner failed: only display the number of followers */
     display_generic: function () {
-        this.$('.o_followers_list').empty();
+        this.$('.o_followers_actions').hide();
+        this.$('.o_followers_list').hide();
+        this.$('.o_followers_title_box > button').prop('disabled', true);
         this.$('.o_followers_count').html(this._format_followers(this.value.length));
     },
 
@@ -453,7 +441,7 @@ var ChatterComposer = composer.BasicComposer.extend({
             internal_subtypes: [],
         });
         if (this.options.is_log) {
-            this.options.send_text = _('Log');
+            this.options.send_text = _t('Log');
         }
         this.events = _.extend(this.events, {
             'click .o_composer_button_full_composer': 'on_open_full_composer',
@@ -686,7 +674,7 @@ var ChatterComposer = composer.BasicComposer.extend({
                     var parent = self.getParent();
                     chat_manager.get_messages({model: parent.model, res_id: parent.res_id});
                 },
-            });
+            }).then(self.trigger.bind(self, 'close_composer'));
         });
     }
 });
@@ -717,6 +705,16 @@ var Chatter = form_common.AbstractField.extend({
 
     start: function () {
         var self = this;
+
+        // Hide the chatter in 'create' mode
+        this.view.on("change:actual_mode", this, this.check_visibility);
+        this.check_visibility();
+        var $container = this.$el.parent();
+        if ($container.hasClass('oe_chatter')) {
+            this.$el
+                .addClass($container.attr("class"))
+                .unwrap();
+        }
 
         // Move the follower's widget (if any) inside the chatter
         this.followers = this.field_manager.fields.message_follower_ids;
@@ -749,6 +747,10 @@ var Chatter = form_common.AbstractField.extend({
             chat_manager.bus.on('update_message', self, self.on_update_message);
             self.ready.resolve();
         });
+    },
+
+    check_visibility: function () {
+        this.set({"force_invisible": this.view.get("actual_mode") === "create"});
     },
 
     fetch_and_render_thread: function (ids, options) {
@@ -840,7 +842,14 @@ var Chatter = form_common.AbstractField.extend({
     },
 
     load_more_messages: function () {
-        this.fetch_and_render_thread(this.msg_ids, {force_fetch: true});
+        var self = this;
+        var top_msg_id = this.$('.o_thread_message').first().data('messageId');
+        var top_msg_selector = '.o_thread_message[data-message-id="' + top_msg_id + '"]';
+        var offset = -framework.getPosition(document.querySelector(top_msg_selector)).top;
+        this.fetch_and_render_thread(this.msg_ids, {force_fetch: true}).then(function(){
+            offset += framework.getPosition(document.querySelector(top_msg_selector)).top;
+            self.thread.scroll_to({offset: offset});
+        });
     },
 
     /**
@@ -866,6 +875,8 @@ var Chatter = form_common.AbstractField.extend({
         // destroy current composer, if any
         if (this.composer) {
             this.composer.destroy();
+            this.composer = undefined;
+            this.mute_new_message_button(false);
         }
 
         // fetch and render messages of current document
@@ -895,6 +906,8 @@ var Chatter = form_common.AbstractField.extend({
             internal_subtypes: this.options.internal_subtypes,
             is_log: options && options.is_log,
             record_name: this.record_name,
+            default_body: old_composer && old_composer.$input && old_composer.$input.val(),
+            default_mention_selections: old_composer && old_composer.mention_get_listener_selections(),
         });
         this.composer.on('input_focused', this, function () {
             this.composer.mention_set_prefetched_partners(this.mention_suggestions || []);
@@ -909,12 +922,22 @@ var Chatter = form_common.AbstractField.extend({
             }
             self.composer.on('post_message', self, self.on_post_message);
             self.composer.on('need_refresh', self, self.refresh_followers);
+            self.composer.on('close_composer', null, self.close_composer.bind(self, true));
         });
-
+        this.mute_new_message_button(true);
     },
-    close_composer: function () {
-        if (this.composer.is_empty()) {
+    close_composer: function (force) {
+        if (this.composer && (this.composer.is_empty() || force)) {
             this.composer.do_hide();
+            this.composer.$input.val('');
+            this.mute_new_message_button(false);
+        }
+    },
+    mute_new_message_button: function (mute) {
+        if (mute) {
+            this.$('.o_chatter_button_new_message').removeClass('btn-primary').addClass('btn-default');
+        } else if (!mute) {
+            this.$('.o_chatter_button_new_message').removeClass('btn-default').addClass('btn-primary');
         }
     },
 

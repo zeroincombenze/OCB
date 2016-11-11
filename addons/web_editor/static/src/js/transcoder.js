@@ -84,7 +84,7 @@ var getMatchedCSSRules = function (a) {
     var style = {};
     _.each(css, function (v,k) {
         _.each(v[1], function (v,k) {
-            if (v && k.indexOf('-webkit') === -1 && (!style[k] || style[k].indexOf('important') === -1 || v.indexOf('important') !== -1)) {
+            if (v && _.isString(v) && k.indexOf('-webkit') === -1 && (!style[k] || style[k].indexOf('important') === -1 || v.indexOf('important') !== -1)) {
                 style[k] = v;
             }
         });
@@ -133,7 +133,7 @@ var font_to_img = function ($editable) {
         });
         if (content) {
             var color = $font.css("color").replace(/\s/g, '');
-            var src = _.str.sprintf('/web_editor/font_to_img/%s/%s/'+$font.height(), window.encodeURI(content), window.encodeURI(color));
+            var src = _.str.sprintf('/web_editor/font_to_img/%s/%s/'+Math.max(1, $font.height()), window.encodeURI(content), window.encodeURI(color));
             var $img = $("<img/>").attr("src", src)
                 .attr("data-class", $font.attr("class"))
                 .attr("class", $font.attr("class").replace(new RegExp("(^|\\s+)" + icon + "(-[^\\s]+)?", "gi"), '')) // remove inline font-awsome style
@@ -173,7 +173,11 @@ var class_to_style = function ($editable) {
                 style = k+":"+v+";"+style;
             }
         });
-        $target.attr("style", style);
+        if (_.isEmpty(style)) {
+            $target.removeAttr("style");
+        } else {
+            $target.attr("style", style);
+        }
     });
 };
 // convert style into inline class from mail
@@ -191,7 +195,7 @@ var style_to_class = function ($editable) {
                 style = k+":"+v+";"+style;
             }
         });
-        css = $c.attr("style", style).attr("style").split(/\s*;\s*/);
+        css = ($c.attr("style", style).attr("style") || "").split(/\s*;\s*/);
         style = $target.attr("style") || "";
         _.each(css, function (v) {
             style = style.replace(v, '');

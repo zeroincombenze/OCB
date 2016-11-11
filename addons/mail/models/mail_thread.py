@@ -4,6 +4,9 @@ import base64
 import datetime
 import dateutil
 import email
+import hashlib
+import hmac
+import json
 import lxml
 from lxml import etree
 import logging
@@ -169,15 +172,19 @@ class MailThread(models.AbstractModel):
     @api.multi
     def _get_message_unread(self):
         res = dict((res_id, 0) for res_id in self.ids)
+        partner_id = self.env.user.partner_id.id
 
         # search for unread messages, directly in SQL to improve performances
         self._cr.execute(""" SELECT msg.res_id FROM mail_message msg
                              RIGHT JOIN mail_message_mail_channel_rel rel
                              ON rel.mail_message_id = msg.id
                              RIGHT JOIN mail_channel_partner cp
-                             ON (cp.channel_id = rel.mail_channel_id AND cp.partner_id = %s AND (cp.seen_message_id < msg.id))
-                             WHERE msg.model = %s AND msg.res_id in %s""",
-                         (self.env.user.partner_id.id, self._name, tuple(self.ids),))
+                             ON (cp.channel_id = rel.mail_channel_id AND cp.partner_id = %s AND
+                                (cp.seen_message_id IS NULL OR cp.seen_message_id < msg.id))
+                             WHERE msg.model = %s AND msg.res_id in %s AND
+                                   (msg.author_id IS NULL OR msg.author_id != %s) AND
+                                   (msg.message_type != 'notification' OR msg.model != 'mail.channel')""",
+                         (partner_id, self._name, tuple(self.ids), partner_id,))
         for result in self._cr.fetchall():
             res[result[0]] += 1
 
@@ -534,6 +541,13 @@ class MailThread(models.AbstractModel):
             because portal users have a different Inbox action than classic users. """
         return 'mail.mail_channel_action_client_chat'
 
+    @api.model
+    def _generate_notification_token(self, base_link, params):
+        secret = self.env['ir.config_parameter'].sudo().get_param('database.secret')
+        token = '%s?%s' % (base_link, ' '.join('%s=%s' % (key, params[key]) for key in sorted(params.keys())))
+        hm = hmac.new(str(secret), token, hashlib.sha1).hexdigest()
+        return hm
+
     @api.multi
     def _notification_link_helper(self, link_type, **kwargs):
         if kwargs.get('message_id'):
@@ -541,26 +555,30 @@ class MailThread(models.AbstractModel):
                 'message_id': kwargs.pop('message_id')
             }
         else:
-            self.ensure_one()
             base_params = {
-                'model': self._name,
-                'res_id': self.ids[0],
+                'model': kwargs.get('model', self._name),
+                'res_id': kwargs.get('res_id', self.ids and self.ids[0] or False),
             }
 
-        link = False
         if link_type in ['view', 'assign', 'follow', 'unfollow']:
             params = dict(base_params)
-            link = '/mail/view?%s' % url_encode(params)
-        elif link_type == 'workflow':
-            params = dict(base_params, signal=kwargs['signal'])
-            link = '/mail/workflow?%s' % url_encode(params)
-        elif link_type == 'method':
-            method = kwargs.pop('method')
-            params = dict(base_params, method=method, params=kwargs)
-            link = '/mail/method?%s' % url_encode(params)
+            base_link = '/mail/%s' % link_type
         elif link_type == 'new':
-            params = dict(base_params, action_id=kwargs.get('action_id'))
-            link = '/mail/new?%s' % url_encode(params)
+            params = dict(base_params, action_id=kwargs.get('action_id', ''))
+            base_link = '/mail/new'
+        elif link_type == 'controller':
+            controller = kwargs.pop('controller')
+            params = dict(base_params)
+            params.pop('model')
+            base_link = '%s' % controller
+        else:
+            return ''
+
+        if link_type not in ['view', 'new']:
+            token = self._generate_notification_token(base_link, params)
+            params['token'] = token
+
+        link = '%s?%s' % (base_link, url_encode(params))
         return link
 
     @api.multi
@@ -576,13 +594,14 @@ class MailThread(models.AbstractModel):
         Example: having defined a group_hr_user entry, store HR users and
         officers. """
         # TDE note: recipients is normally sudo-ed
+        group_user = self.env['ir.model.data'].xmlid_to_res_id('base.group_user')
         for recipient in recipients:
             if recipient.id in done_ids:
                 continue
-            if not recipient.user_ids:
-                group_data['partner'] |= recipient
-            else:
+            if recipient.user_ids and group_user in recipient.user_ids[0].groups_id.ids:
                 group_data['user'] |= recipient
+            else:
+                group_data['partner'] |= recipient
         return group_data
 
     @api.multi
@@ -633,8 +652,8 @@ class MailThread(models.AbstractModel):
                 'followers': self.env['res.partner'],
                 'not_followers': self.env['res.partner'],
                 'button_access': {'url': access_link, 'title': view_title},
-                'button_follow': {'url': '/mail/follow?%s' % url_encode({'model': message.model, 'res_id': message.res_id}), 'title': _('Follow')},
-                'button_unfollow': {'url': '/mail/unfollow?%s' % url_encode({'model': message.model, 'res_id': message.res_id}), 'title': _('Unfollow')},
+                'button_follow': {'url': self._notification_link_helper('follow', model=message.model, res_id=message.res_id), 'title': _('Follow')},
+                'button_unfollow': {'url': self._notification_link_helper('unfollow', model=message.model, res_id=message.res_id), 'title': _('Unfollow')},
                 'actions': list(),
             }
             group_data[category] = self.env['res.partner']
@@ -701,8 +720,11 @@ class MailThread(models.AbstractModel):
                     ('alias_parent_model_id.model', '=', model_name),
                     ('alias_parent_thread_id', 'in', res_ids),
                     ('alias_name', '!=', False)])
-                aliases.update(
-                    dict((alias.alias_parent_thread_id, '%s@%s' % (alias.alias_name, alias_domain)) for alias in mail_aliases))
+                # take only first found alias for each thread_id, to match
+                # order (1 found -> limit=1 for each res_id)
+                for alias in mail_aliases:
+                    if alias.alias_parent_thread_id not in aliases:
+                        aliases[alias.alias_parent_thread_id] = '%s@%s' % (alias.alias_name, alias_domain)
                 doc_names.update(
                     dict((ng_res[0], ng_res[1])
                          for ng_res in self.env[model_name].sudo().browse(aliases.keys()).name_get()))
@@ -790,15 +812,20 @@ class MailThread(models.AbstractModel):
         record_set = None
 
         def _create_bounce_email():
-            self.env['mail.mail'].create({
+            bounce_to = decode_header(message, 'Return-Path') or email_from
+            bounce_mail_values = {
                 'body_html': '<div><p>Hello,</p>'
                              '<p>The following email sent to %s cannot be accepted because this is '
                              'a private email address. Only allowed people can contact us at this address.</p></div>'
                              '<blockquote>%s</blockquote>' % (message.get('to'), message_dict.get('body')),
                 'subject': 'Re: %s' % message.get('subject'),
-                'email_to': message.get('from'),
+                'email_to': bounce_to,
                 'auto_delete': True,
-            }).send()
+            }
+            bounce_from = self.env['ir.mail_server']._get_default_bounce_address()
+            if bounce_from:
+                bounce_mail_values['email_from'] = 'MAILER-DAEMON <%s>' % bounce_from
+            self.env['mail.mail'].create(bounce_mail_values).send()
 
         def _warn(message):
             _logger.info('Routing mail with Message-Id %s: route %s: %s',
@@ -1036,7 +1063,7 @@ class MailThread(models.AbstractModel):
                        decode_header(message, 'Cc'),
                        decode_header(message, 'Resent-To'),
                        decode_header(message, 'Resent-Cc')])
-        local_parts = [e.split('@')[0] for e in tools.email_split(rcpt_tos)]
+        local_parts = [e.split('@')[0].lower() for e in tools.email_split(rcpt_tos)]
         if local_parts:
             aliases = Alias.search([('alias_name', 'in', local_parts)])
             if aliases:
@@ -1091,6 +1118,7 @@ class MailThread(models.AbstractModel):
 
     @api.model
     def message_route_process(self, message, message_dict, routes):
+        self = self.with_context(attachments_mime_plainxml=True) # import XML attachments as text
         # postpone setting message_dict.partner_ids after message_post, to avoid double notifications
         partner_ids = message_dict.pop('partner_ids', [])
         thread_id = False
@@ -1678,7 +1706,7 @@ class MailThread(models.AbstractModel):
             partner_to_subscribe = partner_ids
             if self._context.get('mail_post_autofollow_partner_ids'):
                 partner_to_subscribe = filter(lambda item: item in self._context.get('mail_post_autofollow_partner_ids'), partner_ids)
-            self.message_subscribe(list(partner_to_subscribe))
+            self.message_subscribe(list(partner_to_subscribe), force=False)
 
         # _mail_flat_thread: automatically set free messages to the first posted message
         MailMessage = self.env['mail.message']
@@ -1730,7 +1758,7 @@ class MailThread(models.AbstractModel):
                 # done with SUPERUSER_ID, because on some models users can post only with read access, not necessarily write access
                 self.sudo().write({'message_last_post': fields.Datetime.now()})
         if new_message.author_id and model and self.ids and message_type != 'notification' and not self._context.get('mail_create_nosubscribe'):
-            self.message_subscribe([new_message.author_id.id])
+            self.message_subscribe([new_message.author_id.id], force=False)
         return new_message
 
     @api.multi
@@ -1802,7 +1830,7 @@ class MailThread(models.AbstractModel):
         gen, part = self.env['mail.followers']._add_follower_command(self._name, self.ids, partner_data, channel_data, force=force)
         self.sudo().write({'message_follower_ids': gen})
         for record in self.filtered(lambda self: self.id in part):
-            record.write(part[record.id])
+            record.write({'message_follower_ids': part[record.id]})
 
         self.invalidate_cache()
         return True
@@ -1952,10 +1980,10 @@ class MailThread(models.AbstractModel):
 
         for pid, subtypes in new_partners.items():
             subtypes = list(subtypes) if subtypes is not None else None
-            self.message_subscribe(partner_ids=[pid], subtype_ids=subtypes)
+            self.message_subscribe(partner_ids=[pid], subtype_ids=subtypes, force=(subtypes != None))
         for cid, subtypes in new_channels.items():
             subtypes = list(subtypes) if subtypes is not None else None
-            self.message_subscribe(channel_ids=[cid], subtype_ids=subtypes)
+            self.message_subscribe(channel_ids=[cid], subtype_ids=subtypes, force=(subtypes != None))
 
         # remove the current user from the needaction partner to avoid to notify the author of the message
         user_pids = [user_pid for user_pid in user_pids if user_pid != self.env.user.partner_id.id]

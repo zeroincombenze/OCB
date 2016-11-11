@@ -9,7 +9,7 @@ from openerp import api, tools
 import openerp.modules
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
-from openerp.exceptions import AccessError, UserError
+from openerp.exceptions import AccessError, UserError, ValidationError
 
 _logger = logging.getLogger(__name__)
 
@@ -261,7 +261,7 @@ class ir_translation(osv.osv):
         'Language code of translation item must be among known languages' ), ]
 
     def _auto_init(self, cr, context=None):
-        super(ir_translation, self)._auto_init(cr, context)
+        res = super(ir_translation, self)._auto_init(cr, context)
 
         cr.execute("SELECT indexname FROM pg_indexes WHERE indexname LIKE 'ir_translation_%'")
         indexes = [row[0] for row in cr.fetchall()]
@@ -284,6 +284,8 @@ class ir_translation(osv.osv):
         if 'ir_translation_ltn' not in indexes:
             cr.execute('CREATE INDEX ir_translation_ltn ON ir_translation (name, lang, type)')
             cr.commit()
+
+        return res
 
     def _check_selection_field_value(self, cr, uid, field, value, context=None):
         if field == 'lang':
@@ -532,13 +534,24 @@ class ir_translation(osv.osv):
             records.check_field_access_rights(fmode, model_fields[mname])
             records.check_access_rule(fmode)
 
+    @api.constrains('type', 'name', 'value')
+    def _check_value(self):
+        for trans in self.with_context(lang=None):
+            if trans.type == 'model' and trans.value:
+                mname, fname = trans.name.split(',')
+                record = trans.env[mname].browse(trans.res_id)
+                field = record._fields[fname]
+                if callable(field.translate):
+                    # check whether applying (trans.src -> trans.value) then
+                    # (trans.value -> trans.src) gives the original value back
+                    value0 = field.translate(lambda term: None, record[fname])
+                    value1 = field.translate({trans.src: trans.value}.get, value0)
+                    value2 = field.translate({trans.value: trans.src}.get, value1)
+                    if value2 != value0:
+                        raise ValidationError(_("Translation is not valid:\n%s") % trans.value)
+
     @api.model
     def create(self, vals):
-        if vals.get('type') == 'model' and vals.get('value'):
-            # check and sanitize value
-            mname, fname = vals['name'].split(',')
-            field = self.env[mname]._fields[fname]
-            vals['value'] = field.check_trans_value(vals['value'])
         record = super(ir_translation, self.sudo()).create(vals).with_env(self.env)
         record.check('create')
         self.clear_caches()
@@ -548,13 +561,6 @@ class ir_translation(osv.osv):
     def write(self, vals):
         if vals.get('value'):
             vals.setdefault('state', 'translated')
-            ttype = vals.get('type') or self[:1].type
-            if ttype == 'model':
-                # check and sanitize value
-                name = vals.get('name') or self[:1].name
-                mname, fname = name.split(',')
-                field = self.env[mname]._fields[fname]
-                vals['value'] = field.check_trans_value(vals['value'])
         elif vals.get('src') or not vals.get('value', True):
             vals.setdefault('state', 'to_translate')
         self.check('write')
@@ -581,7 +587,7 @@ class ir_translation(osv.osv):
                         FROM res_lang l
                         WHERE NOT EXISTS (
                             SELECT 1 FROM ir_translation
-                            WHERE lang=l.code AND type='model' AND name=%(name)s AND res_id=%(res_id)s AND src=%(src)s AND module=%(module)s
+                            WHERE lang=l.code AND type='model' AND name=%(name)s AND res_id=%(res_id)s AND src=%(src)s
                         );
                     """
             for record in records:
@@ -604,7 +610,7 @@ class ir_translation(osv.osv):
                             WHERE lang=l.code AND type='model' AND name=%(name)s AND res_id=%(res_id)s
                         );
                         UPDATE ir_translation SET src=%(src)s
-                        WHERE type='model' AND name=%(name)s AND res_id=%(res_id)s AND module=%(module)s;
+                        WHERE type='model' AND name=%(name)s AND res_id=%(res_id)s;
                     """
             for record in records:
                 module = external_ids[record.id].split('.')[0]

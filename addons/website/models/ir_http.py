@@ -59,14 +59,14 @@ class ir_http(orm.AbstractModel):
 
     def get_nearest_lang(self, lang):
         # Try to find a similar lang. Eg: fr_BE and fr_FR
-        if lang in request.website.get_languages():
-            return lang
-
-        short = lang.split('_')[0]
+        short = lang.partition('_')[0]
+        short_match = False
         for code, name in request.website.get_languages():
-            if code.startswith(short):
-                return code
-        return False
+            if code == lang:
+                return lang
+            if not short_match and code.startswith(short):
+                short_match = code
+        return short_match
 
     def _geoip_setup_resolver(self):
         if self._geoip_resolver is None:
@@ -132,13 +132,12 @@ class ir_http(orm.AbstractModel):
             langs = [lg[0] for lg in request.website.get_languages()]
             path = request.httprequest.path.split('/')
             if first_pass:
+                is_a_bot = self.is_a_bot()
                 nearest_lang = not func and self.get_nearest_lang(path[1])
                 url_lang = nearest_lang and path[1]
                 preferred_lang = ((cook_lang if cook_lang in langs else False)
-                                  or self.get_nearest_lang(request.lang)
+                                  or (not is_a_bot and self.get_nearest_lang(request.lang))
                                   or request.website.default_lang_code)
-
-                is_a_bot = self.is_a_bot()
 
                 request.lang = request.context['lang'] = nearest_lang or preferred_lang
                 # if lang in url but not the displayed or default language --> change or remove
@@ -158,6 +157,7 @@ class ir_http(orm.AbstractModel):
                     redirect.set_cookie('website_lang', request.lang)
                     return redirect
                 elif url_lang:
+                    request.uid = None
                     path.pop(1)
                     return self.reroute('/'.join(path) or '/')
             if path[1] == request.website.default_lang_code:

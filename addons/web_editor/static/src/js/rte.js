@@ -205,7 +205,7 @@ var history = new History();
 $.extend($.expr[':'],{
     o_editable: function(node,i,m){
         while (node) {
-            if (node.className) {
+            if (node.className && _.isString(node.className)) {
                 if (node.className.indexOf('o_not_editable')!==-1 ) {
                     return false;
                 }
@@ -516,7 +516,7 @@ var RTE = Widget.extend({
             // add contenteditable on link to improve its editing behaviour
             $target.attr('contenteditable', true);
             setTimeout(function () {
-                $editable.attr('contenteditable', false);
+                $editable.not($target).attr('contenteditable', false);
             });
             // once clicked outside, remove contenteditable on link
             var reactive_editable = function(e){

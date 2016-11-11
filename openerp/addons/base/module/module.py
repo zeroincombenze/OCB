@@ -499,6 +499,7 @@ class module(osv.osv):
                                                               known_dep_ids, exclude_states, context))
         return list(known_dep_ids)
 
+    @api.returns('self')
     def upstream_dependencies(self, cr, uid, ids, known_dep_ids=None,
                                 exclude_states=['installed', 'uninstallable', 'to remove'],
                                 context=None):
@@ -532,6 +533,7 @@ class module(osv.osv):
         api.Environment.reset()
         registry = openerp.modules.registry.RegistryManager.new(cr.dbname, update_module=True)
 
+        cr.commit()
         config = registry['res.config'].next(cr, uid, [], context=context) or {}
         if config.get('type') not in ('ir.actions.act_window_close',):
             return config

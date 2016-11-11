@@ -25,21 +25,18 @@ import pytz
 import re
 import xmlrpclib
 from operator import itemgetter
-from contextlib import contextmanager
 from psycopg2 import Binary
 
 import openerp
 import openerp.tools as tools
+from openerp.sql_db import LazyCursor
 from openerp.tools.translate import _
 from openerp.tools import float_repr, float_round, frozendict, html_sanitize
 import json
-from openerp import SUPERUSER_ID, registry
+from openerp import SUPERUSER_ID
 
-@contextmanager
-def _get_cursor():
-    # yield a valid cursor from any environment or create a new one if none found
-    with registry().cursor() as cr:
-        yield cr
+# deprecated; kept for backward compatibility only
+_get_cursor = LazyCursor
 
 EMPTY_DICT = frozendict()
 
@@ -378,7 +375,7 @@ class float(_column):
     @property
     def digits(self):
         if self._digits_compute:
-            with _get_cursor() as cr:
+            with LazyCursor() as cr:
                 return self._digits_compute(cr)
         else:
             return self._digits
@@ -633,20 +630,21 @@ class binary(_column):
             ('res_field', '=', name),
             ('res_id', '=', id),
         ])
-        if value:
-            if att:
-                att.write({'datas': value})
+        with att.env.norecompute():
+            if value:
+                if att:
+                    att.write({'datas': value})
+                else:
+                    att.create({
+                        'name': name,
+                        'res_model': obj._name,
+                        'res_field': name,
+                        'res_id': id,
+                        'type': 'binary',
+                        'datas': value,
+                    })
             else:
-                att.create({
-                    'name': name,
-                    'res_model': obj._name,
-                    'res_field': name,
-                    'res_id': id,
-                    'type': 'binary',
-                    'datas': value,
-                })
-        else:
-            att.unlink()
+                att.unlink()
         return []
 
 class selection(_column):
@@ -817,6 +815,7 @@ class one2many(_column):
         context.update(self._context)
         if not values:
             return
+        original_obj = obj
         obj = obj.pool[self._obj]
         rec = obj.browse(cr, user, [], context=context)
         with rec.env.norecompute():
@@ -848,7 +847,8 @@ class one2many(_column):
                     inverse_field = obj._fields.get(self._fields_id)
                     assert inverse_field, 'Trying to unlink the content of a o2m but the pointed model does not have a m2o'
                     # if the o2m has a static domain we must respect it when unlinking
-                    domain = self._domain(obj) if callable(self._domain) else self._domain
+                    domain = (self._domain(original_obj)
+                              if callable(self._domain) else self._domain)
                     extra_domain = domain or []
                     ids_to_unlink = obj.search(cr, user, [(self._fields_id,'=',id)] + extra_domain, context=context)
                     # If the model has cascade deletion, we delete the rows because it is the intended behavior,
@@ -863,7 +863,11 @@ class one2many(_column):
                     ids2 = act[2] or [0]
                     cr.execute('select id from '+_table+' where '+self._fields_id+'=%s and id <> ALL (%s)', (id,ids2))
                     ids3 = map(lambda x:x[0], cr.fetchall())
-                    obj.write(cr, user, ids3, {self._fields_id:False}, context=context or {})
+                    inverse_field = obj._fields.get(self._fields_id)
+                    if getattr(inverse_field, "ondelete", None) == "cascade":
+                        obj.unlink(cr, user, ids3, context=context)
+                    else:
+                        obj.write(cr, user, ids3, {self._fields_id: False}, context=context or {})
         return result
 
     def search(self, cr, obj, args, name, value, offset=0, limit=None, uid=None, operator='like', context=None):
@@ -1354,7 +1358,7 @@ class function(_column):
     @property
     def digits(self):
         if self._digits_compute:
-            with _get_cursor() as cr:
+            with LazyCursor() as cr:
                 return self._digits_compute(cr)
         else:
             return self._digits
