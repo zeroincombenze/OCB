@@ -366,8 +366,7 @@ class stock_location(osv.osv):
             states = ['done']
         # build the list of ids of children of the location given by id
         ids = id and [id] or []
-        location_ids = self.search(cr, uid, [('location_id', 'child_of', ids)])
-        return self._product_get_multi_location(cr, uid, location_ids, product_ids, context, states)
+        return self._product_get_multi_location(cr, uid, ids, product_ids, context=context, states=states)
 
     def _product_virtual_get(self, cr, uid, id, product_ids=False, context=None, states=None):
         if states is None:
@@ -726,7 +725,7 @@ class stock_picking(osv.osv):
         default = default.copy()
         picking_obj = self.browse(cr, uid, id, context=context)
         if ('name' not in default) or (picking_obj.name == '/'):
-            seq_obj_name = 'stock.picking.' + picking_obj.type
+            seq_obj_name = 'stock.picking' + ('.' + picking_obj.type if picking_obj.type != 'internal' else '')
             default['name'] = self.pool.get('ir.sequence').get(cr, uid, seq_obj_name)
             default.setdefault('origin', False)
             default.setdefault('backorder_id', False)
@@ -1305,7 +1304,7 @@ class stock_picking(osv.osv):
                     new_picking_name = pick.name
                     self.write(cr, uid, [pick.id], 
                                {'name': sequence_obj.get(cr, uid,
-                                            'stock.picking.%s'%(pick.type)),
+                                            'stock.picking' + ('.' + pick.type if pick.type != 'internal' else '')),
                                })
                     pick.refresh()
                     new_picking = self.copy(cr, uid, pick.id,
@@ -2516,7 +2515,7 @@ class stock_move(osv.osv):
                     'product_uom_id': move.product_uom and move.product_uom.id or False,
                     'quantity': move.product_qty,
                     'ref': move.picking_id and move.picking_id.name or False,
-                    'date': time.strftime('%Y-%m-%d'),
+                    'date': fields.date.context_today(self, cr, uid),
                     'partner_id': partner_id,
                     'debit': reference_amount,
                     'account_id': dest_account_id,
@@ -2527,7 +2526,7 @@ class stock_move(osv.osv):
                     'product_uom_id': move.product_uom and move.product_uom.id or False,
                     'quantity': move.product_qty,
                     'ref': move.picking_id and move.picking_id.name or False,
-                    'date': time.strftime('%Y-%m-%d'),
+                    'date': fields.date.context_today(self, cr, uid),
                     'partner_id': partner_id,
                     'credit': reference_amount,
                     'account_id': src_account_id,

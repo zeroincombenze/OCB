@@ -930,6 +930,10 @@ class expression(object):
                             call_null = False
                             o2m_op = 'not in' if operator in NEGATIVE_TERM_OPERATORS else 'in'
                             push(create_substitution_leaf(leaf, ('id', o2m_op, ids2), working_model))
+                        elif operator in ('like', 'ilike', 'in', '='):
+                            # no match found with positive search operator => no result (FALSE_LEAF)
+                            call_null = False
+                            push(create_substitution_leaf(leaf, FALSE_LEAF, working_model))
 
                 if call_null:
                     o2m_op = 'in' if operator in NEGATIVE_TERM_OPERATORS else 'not in'
@@ -952,7 +956,7 @@ class expression(object):
                     call_null_m2m = True
                     if right is not False:
                         if isinstance(right, basestring):
-                            res_ids = [x[0] for x in relational_model.name_search(cr, uid, right, [], operator, context=context)]
+                            res_ids = [x[0] for x in relational_model.name_search(cr, uid, right, [], operator, context=context, limit=None)]
                             if res_ids:
                                 operator = 'in'
                         else:

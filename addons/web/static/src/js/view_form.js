@@ -729,14 +729,16 @@ instance.web.FormView = instance.web.View.extend(instance.web.form.FieldManagerM
         $(e.target).attr("disabled", true);
         return this.save().done(function(result) {
             self.trigger("save", result);
-            self.reload().then(function() {
+            self.reload().always(function(){
+                $(e.target).attr("disabled", false);
+            }).then(function() {
                 self.to_view_mode();
                 var parent = self.ViewManager.ActionManager.getParent();
                 if(parent){
                     parent.menu.do_reload_needaction();
                 }
             });
-        }).always(function(){
+        }).fail(function(){
             $(e.target).attr("disabled", false);
         });
     },
@@ -5241,6 +5243,7 @@ instance.web.form.FieldBinaryImage = instance.web.form.FieldBinary.extend({
             $img.css("margin-top", "" + (self.options.size[1] - $img.height()) / 2 + "px");
         });
         $img.on('error', function() {
+            self.on_clear();
             $img.attr('src', self.placeholder);
             instance.webclient.notification.warn(_t("Image"), _t("Could not display the selected image."));
         });

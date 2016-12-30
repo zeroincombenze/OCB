@@ -272,15 +272,42 @@ class account_account(osv.osv):
                 order, context=context, count=count)
 
     def _get_children_and_consol(self, cr, uid, ids, context=None):
-        #this function search for all the children and all consolidated children (recursively) of the given account ids
-        ids2 = self.search(cr, uid, [('parent_id', 'child_of', ids)], context=context)
-        ids3 = []
-        for rec in self.browse(cr, uid, ids2, context=context):
-            for child in rec.child_consol_ids:
-                ids3.append(child.id)
-        if ids3:
-            ids3 = self._get_children_and_consol(cr, uid, ids3, context)
-        return ids2 + ids3
+        if isinstance(ids, (int, long)):
+            ids = [ids]
+        cr.execute(
+            """
+            SELECT id FROM (
+                WITH RECURSIVE account_children(id, depth) AS (
+                    SELECT id, 0 as depth
+                    FROM account_account
+                    WHERE id IN %s
+                UNION (
+                    WITH account_children AS (
+                        SELECT ac.id, ac.depth
+                        FROM account_children ac
+                    )
+                    SELECT aa.id, ac.depth + 1
+                    FROM account_children ac, account_account aa
+                    WHERE aa.parent_id = ac.id
+
+                    UNION
+
+                    SELECT aa_rel.parent_id, ac.depth + 1
+                    FROM account_account_consol_rel aa_rel, account_children ac
+                    WHERE aa_rel.child_id = ac.id
+                ))
+                SELECT DISTINCT
+                    id, depth,
+                    max(depth) OVER (PARTITION BY id) as max_depth
+                FROM account_children
+                ORDER BY depth
+            ) children
+            WHERE children.depth = children.max_depth
+            """,
+            (tuple(ids),)
+        )
+        res_ids = [r[0] for r in cr.fetchall()]
+        return self.search(cr, uid, [('id', 'in', res_ids)], context=context)
 
     def __compute(self, cr, uid, ids, field_names, arg=None, context=None,
                   query='', query_params=()):
@@ -1584,7 +1611,7 @@ class account_move(osv.osv):
 
                 if line.account_id.currency_id and line.currency_id:
                     if line.account_id.currency_id.id != line.currency_id.id and (line.account_id.currency_id.id != line.account_id.company_id.currency_id.id):
-                        raise osv.except_osv(_('Error!'), _("""Cannot create move with currency different from ..""") % (line.account_id.code, line.account_id.name))
+                        raise osv.except_osv(_('Error'), _("""Couldn't create move with currency different from the secondary currency of the account "%s - %s". Clear the secondary currency field of the account definition if you want to accept all currencies.""") % (line.account_id.code, line.account_id.name))
 
             if abs(amount) < 10 ** -4:
                 # If the move is balanced

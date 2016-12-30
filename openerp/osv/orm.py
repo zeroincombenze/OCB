@@ -49,7 +49,6 @@ import datetime
 import itertools
 import logging
 import operator
-import pickle
 import re
 import simplejson
 import time
@@ -65,7 +64,7 @@ import openerp
 import openerp.netsvc as netsvc
 import openerp.tools as tools
 from openerp.tools.config import config
-from openerp.tools.misc import CountingStream
+from openerp.tools.misc import CountingStream, pickle
 from openerp.tools.safe_eval import safe_eval as eval
 from openerp.tools.translate import _
 from openerp import SUPERUSER_ID
@@ -288,6 +287,9 @@ class browse_null(object):
 
     def __unicode__(self):
         return u''
+
+    def __iter__(self):
+        raise NotImplementedError("Iteration is not allowed on browse_null")
 
 
 #
@@ -1965,7 +1967,7 @@ class BaseModel(object):
             else:
                 cr.execute('select name, model from ir_ui_view where (id=%s or inherit_id=%s) and arch like %s', (view_id, view_id, '%%%s%%' % field))
                 res = cr.fetchall()[:]
-                model = res[0][1]
+                __, model = res and res[0] or (None, None)
                 res.insert(0, ("Can't find field '%s' in the following view parts composing the view of object model '%s':" % (field, model), None))
                 msg = "\n * ".join([r[0] for r in res])
                 msg += "\n\nEither you wrongly customized this view, or some modules bringing those views are not compatible with your current data model"
