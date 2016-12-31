@@ -19,9 +19,9 @@
 
 [![it](http://www.shs-av.com/wp-content/it_IT.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
 
-**Odoo** è il software gestionale ERP open source su cui si basa il progetto **zeroincombenze®** basato sul modello di business. Prima di maggio 2014 è si chiamava OpenERP e in precedenze tinyERP.
+**Odoo** è il software gestionale ERP open source su cui si basa il progetto **zeroincombenze®**. Prima di maggio 2014 è si chiamava OpenERP e in precedenza tinyERP.
 
-**Odoo** è una suite di prodotti software attivamente supportato da una community internazionale e da una italiana ai fini della localizzazione che permette di gestire tutte le funzionalità di un ERP, un CRM e dalla 8.0 anche un e-Commerce.
+**Odoo** è una suite di prodotti software, attivamente supportato dalla Community internazionale (OCA) e dalla Community Italiana per la localizzazione, che permette di gestire tutte le funzionalità di un ERP, un CRM e dalla 8.0 anche un e-Commerce.
 
 Il software è open source ed è rilasciato secondo i termini della GNU Lesser General Public License.
 
