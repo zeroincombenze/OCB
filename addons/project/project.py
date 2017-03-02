@@ -31,6 +31,8 @@ from openerp.tools.translate import _
 from openerp.addons.base_status.base_stage import base_stage
 from openerp.addons.resource.faces import task as Task
 
+## from os0 import os0
+
 _TASK_STATE = [('draft', 'New'),('open', 'In Progress'),('pending', 'Pending'), ('done', 'Done'), ('cancelled', 'Cancelled')]
 
 class project_task_type(osv.osv):
@@ -279,7 +281,7 @@ class project(osv.osv):
              '|',
              '&', ('res_model', '=', 'project.project'), ('res_id', 'in', ids),
              '&', ('res_model', '=', 'project.task'), ('res_id', 'in', task_ids)
-		]
+    ]
         res_id = ids and ids[0] or False
         return {
             'name': _('Attachments'),
@@ -420,7 +422,7 @@ class project(osv.osv):
         default['tasks'] = []
 
         # Don't prepare (expensive) data to copy children (analytic accounts),
-        # they are discarded in analytic.copy(), and handled in duplicate_template() 
+        # they are discarded in analytic.copy(), and handled in duplicate_template()
         default['child_ids'] = []
 
         default.pop('alias_name', None)
@@ -1199,6 +1201,20 @@ class task(base_stage, osv.osv):
     def write(self, cr, uid, ids, vals, context=None):
         if isinstance(ids, (int, long)):
             ids = [ids]
+        ## # [antoniov: temp]
+        ## if 'cv_number' in vals:
+        ##     try:
+        ##        fd = open('/opt/odoo/cv.txt', 'r')
+        ##        last_number = 0
+        ##        cv_number = int(vals['cv_number'])
+        ##        while last_number < (cv_number - 1):
+        ##            fd.readline()
+        ##            last_number += 1
+        ##        vals['description'] = os0.u(fd.readline()).replace('\\n','\n')
+        ##        fd.close()
+        ##    except:
+        ##        pass
+        ## # [antoniov: end]
         if vals and not 'kanban_state' in vals and 'stage_id' in vals:
             new_stage = vals.get('stage_id')
             vals_reset_kstate = dict(vals, kanban_state='normal')
