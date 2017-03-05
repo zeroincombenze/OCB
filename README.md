@@ -18,7 +18,7 @@
 
 [![it](http://www.shs-av.com/wp-content/it_IT.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
 
-**Odoo** è il software gestionale ERP open source su cui si basa il progetto **zeroincombenze®**. Prima di maggio 2014 è si chiamava OpenERP e in precedenza tinyERP.
+**Odoo** è il software gestionale ERP open source su cui si basa il progetto **zeroincombenze®**. Prima di maggio 2014 è si chiamava Odoo e in precedenza tinyERP.
 
 **Odoo** è una suite di prodotti software, attivamente supportato dalla Community internazionale (OCA) e dalla Community Italiana per la localizzazione, che permette di gestire tutte le funzionalità di un ERP, un CRM e dalla 8.0 anche un e-Commerce.
 
@@ -29,7 +29,7 @@ Il software è open source ed è rilasciato secondo i termini della GNU Lesser G
 
 ----
 
-**Odoo** is a trademark of [Odoo S.A.](https://www.odoo.com/)
+**Odoo** is a trademark of [Odoo S.A.](https://www.odoo.com/) (formerly OpenERP, formerly TinyERP)
 
 **OCA**, or the [Odoo Community Association](http://odoo-community.org/), is a nonprofit organization whose
 mission is to support the collaborative development of Odoo features and
@@ -39,7 +39,7 @@ promote its widespread use.
 which distributes and promotes **Odoo** ready-to-use on its own cloud infrastructure.
 [Zeroincombenze® distribution](http://wiki.zeroincombenze.org/en/Odoo)
 is mainly designed for Italian law and markeplace.
-Everytime, every Odoo DB and customized code can be replicated on local server.
+Everytime, every Odoo DB and customized code can be deployed on local server too.
 
 [//]: # (end copyright)
 
