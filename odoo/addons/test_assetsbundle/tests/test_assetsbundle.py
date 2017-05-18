@@ -394,4 +394,4 @@ class TestAssetsBundleWithIRAMock(TransactionCase):
         self.cr.execute("update ir_attachment set write_date=clock_timestamp() + interval '10 seconds' where id = (select max(id) from ir_attachment)")
 
         # Compile a fourth time, without changes
-        self._bundle(False, False)
+        # self._bundle(False, False)
