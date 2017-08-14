@@ -24,7 +24,7 @@ from openerp import netsvc
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from openerp.tools.translate import _
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 
 class mrp_repair(osv.osv):
     _name = 'mrp.repair'

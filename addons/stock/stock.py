@@ -30,7 +30,7 @@ from openerp.tools.translate import _
 from openerp import netsvc
 from openerp import tools
 from openerp.tools import float_compare, float_round, DEFAULT_SERVER_DATETIME_FORMAT
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 import logging
 _logger = logging.getLogger(__name__)
 

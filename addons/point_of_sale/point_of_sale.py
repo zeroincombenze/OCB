@@ -23,7 +23,6 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 import logging
-import pdb
 import psycopg2
 import time
 
@@ -32,7 +31,7 @@ from openerp import netsvc, tools
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
 
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 import openerp.addons.product.product
 
 _logger = logging.getLogger(__name__)

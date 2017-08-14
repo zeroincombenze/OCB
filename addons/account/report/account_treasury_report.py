@@ -21,7 +21,7 @@
 
 from openerp import tools
 from openerp.osv import fields,osv
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 
 class account_treasury_report(osv.osv):
     _name = "account.treasury.report"

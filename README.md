@@ -3,11 +3,12 @@
 [![Coverage Status](https://coveralls.io/repos/github/zeroincombenze/OCB/badge.svg?branch=7.0)](https://coveralls.io/github/zeroincombenze/OCB?branch=7.0)
 [![codecov](https://codecov.io/gh/zeroincombenze/OCB/branch/7.0/graph/badge.svg)](https://codecov.io/gh/zeroincombenze/OCB/branch/7.0)
 [![OCA_project](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-7.svg)](https://github.com/OCA/OCB/tree/7.0)
-[![Tech Doc](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-7.svg)](http://wiki.zeroincombenze.org/en/Odoo/dev/)
+[![Tech Doc](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-7.svg)](http://wiki.zeroincombenze.org/en/Odoo/7.0/dev)
 [![Help](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-7.svg)](http://wiki.zeroincombenze.org/en/Odoo/7.0/man/)
 [![try it](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-7.svg)](http://erp7.zeroincombenze.it)
 
 [![en](http://www.shs-av.com/wp-content/en_US.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
+================================================================================================
 
 **Odoo** (formerly OpenERP) is the open source ERP software used on **zeroincombenze®** platform.
 
@@ -43,4 +44,4 @@ Everytime, every Odoo DB and customized code can be deployed on local server too
 
 [//]: # (end copyright)
 
-[![chat with us](http://www.shs-av.com/wp-content/chat_with_us.png)](https://www.zeroincombenze.it/chi-siamo/contatti/)
+[![chat with us](https://www.shs-av.com/wp-content/chat_with_us.gif)](https://tawk.to/85d4f6e06e68dd4e358797643fe5ee67540e408b)

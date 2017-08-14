@@ -36,10 +36,12 @@ from openerp.tools import config, ustr
 
 from .. import http
 openerpweb = http
+# from tndb import tndb
 
 #----------------------------------------------------------
-# OpenERP Web helpers
+# Odoo Web helpers
 #----------------------------------------------------------
+
 
 def rjsmin(script):
     """ Minify js with a clever regex.
@@ -85,6 +87,7 @@ def rjsmin(script):
     ).strip()
     return result
 
+
 def db_list(req, force=False):
     proxy = req.session.proxy("db")
     dbs = proxy.list(force)
@@ -94,8 +97,10 @@ def db_list(req, force=False):
     dbs = [i for i in dbs if re.match(r, i)]
     return dbs
 
+
 def db_monodb_redirect(req):
     return db_redirect(req, not config['list_db'])
+
 
 def db_redirect(req, match_first_only_if_unique):
     db = False
@@ -119,14 +124,17 @@ def db_redirect(req, match_first_only_if_unique):
 
     # redirect to the chosen db if multiple are available
     if db and len(dbs) > 1:
-        query = dict(urlparse.parse_qsl(req.httprequest.query_string, keep_blank_values=True))
+        query = dict(urlparse.parse_qsl(
+            req.httprequest.query_string, keep_blank_values=True))
         query.update({'db': db})
         redirect = req.httprequest.path + '?' + urllib.urlencode(query)
     return (db, redirect)
 
+
 def db_monodb(req):
     # if only one db exists, return it else return False
     return db_redirect(req, True)[0]
+
 
 def redirect_with_hash(req, url, code=303):
     # Most IE and Safari versions decided not to preserve location.hash upon
@@ -134,6 +142,7 @@ def redirect_with_hash(req, url, code=303):
     # inexplicably in case of multiple redirects (and we do have some).
     # See extensive test page at http://greenbytes.de/tech/tc/httpredirects/
     return "<html><head><script>window.location = '%s' + location.hash;</script></head></html>" % url
+
 
 def module_topological_sort(modules):
     """ Return a list of module names sorted so that their dependencies of the
@@ -152,32 +161,35 @@ def module_topological_sort(modules):
     # outgoing edge: other module depending on this one
 
     # [Tarjan 1976], http://en.wikipedia.org/wiki/Topological_sorting#Algorithms
-    #L ← Empty list that will contain the sorted nodes
+    # L ← Empty list that will contain the sorted nodes
     L = []
-    #S ← Set of all nodes with no outgoing edges (modules on which no other
+    # S ← Set of all nodes with no outgoing edges (modules on which no other
     #    module depends)
     S = set(module for module in modules if module not in dependencies)
 
     visited = set()
-    #function visit(node n)
+    # function visit(node n)
+
     def visit(n):
-        #if n has not been visited yet then
+        # if n has not been visited yet then
         if n not in visited:
-            #mark n as visited
+            # mark n as visited
             visited.add(n)
-            #change: n not web module, can not be resolved, ignore
-            if n not in modules: return
-            #for each node m with an edge from m to n do (dependencies of n)
+            # change: n not web module, can not be resolved, ignore
+            if n not in modules:
+                return
+            # for each node m with an edge from m to n do (dependencies of n)
             for m in modules[n]:
-                #visit(m)
+                # visit(m)
                 visit(m)
-            #add n to L
+            # add n to L
             L.append(n)
-    #for each node n in S do
+    # for each node n in S do
     for n in S:
-        #visit(n)
+        # visit(n)
         visit(n)
     return L
+
 
 def module_installed(req):
     # Candidates module the current heuristic is the /static dir
@@ -185,19 +197,22 @@ def module_installed(req):
     modules = {}
 
     # Retrieve database installed modules
-    # TODO The following code should move to ir.module.module.list_installed_modules()
+    # TODO The following code should move to
+    # ir.module.module.list_installed_modules()
     Modules = req.session.model('ir.module.module')
-    domain = [('state','=','installed'), ('name','in', loadable)]
+    domain = [('state', '=', 'installed'), ('name', 'in', loadable)]
     for module in Modules.search_read(domain, ['name', 'dependencies_id']):
         modules[module['name']] = []
         deps = module.get('dependencies_id')
         if deps:
-            deps_read = req.session.model('ir.module.module.dependency').read(deps, ['name'])
+            deps_read = req.session.model(
+                'ir.module.module.dependency').read(deps, ['name'])
             dependencies = [i['name'] for i in deps_read]
             modules[module['name']] = dependencies
 
     sorted_modules = module_topological_sort(modules)
     return sorted_modules
+
 
 def module_installed_bypass_session(dbname):
     loadable = openerpweb.addons_manifest.keys()
@@ -206,20 +221,24 @@ def module_installed_bypass_session(dbname):
         registry = openerp.modules.registry.RegistryManager.get(dbname)
         with registry.cursor() as cr:
             m = registry.get('ir.module.module')
-            # TODO The following code should move to ir.module.module.list_installed_modules()
-            domain = [('state','=','installed'), ('name','in', loadable)]
-            ids = m.search(cr, 1, [('state','=','installed'), ('name','in', loadable)])
+            # TODO The following code should move to
+            # ir.module.module.list_installed_modules()
+            domain = [('state', '=', 'installed'), ('name', 'in', loadable)]
+            ids = m.search(
+                cr, 1, [('state', '=', 'installed'), ('name', 'in', loadable)])
             for module in m.read(cr, 1, ids, ['name', 'dependencies_id']):
                 modules[module['name']] = []
                 deps = module.get('dependencies_id')
                 if deps:
-                    deps_read = registry.get('ir.module.module.dependency').read(cr, 1, deps, ['name'])
+                    deps_read = registry.get('ir.module.module.dependency').read(
+                        cr, 1, deps, ['name'])
                     dependencies = [i['name'] for i in deps_read]
                     modules[module['name']] = dependencies
-    except Exception,e:
+    except Exception, e:
         pass
     sorted_modules = module_topological_sort(modules)
     return sorted_modules
+
 
 def module_boot(req, db=None):
     server_wide_modules = openerp.conf.server_wide_modules or ['web']
@@ -234,6 +253,7 @@ def module_boot(req, db=None):
         dbside = [i for i in dbside if i not in serverside]
     addons = serverside + dbside
     return addons
+
 
 def concat_xml(file_list):
     """Concatenate xml files
@@ -256,12 +276,13 @@ def concat_xml(file_list):
 
         if root is None:
             root = ElementTree.Element(xml.tag)
-        #elif root.tag != xml.tag:
+        # elif root.tag != xml.tag:
         #    raise ValueError("Root tags missmatch: %r != %r" % (root.tag, xml.tag))
 
         for child in xml.getchildren():
             root.append(child)
     return ElementTree.tostring(root, 'utf-8'), checksum.hexdigest()
+
 
 def concat_files(file_list, reader=None, intersperse=""):
     """ Concatenates contents of all provided files
@@ -291,7 +312,9 @@ def concat_files(file_list, reader=None, intersperse=""):
     files_concat = intersperse.join(files_content)
     return files_concat, checksum.hexdigest()
 
+
 concat_js_cache = {}
+
 
 def concat_js(file_list):
     content, checksum = concat_files(file_list, intersperse=';')
@@ -302,9 +325,11 @@ def concat_js(file_list):
         concat_js_cache[checksum] = content
     return content, checksum
 
+
 def fs2web(path):
     """convert FS path into web path"""
     return '/'.join(path.split(os.path.sep))
+
 
 def manifest_glob(req, extension, addons=None, db=None):
     if addons is None:
@@ -324,6 +349,7 @@ def manifest_glob(req, extension, addons=None, db=None):
                 r.append((path, fs2web(path[len(addons_path):])))
     return r
 
+
 def manifest_list(req, extension, mods=None, db=None):
     """ list ressources to load specifying either:
     mods: a comma separated string listing modules
@@ -339,6 +365,7 @@ def manifest_list(req, extension, mods=None, db=None):
     files = manifest_glob(req, extension, addons=mods, db=db)
     return [wp for _fp, wp in files]
 
+
 def get_last_modified(files):
     """ Returns the modification time of the most recently modified
     file provided
@@ -353,14 +380,15 @@ def get_last_modified(files):
                    for f in files)
     return datetime.datetime(1970, 1, 1)
 
+
 def make_conditional(req, response, last_modified=None, etag=None):
-    """ Makes the provided response conditional based upon the request,
-    and mandates revalidation from clients
+    """ Makes the provided response conditional based upon the request, and
+    mandates revalidation from clients
 
     Uses Werkzeug's own :meth:`ETagResponseMixin.make_conditional`, after
     setting ``last_modified`` and ``etag`` correctly on the response object
 
-    :param req: OpenERP request
+    :param req: Odoo request
     :type req: web.common.http.WebRequest
     :param response: Werkzeug response
     :type response: werkzeug.wrappers.Response
@@ -377,6 +405,7 @@ def make_conditional(req, response, last_modified=None, etag=None):
         response.set_etag(etag)
     return response.make_conditional(req.httprequest)
 
+
 def login_and_redirect(req, db, login, key, redirect_url='/'):
     wsgienv = req.httprequest.environ
     env = dict(
@@ -387,6 +416,7 @@ def login_and_redirect(req, db, login, key, redirect_url='/'):
     req.session.authenticate(db, login, key, env)
     return set_cookie_and_redirect(req, redirect_url)
 
+
 def set_cookie_and_redirect(req, redirect_url):
     redirect = werkzeug.utils.redirect(redirect_url, 303)
     redirect.autocorrect_location_header = False
@@ -394,12 +424,14 @@ def set_cookie_and_redirect(req, redirect_url):
     redirect.set_cookie('instance0|session_id', cookie_val)
     return redirect
 
+
 def load_actions_from_ir_values(req, key, key2, models, meta):
     Values = req.session.model('ir.values')
     actions = Values.get(key, key2, models, meta, req.context)
 
     return [(id, name, clean_action(req, action))
             for id, name, action in actions]
+
 
 def clean_action(req, action):
     action.setdefault('flags', {})
@@ -409,6 +441,8 @@ def clean_action(req, action):
     return action
 
 # I think generate_views,fix_view_modes should go into js ActionManager
+
+
 def generate_views(action):
     """
     While the server generates a sequence called "views" computing dependencies
@@ -441,17 +475,18 @@ def generate_views(action):
                              'either multiple view modes or a single view '
                              'mode and an optional view id.\n\n Got view '
                              'modes %r and view id %r for action %r' % (
-                view_modes, view_id, action))
+                                 view_modes, view_id, action))
         action['views'] = [(False, mode) for mode in view_modes]
         return
     action['views'] = [(view_id, view_modes[0])]
 
+
 def fix_view_modes(action):
-    """ For historical reasons, OpenERP has weird dealings in relation to
+    """ For historical reasons, Odoo has weird dealings in relation to
     view_mode and the view_type attribute (on window actions):
 
-    * one of the view modes is ``tree``, which stands for both list views
-      and tree views
+    * one of the view modes is ``tree``, which stands for both list views and
+      tree views
     * the choice is made by checking ``view_type``, which is either
       ``form`` for a list view or ``tree`` for an actual tree view
 
@@ -481,6 +516,7 @@ def fix_view_modes(action):
 
     return action
 
+
 def _local_web_translations(trans_file):
     messages = []
     try:
@@ -492,6 +528,7 @@ def _local_web_translations(trans_file):
         if x.id and x.string and "openerp-web" in x.auto_comments:
             messages.append({'id': x.id, 'string': x.string})
     return messages
+
 
 def xml2json_from_elementtree(el, preserve_whitespaces=False):
     """ xml2json-direct
@@ -519,6 +556,7 @@ def xml2json_from_elementtree(el, preserve_whitespaces=False):
     res["children"] = kids
     return res
 
+
 def content_disposition(filename, req):
     filename = ustr(filename)
     escaped = urllib2.quote(filename.encode('utf8'))
@@ -533,7 +571,7 @@ def content_disposition(filename, req):
 
 
 #----------------------------------------------------------
-# OpenERP Web web Controllers
+# Odoo Web web Controllers
 #----------------------------------------------------------
 
 html_template = """<!DOCTYPE html>
@@ -541,7 +579,7 @@ html_template = """<!DOCTYPE html>
     <head>
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <title>OpenERP</title>
+        <title>Odoo</title>
         <link rel="shortcut icon" href="/web/static/src/img/favicon.ico" type="image/x-icon"/>
         <link rel="stylesheet" href="/web/static/src/css/full.css" />
         %(css)s
@@ -562,7 +600,23 @@ html_template = """<!DOCTYPE html>
 </html>
 """
 
+# tndb.wlog('web_skin', openerp.tools.config['web_skin'])
+if openerp.tools.config['web_skin'] != 'odoo':
+    html_template = html_template.replace('favicon.ico',
+                                          openerp.tools.config['web_skin'] + '.ico')
+    html_template = html_template.replace('<meta http-equiv="content-type" content="text/html; charset=utf-8" />',
+                                          '<meta http-equiv="content-type" content="text/html; charset=utf-8" />' +
+                                          '\n<meta name="viewport" content="width=device-width, initial-scale=1.0">')
+    html_template = html_template.replace('<title>Odoo</title>',
+                                          '<title>' +
+                                          openerp.tools.config['web_skin'][0].upper() +
+                                          openerp.tools.config['web_skin'][1:] +
+                                          '</title>')
+    # tndb.wlog(html_template)
+
+
 class Home(openerpweb.Controller):
+    global html_template
     _cp_path = '/'
 
     @openerpweb.httprequest
@@ -571,15 +625,29 @@ class Home(openerpweb.Controller):
         if redir:
             return redirect_with_hash(req, redir)
 
-        js = "\n        ".join('<script type="text/javascript" src="%s"></script>' % i for i in manifest_list(req, 'js', db=db))
-        css = "\n        ".join('<link rel="stylesheet" href="%s">' % i for i in manifest_list(req, 'css', db=db))
+        js = "\n        ".join('<script type="text/javascript" src="%s"></script>' %
+                               i for i in manifest_list(req, 'js', db=db))
+        css = "\n        ".join('<link rel="stylesheet" href="%s">' %
+                                i for i in manifest_list(req, 'css', db=db))
 
-        r = html_template % {
-            'js': js,
-            'css': css,
-            'modules': simplejson.dumps(module_boot(req, db=db)),
-            'init': 'var wc = new s.web.WebClient();wc.appendTo($(document.body));'
-        }
+        # tndb.wlog('index(web_skin)', openerp.tools.config['web_skin'])
+        if openerp.tools.config['web_skin'] != 'odoo':
+            r = html_template % {
+                'js': js,
+                'css': css,
+                'modules': simplejson.dumps(module_boot(req, db=db)),
+                'init': 'var wc = new s.web.WebClient();wc.appendTo($(document.body));'
+            }
+            r = r.replace(
+                'base.css', openerp.tools.config['web_skin'] + '.css')
+        else:
+            r = html_template % {
+                'js': js,
+                'css': css,
+                'modules': simplejson.dumps(module_boot(req, db=db)),
+                'init': 'var wc = new s.web.WebClient();wc.appendTo($(document.body));'
+            }
+        # tndb.wlog(r)
         return r
 
     @openerpweb.httprequest
@@ -587,6 +655,7 @@ class Home(openerpweb.Controller):
         if db not in db_list(req, True):
             return werkzeug.utils.redirect('/', 303)
         return login_and_redirect(req, db, login, key)
+
 
 class WebClient(openerpweb.Controller):
     _cp_path = "/web/webclient"
@@ -613,7 +682,8 @@ class WebClient(openerpweb.Controller):
         file_map = dict(files)
 
         rx_import = re.compile(r"""@import\s+('|")(?!'|"|/|https?://)""", re.U)
-        rx_url = re.compile(r"""url\s*\(\s*('|"|)(?!'|"|/|https?://|data:)""", re.U)
+        rx_url = re.compile(
+            r"""url\s*\(\s*('|"|)(?!'|"|/|https?://|data:)""", re.U)
 
         def reader(f):
             """read the a css file and absolutify all relative uris"""
@@ -640,6 +710,7 @@ class WebClient(openerpweb.Controller):
 
         # move up all @import and @charset rules to the top
         matches = []
+
         def push(matchobj):
             matches.append(matchobj.group(0))
             return ''
@@ -664,7 +735,8 @@ class WebClient(openerpweb.Controller):
         content, checksum = concat_js(files)
 
         return make_conditional(
-            req, req.make_response(content, [('Content-Type', 'application/javascript')]),
+            req, req.make_response(
+                content, [('Content-Type', 'application/javascript')]),
             last_modified, checksum)
 
     @openerpweb.httprequest
@@ -688,17 +760,20 @@ class WebClient(openerpweb.Controller):
             the browser's language. """
         # For performance reasons we only load a single translation, so for
         # sub-languages (that should only be partially translated) we load the
-        # main language PO instead - that should be enough for the login screen.
+        # main language PO instead - that should be enough for the login
+        # screen.
         lang = req.lang.split('_')[0]
 
         translations_per_module = {}
         for addon_name in mods:
             if openerpweb.addons_manifest[addon_name].get('bootstrap'):
                 addons_path = openerpweb.addons_manifest[addon_name]['addons_path']
-                f_name = os.path.join(addons_path, addon_name, "i18n", lang + ".po")
+                f_name = os.path.join(
+                    addons_path, addon_name, "i18n", lang + ".po")
                 if not os.path.exists(f_name):
                     continue
-                translations_per_module[addon_name] = {'messages': _local_web_translations(f_name)}
+                translations_per_module[addon_name] = {
+                    'messages': _local_web_translations(f_name)}
 
         return {"modules": translations_per_module,
                 "lang_parameters": None}
@@ -710,27 +785,30 @@ class WebClient(openerpweb.Controller):
         lang_params = None
         if ids:
             lang_params = res_lang.read(ids[0], ["direction", "date_format", "time_format",
-                                                "grouping", "decimal_point", "thousands_sep"])
+                                                 "grouping", "decimal_point", "thousands_sep"])
 
         # Regional languages (ll_CC) must inherit/override their parent lang (ll), but this is
-        # done server-side when the language is loaded, so we only need to load the user's lang.
+        # done server-side when the language is loaded, so we only need to load
+        # the user's lang.
         ir_translation = req.session.model('ir.translation')
         translations_per_module = {}
-        messages = ir_translation.search_read([('module','in',mods),('lang','=',lang),
-                                               ('comments','like','openerp-web'),('value','!=',False),
-                                               ('value','!=','')],
-                                              ['module','src','value','lang'], order='module')
+        messages = ir_translation.search_read([('module', 'in', mods), ('lang', '=', lang),
+                                               ('comments', 'like',
+                                                'openerp-web'), ('value', '!=', False),
+                                               ('value', '!=', '')],
+                                              ['module', 'src', 'value', 'lang'], order='module')
         for mod, msg_group in itertools.groupby(messages, key=operator.itemgetter('module')):
-            translations_per_module.setdefault(mod,{'messages':[]})
+            translations_per_module.setdefault(mod, {'messages': []})
             translations_per_module[mod]['messages'].extend({'id': m['src'],
-                                                             'string': m['value']} \
-                                                                for m in msg_group)
+                                                             'string': m['value']}
+                                                            for m in msg_group)
         return {"modules": translations_per_module,
                 "lang_parameters": lang_params}
 
     @openerpweb.jsonrequest
     def version_info(self, req):
         return openerp.service.web_services.RPC_VERSION_1
+
 
 class Proxy(openerpweb.Controller):
     _cp_path = '/web/proxy'
@@ -742,7 +820,7 @@ class Proxy(openerpweb.Controller):
         It is strongly recommended to not request binary files through this,
         as the result will be a binary data blob as well.
 
-        :param req: OpenERP request
+        :param req: Odoo request
         :param path: actual request path
         :return: file content
         """
@@ -750,6 +828,7 @@ class Proxy(openerpweb.Controller):
         from werkzeug.wrappers import BaseResponse
 
         return Client(req.httprequest.app, BaseResponse).get(path).data
+
 
 class Database(openerpweb.Controller):
     _cp_path = "/web/database"
@@ -790,9 +869,10 @@ class Database(openerpweb.Controller):
         password, db = operator.itemgetter(
             'drop_pwd', 'drop_db')(
                 dict(map(operator.itemgetter('name', 'value'), fields)))
-        
+
         try:
-            if req.session.proxy("db").drop(password, db):return True
+            if req.session.proxy("db").drop(password, db):
+                return True
         except xmlrpclib.Fault, e:
             if e.faultCode and e.faultCode.split(':')[0] == 'AccessDenied':
                 return {'error': e.faultCode, 'title': 'Drop Database'}
@@ -809,12 +889,12 @@ class Database(openerpweb.Controller):
                     "%Y-%m-%d_%H-%M-%SZ")
             }
             return req.make_response(db_dump,
-               [('Content-Type', 'application/octet-stream; charset=binary'),
-               ('Content-Disposition', content_disposition(filename, req))],
-               {'fileToken': token}
-            )
+                                     [('Content-Type', 'application/octet-stream; charset=binary'),
+                                      ('Content-Disposition', content_disposition(filename, req))],
+                                     {'fileToken': token}
+                                     )
         except xmlrpclib.Fault, e:
-            return simplejson.dumps([[],[{'error': e.faultCode, 'title': _('Backup Database')}]])
+            return simplejson.dumps([[], [{'error': e.faultCode, 'title': _('Backup Database')}]])
 
     @openerpweb.httprequest
     def restore(self, req, db_file, restore_pwd, new_db):
@@ -837,6 +917,7 @@ class Database(openerpweb.Controller):
             if e.faultCode and e.faultCode.split(':')[0] == 'AccessDenied':
                 return {'error': e.faultCode, 'title': _('Change Password')}
         return {'error': _('Error, password not changed !'), 'title': _('Change Password')}
+
 
 class Session(openerpweb.Controller):
     _cp_path = "/web/session"
@@ -868,17 +949,17 @@ class Session(openerpweb.Controller):
         return self.session_info(req)
 
     @openerpweb.jsonrequest
-    def change_password (self,req,fields):
-        old_password, new_password,confirm_password = operator.itemgetter('old_pwd', 'new_password','confirm_pwd')(
-                dict(map(operator.itemgetter('name', 'value'), fields)))
+    def change_password(self, req, fields):
+        old_password, new_password, confirm_password = operator.itemgetter('old_pwd', 'new_password', 'confirm_pwd')(
+            dict(map(operator.itemgetter('name', 'value'), fields)))
         if not (old_password.strip() and new_password.strip() and confirm_password.strip()):
-            return {'error':_('You cannot leave any password empty.'),'title': _('Change Password')}
+            return {'error': _('You cannot leave any password empty.'), 'title': _('Change Password')}
         if new_password != confirm_password:
-            return {'error': _('The new password and its confirmation must be identical.'),'title': _('Change Password')}
+            return {'error': _('The new password and its confirmation must be identical.'), 'title': _('Change Password')}
         try:
             if req.session.model('res.users').change_password(
-                old_password, new_password):
-                return {'new_password':new_password}
+                    old_password, new_password):
+                return {'new_password': new_password}
         except Exception:
             return {'error': _('The old password you provided is incorrect, your password was not changed.'), 'title': _('Change Password')}
         return {'error': _('Error, password not changed !'), 'title': _('Change Password')}
@@ -897,7 +978,8 @@ class Session(openerpweb.Controller):
 
     @openerpweb.jsonrequest
     def modules(self, req):
-        # return all installed modules. Web client is smart enough to not load a module twice
+        # return all installed modules. Web client is smart enough to not load
+        # a module twice
         return module_installed(req)
 
     @openerpweb.jsonrequest
@@ -914,7 +996,7 @@ class Session(openerpweb.Controller):
         """
         saved_actions = req.httpsession.get('saved_actions')
         if not saved_actions:
-            saved_actions = {"next":1, "actions":{}}
+            saved_actions = {"next": 1, "actions": {}}
             req.httpsession['saved_actions'] = saved_actions
         # we don't allow more than 10 stored actions
         if len(saved_actions["actions"]) >= 10:
@@ -949,6 +1031,7 @@ class Session(openerpweb.Controller):
     def destroy(self, req):
         req.session._suicide = True
 
+
 class Menu(openerpweb.Controller):
     _cp_path = "/web/menu"
 
@@ -956,7 +1039,7 @@ class Menu(openerpweb.Controller):
     def get_user_roots(self, req):
         """ Return all root menu ids visible for the session user.
 
-        :param req: A request object, with an OpenERP session attribute
+        :param req: A request object, with an Odoo session attribute
         :type req: < session -> OpenERPSession >
         :return: the root menu ids
         :rtype: list(int)
@@ -970,7 +1053,7 @@ class Menu(openerpweb.Controller):
         menu_domain = [('parent_id', '=', False)]
         if user_menu_id:
             domain_string = s.model('ir.actions.act_window').read(
-                [user_menu_id[0]], ['domain'],req.context)[0]['domain']
+                [user_menu_id[0]], ['domain'], req.context)[0]['domain']
             if domain_string:
                 menu_domain = ast.literal_eval(domain_string)
 
@@ -980,7 +1063,7 @@ class Menu(openerpweb.Controller):
     def load(self, req):
         """ Loads all menu items (all applications and their sub-menus).
 
-        :param req: A request object, with an OpenERP session attribute
+        :param req: A request object, with an Odoo session attribute
         :type req: < session -> OpenERPSession >
         :return: the menu root
         :rtype: dict('children': menu_nodes)
@@ -989,7 +1072,8 @@ class Menu(openerpweb.Controller):
 
         fields = ['name', 'sequence', 'parent_id', 'action']
         menu_root_ids = self.get_user_roots(req)
-        menu_roots = Menus.read(menu_root_ids, fields, req.context) if menu_root_ids else []
+        menu_roots = Menus.read(menu_root_ids, fields,
+                                req.context) if menu_root_ids else []
         menu_root = {
             'id': False,
             'name': 'root',
@@ -1002,13 +1086,14 @@ class Menu(openerpweb.Controller):
 
         # menus are loaded fully unlike a regular tree view, cause there are a
         # limited number of items (752 when all 6.1 addons are installed)
-        menu_ids = Menus.search([('id', 'child_of', menu_root_ids)], 0, False, False, req.context)
+        menu_ids = Menus.search(
+            [('id', 'child_of', menu_root_ids)], 0, False, False, req.context)
         menu_items = Menus.read(menu_ids, fields, req.context)
         # adds roots at the end of the sequence, so that they will overwrite
         # equivalent menu items from full menu read when put into id:item
         # mapping, resulting in children being correctly set on the roots.
         menu_items.extend(menu_roots)
-        menu_root['all_menu_ids'] = menu_ids # includes menu_root_ids!
+        menu_root['all_menu_ids'] = menu_ids  # includes menu_root_ids!
 
         # make a tree using parent_id
         menu_items_map = dict(
@@ -1041,9 +1126,10 @@ class Menu(openerpweb.Controller):
     @openerpweb.jsonrequest
     def action(self, req, menu_id):
         # still used by web_shortcut
-        actions = load_actions_from_ir_values(req,'action', 'tree_but_open',
-                                             [('ir.ui.menu', menu_id)], False)
+        actions = load_actions_from_ir_values(req, 'action', 'tree_but_open',
+                                              [('ir.ui.menu', menu_id)], False)
         return {"action": actions}
+
 
 class DataSet(openerpweb.Controller):
     _cp_path = "/web/dataset"
@@ -1051,8 +1137,8 @@ class DataSet(openerpweb.Controller):
     @openerpweb.jsonrequest
     def search_read(self, req, model, fields=False, offset=0, limit=False, domain=None, sort=None):
         return self.do_search_read(req, model, fields, offset, limit, domain, sort)
-    def do_search_read(self, req, model, fields=False, offset=0, limit=False, domain=None
-                       , sort=None):
+
+    def do_search_read(self, req, model, fields=False, offset=0, limit=False, domain=None, sort=None):
         """ Performs a search() followed by a read() (if needed) using the
         provided search criteria
 
@@ -1108,18 +1194,23 @@ class DataSet(openerpweb.Controller):
         return self._call_kw(req, model, method, args, {})
 
     def _call_kw(self, req, model, method, args, kwargs):
-        # Temporary implements future display_name special field for model#read()
+        # Temporary implements future display_name special field for
+        # model#read()
         if method in ('read', 'search_read') and kwargs.get('context', {}).get('future_display_name'):
             if 'display_name' in args[1]:
                 if method == 'read':
-                    names = dict(req.session.model(model).name_get(args[0], **kwargs))
+                    names = dict(req.session.model(
+                        model).name_get(args[0], **kwargs))
                 else:
-                    names = dict(req.session.model(model).name_search('', args[0], **kwargs))
+                    names = dict(req.session.model(
+                        model).name_search('', args[0], **kwargs))
                 args[1].remove('display_name')
-                records = getattr(req.session.model(model), method)(*args, **kwargs)
+                records = getattr(req.session.model(
+                    model), method)(*args, **kwargs)
                 for record in records:
                     record['display_name'] = \
-                        names.get(record['id']) or "%s#%d" % (model, (record['id']))
+                        names.get(record['id']) or "%s#%d" % (
+                            model, (record['id']))
                 return records
 
         return getattr(req.session.model(model), method)(*args, **kwargs)
@@ -1163,8 +1254,9 @@ class DataSet(openerpweb.Controller):
             return False
         # python 2.6 has no start parameter
         for i, id in enumerate(ids):
-            m.write(id, { field: i + offset })
+            m.write(id, {field: i + offset})
         return True
+
 
 class View(openerpweb.Controller):
     _cp_path = "/web/view"
@@ -1182,7 +1274,7 @@ class View(openerpweb.Controller):
     @openerpweb.jsonrequest
     def undo_custom(self, req, view_id, reset=False):
         CustomView = req.session.model('ir.ui.view.custom')
-        vcustom = CustomView.search([('user_id', '=', req.session._uid), ('ref_id' ,'=', view_id)],
+        vcustom = CustomView.search([('user_id', '=', req.session._uid), ('ref_id', '=', view_id)],
                                     0, False, False, req.context)
         if vcustom:
             if reset:
@@ -1192,14 +1284,16 @@ class View(openerpweb.Controller):
             return {'result': True}
         return {'result': False}
 
+
 class TreeView(View):
     _cp_path = "/web/treeview"
 
     @openerpweb.jsonrequest
     def action(self, req, model, id):
         return load_actions_from_ir_values(
-            req,'action', 'tree_but_open',[(model, id)],
+            req, 'action', 'tree_but_open', [(model, id)],
             False)
+
 
 class Binary(openerpweb.Controller):
     _cp_path = "/web/binary"
@@ -1213,12 +1307,13 @@ class Binary(openerpweb.Controller):
         hashed_session = hashlib.md5(req.session_id).hexdigest()
         id = None if not id else simplejson.loads(id)
         if type(id) is list:
-            id = id[0] # m2o
+            id = id[0]  # m2o
         if etag:
             if not id and hashed_session == etag:
                 return werkzeug.wrappers.Response(status=304)
             else:
-                date = Model.read([id], [last_update], req.context)[0].get(last_update)
+                date = Model.read([id], [last_update], req.context)[
+                    0].get(last_update)
                 if hashlib.md5(date).hexdigest() == etag:
                     return werkzeug.wrappers.Response(status=304)
 
@@ -1238,9 +1333,12 @@ class Binary(openerpweb.Controller):
                     width = int(resize[0])
                     height = int(resize[1])
                     # resize maximum 500*500
-                    if width > 500: width = 500
-                    if height > 500: height = 500
-                    image_base64 = openerp.tools.image_resize_image(base64_source=image_base64, size=(width, height), encoding='base64', filetype='PNG')
+                    if width > 500:
+                        width = 500
+                    if height > 500:
+                        height = 500
+                    image_base64 = openerp.tools.image_resize_image(
+                        base64_source=image_base64, size=(width, height), encoding='base64', filetype='PNG')
 
             image_data = base64.b64decode(image_base64)
 
@@ -1250,7 +1348,8 @@ class Binary(openerpweb.Controller):
         headers.append(('Content-Length', len(image_data)))
         try:
             ncache = int(kw.get('cache'))
-            headers.append(('Cache-Control', 'no-cache' if ncache == 0 else 'max-age=%s' % (ncache)))
+            headers.append(
+                ('Cache-Control', 'no-cache' if ncache == 0 else 'max-age=%s' % (ncache)))
         except:
             pass
         return req.make_response(image_data, headers)
@@ -1267,7 +1366,7 @@ class Binary(openerpweb.Controller):
         binary field (via ``default_get``), otherwise fetches the field for
         that precise record.
 
-        :param req: OpenERP request
+        :param req: Odoo request
         :type req: :class:`web.common.http.HttpRequest`
         :param str model: name of the model to fetch the binary from
         :param str field: binary field
@@ -1326,7 +1425,7 @@ class Binary(openerpweb.Controller):
         filecontent = base64.b64decode(res.get(field, ''))
         if not filecontent:
             raise ValueError(_("No content found for field '%s' on '%s:%s'") %
-                (field, model, id))
+                             (field, model, id))
         else:
             filename = '%s_%s' % (model.replace('.', '_'), id)
             if filename_field:
@@ -1339,7 +1438,8 @@ class Binary(openerpweb.Controller):
 
     @openerpweb.httprequest
     def upload(self, req, callback, ufile):
-        # TODO: might be useful to have a configuration flag for max-length file uploads
+        # TODO: might be useful to have a configuration flag for max-length
+        # file uploads
         out = """<script language="javascript" type="text/javascript">
                     var win = window.top.window;
                     win.jQuery(win).trigger(%s, %s);
@@ -1372,7 +1472,7 @@ class Binary(openerpweb.Controller):
                 'id':  attachment_id
             }
         except xmlrpclib.Fault, e:
-            args = {'error':e.faultCode }
+            args = {'error': e.faultCode}
         return out % (simplejson.dumps(callback), simplejson.dumps(args))
 
     @openerpweb.httprequest
@@ -1415,6 +1515,7 @@ class Binary(openerpweb.Controller):
         ]
         return req.make_response(image_data, headers)
 
+
 class Action(openerpweb.Controller):
     _cp_path = "/web/action"
 
@@ -1427,7 +1528,8 @@ class Action(openerpweb.Controller):
         except ValueError:
             try:
                 module, xmlid = action_id.split('.', 1)
-                model, action_id = req.session.model('ir.model.data').get_object_reference(module, xmlid)
+                model, action_id = req.session.model(
+                    'ir.model.data').get_object_reference(module, xmlid)
                 assert model.startswith('ir.actions.')
             except Exception:
                 action_id = 0   # force failed read
@@ -1439,7 +1541,8 @@ class Action(openerpweb.Controller):
             if action_type == 'ir.actions.report.xml':
                 ctx.update({'bin_size': True})
             ctx.update(req.context)
-            action = req.session.model(action_type).read([action_id], False, ctx)
+            action = req.session.model(action_type).read(
+                [action_id], False, ctx)
             if action:
                 value = clean_action(req, action[0])
         return value
@@ -1452,6 +1555,7 @@ class Action(openerpweb.Controller):
             return clean_action(req, return_action)
         else:
             return False
+
 
 class Export(openerpweb.Controller):
     _cp_path = "/web/export"
@@ -1476,7 +1580,7 @@ class Export(openerpweb.Controller):
         return fields
 
     @openerpweb.jsonrequest
-    def get_fields(self, req, model, prefix='', parent_name= '',
+    def get_fields(self, req, model, prefix='', parent_name='',
                    import_compat=True, parent_field_type=None,
                    exclude=None):
 
@@ -1491,7 +1595,7 @@ class Export(openerpweb.Controller):
             fields['.id'] = fields.pop('id', {'string': 'ID'})
 
         fields_sequence = sorted(fields.iteritems(),
-            key=lambda field: openerp.tools.ustr(field[1].get('string', '')))
+                                 key=lambda field: openerp.tools.ustr(field[1].get('string', '')))
 
         records = []
         for field_name, field in fields_sequence:
@@ -1499,7 +1603,8 @@ class Export(openerpweb.Controller):
                 if exclude and field_name in exclude:
                     continue
                 if field.get('readonly'):
-                    # If none of the field's states unsets readonly, skip the field
+                    # If none of the field's states unsets readonly, skip the
+                    # field
                     if all(dict(attrs).get('readonly', True)
                            for attrs in field.get('states', {}).values()):
                         continue
@@ -1527,8 +1632,9 @@ class Export(openerpweb.Controller):
         return records
 
     @openerpweb.jsonrequest
-    def namelist(self,req,  model, export_id):
-        # TODO: namelist really has no reason to be in Python (although itertools.groupby helps)
+    def namelist(self, req,  model, export_id):
+        # TODO: namelist really has no reason to be in Python (although
+        # itertools.groupby helps)
         export = req.session.model("ir.exports").read([export_id])[0]
         export_fields_list = req.session.model("ir.exports.line").read(
             export['export_fields'])
@@ -1596,6 +1702,7 @@ class Export(openerpweb.Controller):
             (prefix + '/' + k, prefix_string + '/' + v)
             for k, v in self.fields_info(req, model, export_fields).iteritems())
 
+
 class ExportFormat(object):
     @property
     def content_type(self):
@@ -1609,7 +1716,7 @@ class ExportFormat(object):
         raise NotImplementedError()
 
     def from_data(self, fields, rows):
-        """ Conversion method from OpenERP's export data to whatever the
+        """ Conversion method from Odoo's export data to whatever the
         current export class outputs
 
         :params list fields: a list of fields to export
@@ -1632,19 +1739,20 @@ class ExportFormat(object):
         ids = ids or Model.search(domain, 0, False, False, context)
 
         field_names = map(operator.itemgetter('name'), fields)
-        import_data = Model.export_data(ids, field_names, context).get('datas',[])
+        import_data = Model.export_data(
+            ids, field_names, context).get('datas', [])
 
         if import_compat:
             columns_headers = field_names
         else:
             columns_headers = [val['label'].strip() for val in fields]
 
-
         return req.make_response(self.from_data(columns_headers, import_data),
-            headers=[('Content-Disposition',
-                            content_disposition(self.filename(model), req)),
-                     ('Content-Type', self.content_type)],
-            cookies={'fileToken': token})
+                                 headers=[('Content-Disposition',
+                                           content_disposition(self.filename(model), req)),
+                                          ('Content-Type', self.content_type)],
+                                 cookies={'fileToken': token})
+
 
 class CSVExport(ExportFormat, http.Controller):
     _cp_path = '/web/export/csv'
@@ -1667,12 +1775,13 @@ class CSVExport(ExportFormat, http.Controller):
             row = []
             for d in data:
                 if isinstance(d, basestring):
-                    d = d.replace('\n',' ').replace('\t',' ')
+                    d = d.replace('\n', ' ').replace('\t', ' ')
                     try:
                         d = d.encode('utf-8')
                     except UnicodeError:
                         pass
-                if d is False: d = None
+                if d is False:
+                    d = None
                 row.append(d)
             writer.writerow(row)
 
@@ -1680,6 +1789,7 @@ class CSVExport(ExportFormat, http.Controller):
         data = fp.read()
         fp.close()
         return data
+
 
 class ExcelExport(ExportFormat, http.Controller):
     _cp_path = '/web/export/xls'
@@ -1702,7 +1812,7 @@ class ExcelExport(ExportFormat, http.Controller):
 
         for i, fieldname in enumerate(fields):
             worksheet.write(0, i, fieldname)
-            worksheet.col(i).width = 8000 # around 220 pixels
+            worksheet.col(i).width = 8000  # around 220 pixels
 
         style = xlwt.easyxf('align: wrap yes')
 
@@ -1710,7 +1820,8 @@ class ExcelExport(ExportFormat, http.Controller):
             for cell_index, cell_value in enumerate(row):
                 if isinstance(cell_value, basestring):
                     cell_value = re.sub("\r", " ", cell_value)
-                if cell_value is False: cell_value = None
+                if cell_value is False:
+                    cell_value = None
                 worksheet.write(row_index + 1, cell_index, cell_value, style)
 
         fp = StringIO()
@@ -1719,6 +1830,7 @@ class ExcelExport(ExportFormat, http.Controller):
         data = fp.read()
         fp.close()
         return data
+
 
 class Reports(openerpweb.Controller):
     _cp_path = "/web/report"
@@ -1772,15 +1884,15 @@ class Reports(openerpweb.Controller):
         # Try to get current object model and their ids from context
         if 'context' in action:
             action_context = action['context']
-            if (action_context.get('active_model')
-                    and action_context['active_ids']):
+            if (action_context.get('active_model') and
+                    action_context['active_ids']):
                 # Use built-in ORM method to get data from DB
                 m = req.session.model(action_context['active_model'])
                 r = []
                 try:
                     r = m.name_get(action_context['active_ids'], context)
                 except xmlrpclib.Fault:
-                    #we assume this went wrong because of incorrect/missing
+                    # we assume this went wrong because of incorrect/missing
                     #_rec_name. We don't have access to _columns here to do
                     # a proper check
                     pass
@@ -1796,10 +1908,11 @@ class Reports(openerpweb.Controller):
         file_name = p.sub('_', file_name)
 
         return req.make_response(report,
-             headers=[
-                 ('Content-Disposition', content_disposition(file_name, req)),
-                 ('Content-Type', report_mimetype),
-                 ('Content-Length', len(report))],
-             cookies={'fileToken': token})
+                                 headers=[
+                                     ('Content-Disposition',
+                                      content_disposition(file_name, req)),
+                                     ('Content-Type', report_mimetype),
+                                     ('Content-Length', len(report))],
+                                 cookies={'fileToken': token})
 
 # vim:expandtab:tabstop=4:softtabstop=4:shiftwidth=4:

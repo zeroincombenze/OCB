@@ -25,7 +25,7 @@ from openerp import tools
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
 
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 
 
 class price_type(osv.osv):

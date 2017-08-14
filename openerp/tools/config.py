@@ -228,6 +228,9 @@ class configmanager(object):
                          help="specify the the maximum number of physical connections to posgresql")
         group.add_option("--db-template", dest="db_template", my_default="template1",
                          help="specify a custom database template to create a new database")
+        # [antoniov: 2017-04-16] Added skin support
+        group.add_option("--webskin", dest="web_skin", my_default="odoo",
+                         help="specify the skin of web interface")
         parser.add_option_group(group)
 
         group = optparse.OptionGroup(parser, "Internationalisation options",
@@ -377,8 +380,9 @@ class configmanager(object):
             self.options['pidfile'] = False
 
         # if defined dont take the configfile value even if the defined value is None
+        # [antoniov: 2017-04-16] Added web_skin kery to skin support
         keys = ['xmlrpc_interface', 'xmlrpc_port', 'db_name', 'db_user', 'db_password', 'db_host',
-                'db_port', 'db_template', 'logfile', 'pidfile', 'smtp_port',
+                'db_port', 'db_template', 'web_skin', 'logfile', 'pidfile', 'smtp_port',
                 'email_from', 'smtp_server', 'smtp_user', 'smtp_password',
                 'netrpc_interface', 'netrpc_port', 'db_maxconn', 'import_partial', 'addons_path',
                 'netrpc', 'xmlrpc', 'syslog', 'without_demo', 'timezone',
@@ -454,7 +458,6 @@ class configmanager(object):
             except:
                 # If pytz is missing, don't check the provided TZ, it will be ignored anyway.
                 pass
-
         if opt.pg_path:
             self.options['pg_path'] = opt.pg_path
 
@@ -485,9 +488,42 @@ class configmanager(object):
             openerp.conf.server_wide_modules = map(lambda m: m.strip(), opt.server_wide_modules.split(','))
         else:
             openerp.conf.server_wide_modules = ['web','web_kanban']
+        # [antoniov: 2017-04-16] Added skin support
+        # self._update_manifest(self.options['web_skin'])
         if complete:
             openerp.modules.module.initialize_sys_path()
             openerp.modules.loading.open_openerp_namespace()
+
+    def _update_manifest(self, web_skin):
+        # [antoniov: 2017-04-16] Added skin support
+        TOKEN_ID = 'static/src/css/base.css'
+        for apath in openerp.conf.addons_paths:
+            apath = apath.strip()
+            fpath = os.path.abspath(os.path.expanduser(apath))
+            if fpath and self._is_addons_path(fpath):
+                for f in openerp.conf.server_wide_modules:
+                    modpath = os.path.join(fpath, f)
+                    manifest = os.path.isfile(os.path.join(modpath,
+                                                           '__openerp__.py'))
+                    if manifest:
+                        fd = open(manifest, 'r')
+                        content = fd.read()
+                        fd.close()
+                        contents = content.split('\n')
+                        TOKEN_SKIN = '# ' + TOKEN_ID
+                        TOKEN_ODOO = '"' + TOKEN_ID + '",'
+                        for i,ln in enumerate(contents):
+                            if ln.find(TOKEN_SKIN) >= 0 and web_skin != 'odoo':
+                                pass
+                            elif ln.find(TOKEN_SKIN) >= 0 and \
+                                    web_skin == 'odoo':
+                                pass
+                            elif ln.find(TOKEN_ODOO) >= 0 and \
+                                    web_skin != 'odoo':
+                                pass
+                            elif ln.find(TOKEN_ODOO) >= 0 and \
+                                    web_skin == 'odoo':
+                                pass
 
     def _generate_pgpassfile(self):
         """

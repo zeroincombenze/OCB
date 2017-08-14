@@ -25,7 +25,7 @@ from openerp import netsvc
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
 
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 
 def _employee_get(obj, cr, uid, context=None):
     if context is None:

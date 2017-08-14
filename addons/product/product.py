@@ -28,7 +28,7 @@ from openerp import tools, SUPERUSER_ID
 from openerp.osv import osv, fields, expression
 from openerp.tools.translate import _
 
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 from openerp.tools.float_utils import float_round
 
 def ean_checksum(eancode):

@@ -21,7 +21,7 @@
 
 from openerp.osv import fields, osv
 
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 
 class hr_contract_be(osv.osv):
     _inherit = 'hr.contract'

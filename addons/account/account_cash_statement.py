@@ -24,7 +24,7 @@ import time
 
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 
 class account_cashbox_line(osv.osv):
 

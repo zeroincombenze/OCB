@@ -22,7 +22,7 @@
 import time
 from datetime import datetime
 
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 from openerp.osv import fields, osv, orm
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 from openerp.tools import float_compare

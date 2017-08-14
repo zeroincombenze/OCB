@@ -33,7 +33,7 @@ from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
 from openerp.tools.safe_eval import safe_eval as eval
 
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 
 _logger = logging.getLogger(__name__)
 

@@ -20,7 +20,7 @@
 ##############################################################################
 
 from lxml import etree
-import openerp.addons.decimal_precision as dp
+import decimal_precision as dp
 import openerp.exceptions
 
 from openerp import netsvc, SUPERUSER_ID
