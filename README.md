@@ -1,5 +1,17 @@
+[![Build Status](https://travis-ci.org/zeroincombenze/OCB.svg?branch=7.0)](https://travis-ci.org/zeroincombenze/OCB)
+[![license agpl](https://img.shields.io/badge/licence-AGPL--3-blue.svg)](http://www.gnu.org/licenses/agpl-3.0.html)
+[![Coverage Status](https://coveralls.io/repos/github/zeroincombenze/OCB/badge.svg?branch=7.0)](https://coveralls.io/github/zeroincombenze/OCB?branch=7.0)
+[![codecov](https://codecov.io/gh/zeroincombenze/OCB/branch/7.0/graph/badge.svg)](https://codecov.io/gh/zeroincombenze/OCB/branch/7.0)
+[![OCA_project](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-7.svg)](https://github.com/OCA/OCB/tree/7.0)
+[![Tech Doc](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-7.svg)](http://wiki.zeroincombenze.org/en/Odoo/7.0/dev)
+[![Help](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-7.svg)](http://wiki.zeroincombenze.org/en/Odoo/7.0/man/)
+[![try it](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-7.svg)](http://erp7.zeroincombenze.it)
+
+
+[![en](http://www.shs-av.com/wp-content/en_US.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
 
 Odoo is an OpenSource/Free software Enterprise Resource Planning and
+====================================================================
 Customer Relationship Management software. More info at:
 
     http://www.odoo.com
