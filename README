@@ -10,27 +10,56 @@
 
 [![en](http://www.shs-av.com/wp-content/en_US.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
 
-Odoo (formerly OpenERP)
-=======================
+Odoo is an OpenSource/Free software Enterprise Resource Planning and
+====================================================================
+Customer Relationship Management software. More info at:
 
-**Odoo** (formerly OpenERP) is the open source ERP software used on **zeroincombenze®** platform.
+    http://www.odoo.com
 
-**Odoo** is a complete suite of enterprise management applications, supported and provided by an active global community and a network of 500 official partners.
+Installation
+------------
 
-[Original readme](README)
+Add the the apt repository
+
+    deb http://nightly.odoo.com/7.0/nightly/deb/ ./
+
+in your source.list and type:
+
+    $ sudo apt-get update
+    $ sudo apt-get install openerp
+
+Or download the deb file and type:
+
+    $ sudo dpkg -i <openerp-deb-filename>
+    $ sudo apt-get install install -f
 
 
-[![it](http://www.shs-av.com/wp-content/it_IT.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
+Install the required dependencies:
 
-Odoo (già OpenERP)
-==================
+    $ yum install python
+    $ easy_install pip
+    $ pip install .....
 
-**Odoo** è il software gestionale ERP open source su cui si basa il progetto **zeroincombenze®**. Prima di maggio 2014 è si chiamava Odoo e in precedenza tinyERP.
+Install the openerp rpm
 
-**Odoo** è una suite di prodotti software, attivamente supportato dalla Community internazionale (OCA) e dalla Community Italiana per la localizzazione, che permette di gestire tutte le funzionalità di un ERP, un CRM e dalla 8.0 anche un e-Commerce.
+    $ rpm -i openerp-VERSION.rpm
 
-Il software è open source ed è rilasciato secondo i termini della GNU Lesser General Public License.
 
+    Check the notes in setup.py
+
+
+Setting up your first database
+
+Point your browser to http://localhost:8069/ and click "Manage Databases", the
+default master password is "admin".
+
+Detailed System Requirements
+
+The dependencies are listed in setup.py
+
+For Luxembourg localization, you also need:
+
+ pdftk (http://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/)
 
 [//]: # (copyright)
 
