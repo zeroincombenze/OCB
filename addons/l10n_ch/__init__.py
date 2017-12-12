@@ -1,8 +1,9 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ##############################################################################
 #
 #    Author: Nicolas Bessi. Copyright Camptocamp SA
-#    Donors: Hasa Sàrl, Open Net Sàrl and Prisme Solutions Informatique SA
+#    Financial contributors: Hasa SA, Open Net SA,
+#                            Prisme Solutions Informatique SA, Quod SA
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -19,14 +20,6 @@
 #
 ##############################################################################
 
-import account_wizard
-import invoice
-import company
-import partner
-import company
-import wizard
-import payment
-import report
-import bank
+from . import account_wizard
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

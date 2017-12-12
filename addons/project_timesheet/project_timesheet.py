@@ -74,18 +74,17 @@ class project_work(osv.osv):
         res['product_uom_id'] = emp.product_id.uom_id.id
         return res
 
-    def create(self, cr, uid, vals, *args, **kwargs):
+    def create(self, cr, uid, vals, context):
         obj_timesheet = self.pool.get('hr.analytic.timesheet')
         project_obj = self.pool.get('project.project')
         task_obj = self.pool.get('project.task')
         uom_obj = self.pool.get('product.uom')
         
         vals_line = {}
-        context = kwargs.get('context', {})
         if not context.get('no_analytic_entry',False):
             obj_task = task_obj.browse(cr, uid, vals['task_id'])
             result = self.get_user_related_details(cr, uid, vals.get('user_id', uid))
-            vals_line['name'] = '%s: %s' % (tools.ustr(obj_task.name), tools.ustr(vals['name']) or '/')
+            vals_line['name'] = '%s: %s' % (tools.ustr(obj_task.name), tools.ustr(vals['name'] or '/'))
             vals_line['user_id'] = vals['user_id']
             vals_line['product_id'] = result['product_id']
             vals_line['date'] = vals['date'][:10]
@@ -109,7 +108,7 @@ class project_work(osv.osv):
                 amount = vals_line['unit_amount']
                 prod_id = vals_line['product_id']
                 unit = False
-                timeline_id = obj_timesheet.create(cr, uid, vals=vals_line, context=context)
+                timeline_id = obj_timesheet.create(cr, uid, vals_line, context)
 
                 # Compute based on pricetype
                 amount_unit = obj_timesheet.on_change_unit_amount(cr, uid, timeline_id,
@@ -118,14 +117,14 @@ class project_work(osv.osv):
                     updv = { 'amount': amount_unit['value']['amount'] }
                     obj_timesheet.write(cr, uid, [timeline_id], updv, context=context)
                 vals['hr_analytic_timesheet_id'] = timeline_id
-        return super(project_work,self).create(cr, uid, vals, *args, **kwargs)
+        return super(project_work,self).create(cr, uid, vals, context)
 
     def write(self, cr, uid, ids, vals, context=None):
         if context is None:
             context = {}
-        timesheet_obj = self.pool.get('hr.analytic.timesheet')
-        project_obj = self.pool.get('project.project')
-        uom_obj = self.pool.get('product.uom')
+        timesheet_obj = self.pool['hr.analytic.timesheet']
+        project_obj = self.pool['project.project']
+        uom_obj = self.pool['product.uom']
         result = {}
         
         if isinstance(ids, (long, int)):
@@ -139,13 +138,9 @@ class project_work(osv.osv):
                 continue
             vals_line = {}
             if 'name' in vals:
-                vals_line['name'] = '%s: %s' % (tools.ustr(task.task_id.name), tools.ustr(vals['name']) or '/')
+                vals_line['name'] = '%s: %s' % (tools.ustr(task.task_id.name), tools.ustr(vals['name'] or '/'))
             if 'user_id' in vals:
                 vals_line['user_id'] = vals['user_id']
-                result = self.get_user_related_details(cr, uid, vals['user_id'])
-                for fld in ('product_id', 'general_account_id', 'journal_id', 'product_uom_id'):
-                    if result.get(fld, False):
-                        vals_line[fld] = result[fld]
                         
             if 'date' in vals:
                 vals_line['date'] = vals['date'][:10]
@@ -153,6 +148,10 @@ class project_work(osv.osv):
                 default_uom = self.pool.get('res.users').browse(cr, uid, uid).company_id.project_time_mode_id.id
                 vals_line['unit_amount'] = vals['hours']
                 prod_id = vals_line.get('product_id', line_id.product_id.id) # False may be set
+                result = self.get_user_related_details(cr, uid, vals.get('user_id', task.user_id.id))
+                for fld in ('product_id', 'general_account_id', 'journal_id', 'product_uom_id'):
+                    if result.get(fld, False):
+                        vals_line[fld] = result[fld]
 
                 if result.get('product_uom_id',False) and (not result['product_uom_id'] == default_uom):
                     vals_line['unit_amount'] = uom_obj._compute_qty(cr, uid, default_uom, vals['hours'], result['product_uom_id'])
@@ -165,7 +164,9 @@ class project_work(osv.osv):
                 if amount_unit and 'amount' in amount_unit.get('value',{}):
                     vals_line['amount'] = amount_unit['value']['amount']
 
-            self.pool.get('hr.analytic.timesheet').write(cr, uid, [line_id.id], vals_line, context=context)
+            #workaround for lp:1023047
+            if vals_line:
+                self.pool.get('hr.analytic.timesheet').write(cr, uid, [line_id.id], vals_line, context=context)
             
         return super(project_work,self).write(cr, uid, ids, vals, context)
 
@@ -217,7 +218,7 @@ class task(osv.osv):
                         if vals.get('project_id',False):
                             vals_line['account_id'] = acc_id
                         if vals.get('name',False):
-                            vals_line['name'] = '%s: %s' % (tools.ustr(vals['name']), tools.ustr(task_work.name) or '/')
+                            vals_line['name'] = '%s: %s' % (tools.ustr(vals['name']), tools.ustr(task_work.name or '/'))
                         hr_anlytic_timesheet.write(cr, uid, [line_id], vals_line, {})
         return super(task,self).write(cr, uid, ids, vals, context)
 

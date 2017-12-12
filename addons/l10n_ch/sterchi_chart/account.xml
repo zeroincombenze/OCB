@@ -9,13 +9,13 @@
         </record>
         <record id="account_type_view_assets" model="account.account.type">
             <field name="name">Autre: Vue Actifs</field>
-            <field name="code">view</field>
+            <field name="code">account_type_view_assets</field>
             <field name="close_method">none</field>
             <field name="report_type">asset</field>
         </record>
         <record id="account_type_view_liability" model="account.account.type">
             <field name="name">Autre: Vue Passifs</field>
-            <field name="code">view</field>
+            <field name="code">account_type_view_liability</field>
             <field name="close_method">none</field>
             <field name="report_type">liability</field>
         </record>
@@ -583,20 +583,18 @@
             <field ref="ch_110_0" name="parent_id"/>
         </record>
         <record id="ch_1100" model="account.account.template">
-            <field name="type">receivable</field>
-            <field name="reconcile" eval="True"/>
+            <field name="type">view</field>
             <field name="name">Créances envers des tiers suisses</field>
             <field name="code">1100</field>
-            <field name="user_type" ref="account_type_receivable"/>
+            <field name="user_type" ref="account_type_view_assets"/>
             <field name="note"/>
             <field ref="ch_110_00" name="parent_id"/>
         </record>
         <record id="ch_1101" model="account.account.template">
-            <field name="type">receivable</field>
-            <field name="reconcile" eval="True"/>
+            <field name="type">view</field>
             <field name="name">Créances envers des tiers étrangers</field>
             <field name="code">1101</field>
-            <field name="user_type" ref="account_type_receivable"/>
+            <field name="user_type" ref="account_type_view_assets"/>
             <field name="note"/>
             <field ref="ch_110_00" name="parent_id"/>
         </record>
@@ -3021,11 +3019,10 @@
             <field ref="ch_200" name="parent_id"/>
         </record>
         <record id="ch_2000" model="account.account.template">
-            <field name="type">payable</field>
-            <field name="reconcile">True</field>
+            <field name="type">view</field>
             <field name="name">Dettes c/achats de matières et marchandises</field>
             <field name="code">2000</field>
-            <field name="user_type" ref="account_type_payable"/>
+            <field name="user_type" ref="account_type_view_liability"/>
             <field name="note"/>
             <field ref="ch_200_0" name="parent_id"/>
         </record>
@@ -3337,7 +3334,7 @@
         </record>
         <record id="ch_2200" model="account.account.template">
             <field name="type">other</field>
-            <field name="reconcile">True</field>
+            <field name="reconcile" eval="False"/>
             <field name="name">TVA due</field>
             <field name="code">2200</field>
             <field name="user_type" ref="account_type_other_payable"/>
@@ -11680,6 +11677,14 @@
             <field name="note"/>
             <field ref="ch_900" name="parent_id"/>
         </record>
+        <record id="ch_9001" model="account.account.template">
+            <field name="type">other</field>
+            <field name="name">Compte de résultat (bilan)</field>
+            <field name="code">9001</field>
+            <field name="user_type" ref="account_type_equity"/>
+            <field name="note"/>
+            <field ref="ch_900" name="parent_id"/>
+        </record>
         <record id="ch_91" model="account.account.template">
             <field name="type">view</field>
             <field name="name">Bilan</field>
@@ -11810,34 +11815,15 @@
             <field name="property_account_income_opening" ref="ch_2990"/>
             <field name="property_account_expense_opening" ref="ch_2990"/>
             <field name="property_reserve_and_surplus_account" ref="ch_2991"/>
+            <field name="code_digits" eval="0"/>
+            <field name="spoken_languages" eval="'it_IT;de_DE'"/>
         </record>
-        
-        <!-- journal configuration of account -->
-
-        <record id="expenses_journal" model="account.journal">
-            <field name="default_debit_account_id" eval="False"/>
-            <field name="default_debit_account_id" eval="False"/>
-        </record>
-        
-        <record id="bank_journal" model="account.journal">
-            <field name="default_debit_account_id" eval="False"/>
-            <field name="default_debit_account_id" eval="False"/>
-        </record>
-        
-        <record id="bank_euro_journal" model="account.journal">
-            <field name="default_debit_account_id" eval="False"/>
-            <field name="default_debit_account_id" eval="False"/>
-        </record>
-        
-        <record id="petty_cash_journal" model="account.journal">
-            <field name="default_debit_account_id" eval="False"/>
-            <field name="default_debit_account_id" eval="False"/>
-        </record>
-        
-        
-        <record model="account.journal" id="bilan_journal">
-            <field name="default_debit_account_id" eval="False"/>
-            <field name="default_debit_account_id" eval="False"/>
+        <record id="l10nch_chart_template_value" model="ir.values">
+            <field name="name">Plan comptable STERCHI</field>
+            <field name="model">account.chart.template</field>
+            <field name="key">default</field>
+            <field name="res_id" ref="l10nch_chart_template"/>
+            <field name="value" ref="base.CHF"/>
         </record>
     </data>
 </openerp>

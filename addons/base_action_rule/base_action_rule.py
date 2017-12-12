@@ -20,6 +20,7 @@
 ##############################################################################
 
 from osv import fields, osv, orm
+from openerp import SUPERUSER_ID
 from tools.translate import _
 from datetime import datetime
 from datetime import timedelta
@@ -202,15 +203,17 @@ the rule to mark CC(mail to any other person defined in actions)."),
             return True
         return wrapper
 
-    def _register_hook(self, cr, uid, ids, context=None):
+    def _register_hook(self, cr, uid=SUPERUSER_ID, ids=None, context=None):
         """
         Wrap every `create` and `write` methods of the models specified by
         the rules (given by `ids`).
         """
+        if ids == [] or ids is None:
+            ids = self.search(cr, uid, [])
         for action_rule in self.browse(cr, uid, ids, context=context):
             model = action_rule.model_id.model
             obj_pool = self.pool.get(model)
-            if not hasattr(obj_pool, 'base_action_ruled'):
+            if obj_pool and not hasattr(obj_pool, 'base_action_ruled'):
                 obj_pool.create = self._create(obj_pool.create, model, context=context)
                 obj_pool.write = self._write(obj_pool.write, model, context=context)
                 obj_pool.base_action_ruled = True

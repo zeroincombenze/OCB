@@ -37,8 +37,13 @@ class hr_employee(osv.osv):
     def _getAnalyticJournal(self, cr, uid, context=None):
         md = self.pool.get('ir.model.data')
         try:
-            result = md.get_object_reference(cr, uid, 'hr_timesheet', 'analytic_journal')
-            return result[1]
+#            result = md.get_object_reference(cr, uid, 'hr_timesheet', 'analytic_journal')
+#            return result[1]
+            dummy, res_id = md.get_object_reference(cr, uid, 'hr_timesheet', 'analytic_journal')
+            #search on id found in result to check if current user has read access right
+            check_right = self.pool.get('account.analytic.journal').search(cr, uid, [('id', '=', res_id)], context=context)
+            if check_right:
+                return res_id
         except ValueError:
             pass
         return False
@@ -46,8 +51,12 @@ class hr_employee(osv.osv):
     def _getEmployeeProduct(self, cr, uid, context=None):
         md = self.pool.get('ir.model.data')
         try:
-            result = md.get_object_reference(cr, uid, 'product', 'product_consultant')
-            return result[1]
+            dummy, res_id = md.get_object_reference(cr, uid, 'product', 'product_consultant')
+            #result = md.get_object_reference(cr, uid, 'product', 'product_consultant')
+            #search on id found in result to check if current user has read access right
+            check_right = self.pool.get('product.template').search(cr, uid, [('id', '=', res_id)], context=context)
+            if check_right:
+                return res_id
         except ValueError:
             pass
         return False
@@ -74,8 +83,7 @@ class hr_analytic_timesheet(osv.osv):
         toremove = {}
         for obj in self.browse(cr, uid, ids, context=context):
             toremove[obj.line_id.id] = True
-        self.pool.get('account.analytic.line').unlink(cr, uid, toremove.keys(), context=context)
-        return super(hr_analytic_timesheet, self).unlink(cr, uid, ids, context=context)
+        return self.pool.get('account.analytic.line').unlink(cr, uid, toremove.keys(), context=context)
 
 
     def on_change_unit_amount(self, cr, uid, id, prod_id, unit_amount, company_id, unit=False, journal_id=False, context=None):
@@ -91,6 +99,7 @@ class hr_analytic_timesheet(osv.osv):
             uom = self.pool.get('product.product').browse(cr, uid, prod_id, context=context)
             if uom.uom_id:
                 res['value'].update({'product_uom_id': uom.uom_id.id})
+                res['value'].update({'name': uom.name})
         else:
             res['value'].update({'product_uom_id': False})
         return res

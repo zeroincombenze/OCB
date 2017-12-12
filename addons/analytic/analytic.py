@@ -219,7 +219,7 @@ class account_analytic_account(osv.osv):
         default['line_ids'] = []
         return super(account_analytic_account, self).copy(cr, uid, id, default, context=context)
 
-    def on_change_partner_id(self, cr, uid, id, partner_id, context={}):
+    def on_change_partner_id(self, cr, uid, id, partner_id, name=False, context={}):
         if not partner_id:
             return {'value': {'contact_id': False}}
         addr = self.pool.get('res.partner').address_get(cr, uid, [partner_id], ['invoice'])
@@ -263,18 +263,15 @@ class account_analytic_account(osv.osv):
         if name:
             account = self.search(cr, uid, [('code', '=', name)] + args, limit=limit, context=context)
             if not account:
-                names=map(lambda i : i.strip(),name.split('/'))
-                for i in range(len(names)):
-                    dom=[('name', operator, names[i])]
-                    if i>0:
-                        dom+=[('id','child_of',account)]
-                    account = self.search(cr, uid, dom, limit=limit, context=context)
-                newacc = account
-                while newacc:
-                    newacc = self.search(cr, uid, [('parent_id', 'in', newacc)], limit=limit, context=context)
-                    account += newacc
-                if args:
-                    account = self.search(cr, uid, [('id', 'in', account)] + args, limit=limit, context=context)
+                dom = []
+                for name2 in map(lambda i : i.strip(),name.split('/')):
+                    account = self.search(
+                            cr, uid, 
+                            dom + [('name', 'ilike', name2)] + args,
+                            limit=limit, context=context)
+                    if not account:
+                        break
+                    dom = [('parent_id','in',account)]
         else:
             account = self.search(cr, uid, args, limit=limit, context=context)
         return self.name_get(cr, uid, account, context=context)

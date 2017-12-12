@@ -22,17 +22,16 @@
 
 {
     'name': 'Delivery Costs',
-    'version': '1.0',
+    'version': '1.0.d',
     'category': 'Sales Management',
     'complexity': "normal",
     'description': """
 Allows you to add delivery methods in sale orders and picking.
 ==============================================================
 
-You can define your own carrier and delivery grids for prices.
-When creating invoices from picking, OpenERP is able to add and compute the shipping line.
-
-     """,
+You can define your own carrier and delivery grids for prices. When creating 
+invoices from picking, OpenERP is able to add and compute the shipping line.
+""",
     'author': 'OpenERP SA',
     'depends': ['sale', 'purchase', 'stock'],
     'init_xml': ['delivery_data.xml'],
@@ -46,6 +45,7 @@ When creating invoices from picking, OpenERP is able to add and compute the ship
     'demo_xml': ['delivery_demo.xml'],
     'test': [
         'test/delivery_cost.yml',
+        'test/delivery_chained_pickings.yml',
     ],
     'installable': True,
     'auto_install': False,

@@ -142,7 +142,7 @@ class email_template(osv.osv):
                                                 "emails created from this template"),
 
         # Overridden mail.message.common fields to make tooltips more appropriate:
-        'subject':fields.char('Subject', size=512, translate=True, help="Subject (placeholders may be used here)",),
+        'subject': fields.char('Subject', size=512, translate=False, help="Subject (placeholders may be used here)",),
         'email_from': fields.char('From', size=128, help="Sender address (placeholders may be used here)"),
         'email_to': fields.char('To', size=256, help="Comma-separated recipient addresses (placeholders may be used here)"),
         'email_cc': fields.char('Cc', size=256, help="Carbon copy recipients (placeholders may be used here)"),
@@ -151,8 +151,8 @@ class email_template(osv.osv):
         'mail_server_id': fields.many2one('ir.mail_server', 'Outgoing Mail Server', readonly=False,
                                           help="Optional preferred server for outgoing mails. If not set, the highest "
                                                "priority one will be used."),
-        'body_text': fields.text('Text contents', translate=True, help="Plaintext version of the message (placeholders may be used here)"),
-        'body_html': fields.text('Rich-text contents', translate=True, help="Rich-text/HTML version of the message (placeholders may be used here)"),
+        'body_text': fields.text('Text contents', translate=False, help="Plaintext version of the message (placeholders may be used here)"),
+        'body_html': fields.text('Rich-text contents', translate=False, help="Rich-text/HTML version of the message (placeholders may be used here)"),
         'message_id': fields.char('Message-Id', size=256, help="Message-ID SMTP header to use in outgoing messages based on this template. "
                                                                "Please note that this overrides the 'Resource Tracking' option, "
                                                                "so if you simply need to track replies to outgoing emails, enable "
@@ -285,7 +285,6 @@ class email_template(osv.osv):
                         })
         return {'value':result}
 
-
     def generate_email(self, cr, uid, template_id, res_id, context=None):
         """Generates an email from the template for given (model, res_id) pair.
 
@@ -336,7 +335,8 @@ class email_template(osv.osv):
 
         if template.user_signature:
             signature = self.pool.get('res.users').browse(cr, uid, uid, context).signature
-            values['body_text'] += '\n\n' + signature
+            if signature:
+                values['body_text'] += '\n\n' + signature
 
         values.update(mail_server_id = template.mail_server_id.id or False,
                       auto_delete = template.auto_delete,
@@ -386,7 +386,7 @@ class email_template(osv.osv):
         mail_message = self.pool.get('mail.message')
         ir_attachment = self.pool.get('ir.attachment')
         values = self.generate_email(cr, uid, template_id, res_id, context=context)
-        assert 'email_from' in values, 'email_from is missing or empty after template rendering, send_mail() cannot proceed'
+        # assert 'email_from' in values, 'email_from is missing or empty after template rendering, send_mail() cannot proceed'
         attachments = values.pop('attachments') or {}
         msg_id = mail_message.create(cr, uid, values, context=context)
         # link attachments

@@ -98,9 +98,6 @@ class CompanyLDAP(osv.osv):
         filter = filter_format(conf['ldap_filter'], (login,))
         try:
             results = self.query(conf, filter)
-
-            # Get rid of (None, attrs) for searchResultReference replies
-            results = [i for i in results if i[0]]
             if results and len(results) == 1:
                 dn = results[0][0]
                 conn = self.connect(conf)
@@ -184,7 +181,7 @@ class CompanyLDAP(osv.osv):
         """
         
         user_id = False
-        login = tools.ustr(login)
+        login = tools.ustr(login.lower().trip())
         cr.execute("SELECT id, active FROM res_users WHERE login=%s", (login,))
         res = cr.fetchone()
         if res:

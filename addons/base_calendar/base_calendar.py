@@ -30,6 +30,7 @@ import pytz
 import re
 import time
 import tools
+from operator import itemgetter
 
 months = {
     1: "January", 2: "February", 3: "March", 4: "April", \
@@ -85,7 +86,10 @@ def base_calendar_id2real_id(base_calendar_id=None, with_date=False):
                 return (int(real_id), real_date, end.strftime("%Y-%m-%d %H:%M:%S"))
             return int(real_id)
 
-    return base_calendar_id and int(base_calendar_id) or base_calendar_id
+        return int(base_calendar_id)
+
+    return base_calendar_id
+    
 
 def real_id2base_calendar_id(real_id, recurrent_date):
     """
@@ -203,6 +207,21 @@ html_invitation = """
 </body>
 </html>
 """
+
+def set_local_timezone(obj, cr, uid, dt, context=None):
+    '''
+    This method will convert datetime in logged in user's timezone
+    dt: will be the datetime in string
+    '''
+    if len(dt) <= 10:
+        return datetime.strptime(dt, '%Y-%m-%d')
+    else:
+        tz_info = context.get('tz') or 'UTC'
+        local_tz = pytz.timezone(tz_info)
+        local_time = tools.misc.server_to_local_timestamp(dt, '%Y-%m-%d %H:%M:%S', '%Y-%m-%d %H:%M:%S', tz_info)
+        event_date = local_tz.localize(datetime.strptime(local_time, '%Y-%m-%d %H:%M:%S'), is_dst=True)
+        return event_date
+
 
 class calendar_attendee(osv.osv):
     """
@@ -323,57 +342,57 @@ class calendar_attendee(osv.osv):
 
     _columns = {
         'cutype': fields.selection([('individual', 'Individual'), \
-                    ('group', 'Group'), ('resource', 'Resource'), \
-                    ('room', 'Room'), ('unknown', 'Unknown') ], \
-                    'Invite Type', help="Specify the type of Invitation"),
+                                    ('group', 'Group'), ('resource', 'Resource'), \
+                                    ('room', 'Room'), ('unknown', 'Unknown')], \
+                                   'Invite Type', help="Specify the type of Invitation"),
         'member': fields.char('Member', size=124,
-                    help="Indicate the groups that the attendee belongs to"),
+                              help="Indicate the groups that the attendee belongs to"),
         'role': fields.selection([('req-participant', 'Participation required'), \
-                    ('chair', 'Chair Person'), \
-                    ('opt-participant', 'Optional Participation'), \
-                    ('non-participant', 'For information Purpose')], 'Role', \
-                    help='Participation role for the calendar user'),
+                                  ('chair', 'Chair Person'), \
+                                  ('opt-participant', 'Optional Participation'), \
+                                  ('non-participant', 'For information Purpose')], 'Role', \
+                                 help='Participation role for the calendar user'),
         'state': fields.selection([('tentative', 'Tentative'),
-                        ('needs-action', 'Needs Action'),
-                        ('accepted', 'Accepted'),
-                        ('declined', 'Declined'),
-                        ('delegated', 'Delegated')], 'State', readonly=True, \
-                        help="Status of the attendee's participation"),
-        'rsvp':  fields.boolean('Required Reply?',
-                    help="Indicats whether the favor of a reply is requested"),
+                                   ('needs-action', 'Needs Action'),
+                                   ('accepted', 'Accepted'),
+                                   ('declined', 'Declined'),
+                                   ('delegated', 'Delegated')], 'State', readonly=True, \
+                                  help="Status of the attendee's participation"),
+        'rsvp': fields.boolean('Required Reply?',
+                               help="Indicats whether the favor of a reply is requested"),
         'delegated_to': fields.function(_compute_data, \
-                string='Delegated To', type="char", size=124, store=True, \
-                multi='delegated_to', help="The users that the original \
+                                        string='Delegated To', type="char", size=124, store=True, \
+                                        multi='delegated_to', help="The users that the original \
 request was delegated to"),
-        'delegated_from': fields.function(_compute_data, string=\
+        'delegated_from': fields.function(_compute_data, string= \
             'Delegated From', type="char", store=True, size=124, multi='delegated_from'),
         'parent_ids': fields.many2many('calendar.attendee', 'calendar_attendee_parent_rel', \
-                                    'attendee_id', 'parent_id', 'Delegrated From'),
+                                       'attendee_id', 'parent_id', 'Delegrated From'),
         'child_ids': fields.many2many('calendar.attendee', 'calendar_attendee_child_rel', \
                                       'attendee_id', 'child_id', 'Delegrated To'),
         'sent_by': fields.function(_compute_data, string='Sent By', \
-                        type="char", multi='sent_by', store=True, size=124, \
-                        help="Specify the user that is acting on behalf of the calendar user"),
+                                   type="char", multi='sent_by', store=True, size=124, \
+                                   help="Specify the user that is acting on behalf of the calendar user"),
         'sent_by_uid': fields.function(_compute_data, string='Sent By User', \
-                            type="many2one", relation="res.users", multi='sent_by_uid'),
+                                       type="many2one", relation="res.users", multi='sent_by_uid'),
         'cn': fields.function(_compute_data, string='Common name', \
-                            type="char", size=124, multi='cn', store=True),
+                              type="char", size=124, multi='cn', store=True),
         'dir': fields.char('URI Reference', size=124, help="Reference to the URI\
 that points to the directory information corresponding to the attendee."),
         'language': fields.function(_compute_data, string='Language', \
-                    type="selection", selection=_lang_get, multi='language', \
-                    store=True, help="To specify the language for text values in a\
+                                    type="selection", selection=_lang_get, multi='language', \
+                                    store=True, help="To specify the language for text values in a\
 property or property parameter."),
         'user_id': fields.many2one('res.users', 'User'),
         'partner_address_id': fields.many2one('res.partner.address', 'Contact'),
         'partner_id': fields.related('partner_address_id', 'partner_id', type='many2one', \
-                        relation='res.partner', string='Partner', help="Partner related to contact"),
+                                     relation='res.partner', string='Partner', help="Partner related to contact"),
         'email': fields.char('Email', size=124, help="Email of Invited Person"),
         'event_date': fields.function(_compute_data, string='Event Date', \
-                            type="datetime", multi='event_date'),
+                                      type="datetime", multi='event_date'),
         'event_end_date': fields.function(_compute_data, \
-                            string='Event End Date', type="datetime", \
-                            multi='event_end_date'),
+                                          string='Event End Date', type="datetime", \
+                                          multi='event_end_date'),
         'ref': fields.reference('Event Ref', selection=_links_get, size=128),
         'availability': fields.selection([('free', 'Free'), ('busy', 'Busy')], 'Free/Busy', readonly="True"),
     }
@@ -498,9 +517,11 @@ property or property parameter."),
                     att_infos.append(((att2.user_id and att2.user_id.name) or \
                                  (att2.partner_id and att2.partner_id.name) or \
                                     att2.email) + ' - Status: ' + att2.state.title())
+                start_date = set_local_timezone(self, cr, uid, res_obj.date, context=context).strftime('%Y-%m-%d %I:%M:%S %p %Z')
+                end_date = res_obj.date_deadline and set_local_timezone(self, cr, uid, res_obj.date_deadline, context=context).strftime('%Y-%m-%d %I:%M:%S %p %Z') or False
                 body_vals = {'name': res_obj.name,
-                            'start_date': res_obj.date,
-                            'end_date': res_obj.date_deadline or False,
+                            'start_date': start_date,
+                            'end_date': end_date,
                             'description': res_obj.description or '-',
                             'location': res_obj.location or '-',
                             'attendees': '<br>'.join(att_infos),
@@ -879,6 +900,7 @@ class calendar_alarm(osv.osv):
 
                 if alarm.action == 'email':
                     sub = '[Openobject Reminder] %s' % (alarm.name)
+                    event = set_local_timezone(self, cr, uid, alarm.event_date, context=context).strftime('%Y-%m-%d %I:%M:%S %p %Z')
                     body = """
 Event: %s
 Event Date: %s
@@ -890,7 +912,7 @@ From:
 ----
 %s
 
-"""  % (alarm.name, alarm.trigger_date, alarm.description, \
+"""  % (alarm.name, event, alarm.description, \
                         alarm.user_id.name, alarm.user_id.signature)
                     mail_to = [alarm.user_id.user_email]
                     for att in alarm.attendee_ids:
@@ -1303,6 +1325,18 @@ rule or repeating pattern of time to exclude from the recurring rule."),
                 res.append(base_calendar_id2real_id(id))
             return res
 
+    def _multikeysort(self, items, columns):
+
+        comparers = [ ((itemgetter(col[1:].strip()), -1) if col.startswith('-') else (itemgetter(col.strip()), 1)) for col in columns]
+        def comparer(left, right):
+            for fn, mult in comparers:
+                result = cmp(fn(left), fn(right))
+                if result:
+                    return mult * result
+                else:
+                    return 0
+        return sorted(items, cmp=comparer)
+
     def search(self, cr, uid, args, offset=0, limit=0, order=None, context=None, count=False):
         context = context or {}
         args_without_date = []
@@ -1327,6 +1361,16 @@ rule or repeating pattern of time to exclude from the recurring rule."),
                                  0, 0, order, context, count=False)
         if context.get('virtual_id', True):
             res = self.get_recurrent_ids(cr, uid, res, args, limit, context=context)
+            if order:
+                order = order.split(',')
+                sortby = {}
+                for o in order:
+                    spl = o.split()
+                    sortby[spl[0]] = spl[1]
+                fields = sortby.keys()
+                ordered = self.read(cr, uid, res, fields=fields, context=context)
+                res = self._multikeysort(ordered, [key.split()[0] if sortby[key.split()[0]] == 'ASC' else '-%s' % key.split()[0] for key in order])
+                res = [x['id'] for x in res]
 
         if count:
             return len(res)

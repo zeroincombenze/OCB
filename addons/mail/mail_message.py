@@ -26,10 +26,10 @@ import dateutil.parser
 import email
 import logging
 import pytz
-import re
 import time
 from email.header import decode_header
 from email.message import Message
+from email.utils import getaddresses
 
 import tools
 from osv import osv
@@ -39,11 +39,10 @@ from openerp import SUPERUSER_ID
 
 _logger = logging.getLogger('mail')
 
-def format_date_tz(date, tz=None):
-    if not date:
-        return 'n/a'
-    format = tools.DEFAULT_SERVER_DATETIME_FORMAT
-    return tools.server_to_local_timestamp(date, format, format, tz)
+
+def format_date_tz(date, tz_user):
+    dt_format = tools.DEFAULT_SERVER_DATETIME_FORMAT
+    return date and tools.server_to_local_timestamp(date, dt_format, dt_format, tz_user) or 'n/a'
 
 def truncate_text(text):
     lines = text and text.split('\n') or []
@@ -60,9 +59,15 @@ def decode(text):
         return ''.join([tools.ustr(x[0], x[1]) for x in text])
 
 def to_email(text):
-    """Return a list of the email addresses found in ``text``"""
+    """Returns a list of the email addresses found in ``text``                       
+    """
     if not text: return []
-    return re.findall(r'([^ ,<@]+@[^> ,]+)', text)
+    
+    people = getaddresses([text])
+    addresses = [person[1] for person in people]    
+
+    return addresses
+    
 
 class mail_message_common(osv.osv_memory):
     """Common abstract class for holding the main attributes of a 
@@ -81,7 +86,7 @@ class mail_message_common(osv.osv_memory):
         'email_to': fields.char('To', size=256, help='Message recipients'),
         'email_cc': fields.char('Cc', size=256, help='Carbon copy message recipients'),
         'email_bcc': fields.char('Bcc', size=256, help='Blind carbon copy message recipients'),
-        'reply_to':fields.char('Reply-To', size=256, help='Preferred response address for the message'),
+        'reply_to': fields.char('Reply-To', size=256, help='Preferred response address for the message'),
         'headers': fields.text('Message headers', readonly=1,
                                help="Full message headers, e.g. SMTP session headers "
                                     "(usually available on inbound messages only)"),
@@ -148,20 +153,19 @@ class mail_message(osv.osv):
         return action_data
 
     def _get_display_text(self, cr, uid, ids, name, arg, context=None):
-        if context is None:
-            context = {}
-        tz = context.get('tz')
+        context = context or self.pool['res.users'].context_get(cr, uid)
+        tz_user = context.get('tz', 'UTC')
         result = {}
 
         # Read message as UID 1 to allow viewing author even if from different company
-        for message in self.browse(cr, SUPERUSER_ID, ids):
+        for message in self.browse(cr, SUPERUSER_ID, ids, context):
             msg_txt = ''
             if message.email_from:
-                msg_txt += _('%s wrote on %s: \n Subject: %s \n\t') % (message.email_from or '/', format_date_tz(message.date, tz), message.subject)
+                msg_txt += _('%s wrote on %s: \n Subject: %s \n\t') % (message.email_from or '/', format_date_tz(message.date, tz_user), message.subject)
                 if message.body_text:
                     msg_txt += truncate_text(message.body_text)
             else:
-                msg_txt = (message.user_id.name or '/') + _(' on ') + format_date_tz(message.date, tz) + ':\n\t'
+                msg_txt = (message.user_id.name or '/') + _(' on ') + format_date_tz(message.date, tz_user) + ':\n\t'
                 msg_txt += (message.subject or '')
             result[message.id] = msg_txt
         return result
@@ -534,7 +538,14 @@ class mail_message(osv.osv):
                                                 mail_server_id=message.mail_server_id.id,
                                                 context=context)
                 if res:
-                    message.write({'state':'sent', 'message_id': res})
+                    message.write(
+                            {
+                                'state':'sent',
+                                'message_id': res,
+                                'user_id': message.user_id.id or uid,
+                                'date': message.date
+                                    or datetime.datetime.now(),
+                            })
                     message_sent = True
                 else:
                     message.write({'state':'exception'})
