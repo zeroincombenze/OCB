@@ -7,30 +7,41 @@
 [![Help](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-7.svg)](http://wiki.zeroincombenze.org/en/Odoo/7.0/man/)
 [![try it](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-7.svg)](http://erp7.zeroincombenze.it)
 
+[![en](https://github.com/zeroincombenze/grymb/blob/master/flags/en_US.png)](https://www.facebook.com/groups/openerp.italia/)
 
-[![en](http://www.shs-av.com/wp-content/en_US.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
+Odoo 7.0 (formerly OpenERP)
+===========================
 
-Odoo (formerly OpenERP)
-=======================
+Odoo is a suite of web based open source business apps.
 
-**Odoo** (formerly OpenERP) is the open source ERP software used on **zeroincombenze®** platform.
+The main Odoo Apps include an Open Source CRM and Enterprise Resource Planning.
+The main ERP modules are: Warehouse Management, Project Management,
+Billing AND Accounting, Point of Sale, Human Resources, Manufacturing,
+Purchase Management, Sale Management and other modules.
 
-**Odoo** is a complete suite of enterprise management applications, supported and provided by an active global community and a network of 500 official partners.
 
-[Original readme](README)
-
+[![it](https://github.com/zeroincombenze/grymb/blob/master/flags/it_IT.png)](https://www.facebook.com/groups/openerp.italia/)
 
 [![it](http://www.shs-av.com/wp-content/it_IT.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
 
-Odoo (già OpenERP)
-==================
+Odoo 6.1 (già OpenERP)
+======================
 
-**Odoo** è il software gestionale ERP open source su cui si basa il progetto **zeroincombenze®**. Prima di maggio 2014 è si chiamava Odoo e in precedenza tinyERP.
+Odoo è una suite di prodotti web open-source.
 
-**Odoo** è una suite di prodotti software, attivamente supportato dalla Community internazionale (OCA) e dalla Community Italiana per la localizzazione, che permette di gestire tutte le funzionalità di un ERP, un CRM e dalla 8.0 anche un e-Commerce.
+Le principali applicazioni di Odoo includo un Open Source CRM e Enterprise Resource Planning.
+I principali moduli ERP sono: gestione Magazzino, gestione Progetti,
+Contabilità e Fatturazione, Punto vendite, Dipendenti, Produzione,
+gestione Acquisti, gestione vendite e molto altro ancora.
 
-Il software è open source ed è rilasciato secondo i termini della GNU Lesser General Public License.
+Distribuzione Odoo 7.0:
 
+nome | descrizione | licenza | localizzazione italiana | note
+--- | --- | --- | --- | ---
+[Odoo](https://github.com/odoo/odoo/tree/7.0) | Odoo nativo | A-GPL | Non disponibile | Fuori assistenza
+[OCA](https://github.com/OCA/OCB/tree/7.0) | Distributione OCA | A-GPL | Norme fiscali < 2017 | Da 2018 non aggiornato
+[OIA](https://github.com/Odoo-Italia-Associazione/l10n-italy/tree/7.0) | Odoo Italia Associazione | A-GPL | Norme fiscali 2018 | Supportato da associazione
+[Zeroincombenze](https://github.com/zeroincombenze/OCB/tree/7.0) | Zeroincombenze | A-GPL | Norme fiscali 2018 | Supportato da SHS-AV s.r.l.
 
 [//]: # (copyright)
 

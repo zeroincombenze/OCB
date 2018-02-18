@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #
 # Copyright P. Christeas <p_christ@hol.gr> 2008-2010
-# Copyright 2010 OpenERP SA. (http://www.openerp.com)
+# Copyright 2010 Odoo SA. (http://www.odoo.com)
 #
 #
 # WARNING: This program as such is intended to be used by professional
@@ -32,7 +32,7 @@
     class/functionality, but a set of network stack layers, implementing
     extendable HTTP protocols.
 
-    The OpenERP server defines a single instance of a HTTP server, listening at
+    The Odoo server defines a single instance of a HTTP server, listening at
     the standard 8069, 8071 ports (well, it is 2 servers, and ports are 
     configurable, of course). This "single" server then uses a `MultiHTTPHandler`
     to dispatch requests to the appropriate channel protocol, like the XML-RPC,

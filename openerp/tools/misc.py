@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    OpenERP, Open Source Management Solution
+#    Odoo, Open Source Management Solution
 #    Copyright (C) 2004-2009 Tiny SPRL (<http://tiny.be>).
-#    Copyright (C) 2010-2013 OpenERP s.a. (<http://openerp.com>).
+#    Copyright (C) 2010-2013 Odoo s.a. (<http://odoo.com>).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -23,7 +23,7 @@
 #.apidoc title: Utilities: tools.misc
 
 """
-Miscellaneous tools used by OpenERP.
+Miscellaneous tools used by Odoo.
 """
 
 from functools import wraps
@@ -118,7 +118,7 @@ def exec_command_pipe(name, *args):
 #file_path_addons = os.path.join(file_path_root, 'addons')
 
 def file_open(name, mode="r", subdir='addons', pathinfo=False):
-    """Open a file from the OpenERP root, using a subdir folder.
+    """Open a file from the Odoo root, using a subdir folder.
 
     Example::
     
@@ -150,7 +150,7 @@ def file_open(name, mode="r", subdir='addons', pathinfo=False):
                 name = name[len(base) + 1:]
                 break
         else:
-            # It is outside the OpenERP root: skip zipfile lookup.
+            # It is outside the Odoo root: skip zipfile lookup.
             base, name = os.path.split(name)
         return _fileopen(name, mode=mode, basedir=base, pathinfo=pathinfo, basename=basename)
 
@@ -514,7 +514,7 @@ ALL_LANGUAGES = {
     }
 
 def scan_languages():
-    """ Returns all languages supported by OpenERP for translation
+    """ Returns all languages supported by Odoo for translation
 
     :returns: a list of (lang_code, lang_name) pairs
     :rtype: [(str, unicode)]
@@ -753,7 +753,7 @@ def detect_server_timezone():
     # Option 1: the configuration option (did not exist before, so no backwards compatibility issue)
     # Option 2: to be backwards compatible with 5.0 or earlier, the value from time.tzname[0], but only if it is known to pytz
     # Option 3: the environment variable TZ
-    sources = [ (config['timezone'], 'OpenERP configuration'),
+    sources = [ (config['timezone'], 'Odoo configuration'),
                 (time.tzname[0], 'time.tzname'),
                 (os.environ.get('TZ',False),'TZ environment variable'), ]
     # Option 4: OS-specific: /etc/timezone on Unix
@@ -917,7 +917,7 @@ class upload_data_thread(threading.Thread):
         try:
             import urllib
             args = urllib.urlencode(self.args)
-            fp = urllib.urlopen('http://www.openerp.com/scripts/survey.php', args)
+            fp = urllib.urlopen('http://www.odoo.com/scripts/survey.php', args)
             fp.read()
             fp.close()
         except Exception:
@@ -984,7 +984,7 @@ class UnquoteEvalContext(defaultdict):
     """Defaultdict-based evaluation context that returns 
        an ``unquote`` string for any missing name used during
        the evaluation.
-       Mostly useful for evaluating OpenERP domains/contexts that
+       Mostly useful for evaluating Odoo domains/contexts that
        may refer to names that are unknown at the time of eval,
        so that when the context/domain is converted back to a string,
        the original names are preserved.

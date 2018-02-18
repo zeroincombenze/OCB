@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2004-TODAY OpenERP S.A. <http://www.openerp.com>
+#    Odoo, Open Source Management Solution
+#    Copyright (C) 2004-TODAY Odoo S.A. <http://www.odoo.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -34,8 +34,8 @@ version_info = (7, 0, 0, FINAL, 0)
 version = '.'.join(map(str, version_info[:2])) + RELEASE_LEVELS_DISPLAY[version_info[3]] + str(version_info[4] or '')
 serie = major_version = '.'.join(map(str, version_info[:2]))
 
-description = 'OpenERP Server'
-long_desc = '''OpenERP is a complete ERP and CRM. The main features are accounting (analytic
+description = 'Odoo Server'
+long_desc = '''Odoo is a complete ERP and CRM. The main features are accounting (analytic
 and financial), stock management, sales and purchases management, tasks
 automation, marketing campaigns, help desk, POS, etc. Technical features include
 a distributed server, flexible workflows, an object database, a dynamic GUI,
@@ -45,11 +45,11 @@ classifiers = """Development Status :: 5 - Production/Stable
 License :: OSI Approved :: GNU Affero General Public License v3
 Programming Language :: Python
 """
-url = 'http://www.openerp.com'
-author = 'OpenERP S.A.'
-author_email = 'info@openerp.com'
+url = 'http://www.odoo.com'
+author = 'Odoo S.A.'
+author_email = 'info@odoo.com'
 license = 'AGPL-3'
 
-nt_service_name = "openerp-server-" + serie
+nt_service_name = "odoo-server-" + serie
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

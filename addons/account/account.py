@@ -962,11 +962,16 @@ class account_fiscalyear(osv.osv):
         if not dt:
             dt = fields.date.context_today(self,cr,uid,context=context)
         args = [('date_start', '<=' ,dt), ('date_stop', '>=', dt)]
+        # [antoniov 2018-02-05] avoid login error!
+        # if context.get('company_id', False):
+        #     company_id = context['company_id']
+        # else:
+        #     company_id = self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.id
+        # args.append(('company_id', '=', company_id))
         if context.get('company_id', False):
             company_id = context['company_id']
-        else:
-            company_id = self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.id
-        args.append(('company_id', '=', company_id))
+            args.append(('company_id', '=', company_id))
+        # [/antoniov]
         ids = self.search(cr, uid, args, context=context)
         if not ids:
             if exception:
@@ -1049,11 +1054,12 @@ class account_period(osv.osv):
         if not dt:
             dt = fields.date.context_today(self, cr, uid, context=context)
         args = [('date_start', '<=' ,dt), ('date_stop', '>=', dt)]
+        # [antoniov 2018-02-05] avoid login error!
         if context.get('company_id', False):
             args.append(('company_id', '=', context['company_id']))
-        else:
-            company_id = self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.id
-            args.append(('company_id', '=', company_id))
+        # else:
+        #     company_id = self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.id
+        #     args.append(('company_id', '=', company_id))
         result = []
         #WARNING: in next version the default value for account_periof_prefer_normal will be True
         if context.get('account_period_prefer_normal'):

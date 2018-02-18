@@ -94,10 +94,9 @@ class TransactionCase(BaseCase):
         TransactionCase.cr = self.cursor()
         TransactionCase.uid = openerp.SUPERUSER_ID
 
-        @self.addCleanup
-        def close_cursor():
-            self.cr.rollback()
-            self.cr.close()
+    def tearDown(self):
+        self.cr.rollback()
+        self.cr.close()
 
 
 class SingleTransactionCase(BaseCase):

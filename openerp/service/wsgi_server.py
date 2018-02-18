@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2011-2012 OpenERP s.a. (<http://openerp.com>).
+#    Odoo, Open Source Management Solution
+#    Copyright (C) 2011-2012 Odoo s.a. (<http://odoo.com>).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -72,7 +72,7 @@ def xmlrpc_return(start_response, service, method, params, legacy_exceptions=Fal
     This is the place to look at to see the mapping between core exceptions
     and XML-RPC fault codes.
     """
-    # Map OpenERP core exceptions to XML-RPC fault codes. Specific exceptions
+    # Map Odoo core exceptions to XML-RPC fault codes. Specific exceptions
     # defined in ``openerp.exceptions`` are mapped to specific fault codes;
     # all the other exceptions are mapped to the generic
     # RPC_FAULT_CODE_APPLICATION_ERROR value.
@@ -163,7 +163,7 @@ def xmlrpc_handle_exception_legacy(e):
     return response
 
 def wsgi_xmlrpc_1(environ, start_response):
-    """ The main OpenERP WSGI handler."""
+    """ The main Odoo WSGI handler."""
     if environ['REQUEST_METHOD'] == 'POST' and environ['PATH_INFO'].startswith(XML_RPC_PATH_1):
         length = int(environ['CONTENT_LENGTH'])
         data = environ['wsgi.input'].read(length)
@@ -400,8 +400,8 @@ def register_wsgi_handler(handler):
 def application_unproxied(environ, start_response):
     """ WSGI entry point."""
     # cleanup db/uid trackers - they're set at HTTP dispatch in
-    # web.session.OpenERPSession.send() and at RPC dispatch in
-    # openerp.service.web_services.objects_proxy.dispatch().
+    # web.session.OdooSession.send() and at RPC dispatch in
+    # odoo.service.web_services.objects_proxy.dispatch().
     # /!\ The cleanup cannot be done at the end of this `application`
     # method because werkzeug still produces relevant logging afterwards 
     if hasattr(threading.current_thread(), 'uid'):
