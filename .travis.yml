@@ -49,6 +49,7 @@ install:
 
 script:
   - SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}
+  - [ -d ${HOME}/${ODOO_REPO#*/}-${VERSION}/server ] && SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}/server
   - export TRAVIS_BUILD_DIR=${SERVER_PATH}/openerp/addons
   - travis_run_tests
 
