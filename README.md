@@ -2,7 +2,6 @@
 [![license agpl](https://img.shields.io/badge/licence-AGPL--3-blue.svg)](http://www.gnu.org/licenses/agpl-3.0.html)
 [![Coverage Status](https://coveralls.io/repos/github/zeroincombenze/OCB/badge.svg?branch=6.1)](https://coveralls.io/github/zeroincombenze/OCB?branch=6.1)
 [![codecov](https://codecov.io/gh/zeroincombenze/OCB/branch/6.1/graph/badge.svg)](https://codecov.io/gh/zeroincombenze/OCB/branch/6.1)
-[![OCA_project](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-6.svg)](https://github.com/OCA/OCB/tree/6.1)
 [![Tech Doc](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-6.svg)](http://wiki.zeroincombenze.org/en/Odoo/6.1/dev)
 [![Help](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-6.svg)](http://wiki.zeroincombenze.org/en/Odoo/6.1/man/)
 [![try it](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-6.svg)](http://erp6.zeroincombenze.it)
@@ -28,11 +27,12 @@ Odoo 6.1
 Odoo è una suite di prodotti web open-source.
 
 Le principali applicazioni di Odoo includo un Open Source CRM e Enterprise Resource Planning.
-I principali moduli ERP sno: gestione Magazzino, gestione Progetti,
+I principali moduli ERP sono: gestione Magazzino, gestione Progetti,
 Contabilità e Fatturazione, Punto vendite, Dipendenti, Produzione,
 gestione Acquisti, gestione vendite e molto altro ancora.
 
 Distribuzione Odoo 6.1:
+
 nome | descrizione | licenza | localizzazione italiana | note
 --- | --- | --- | --- | ---
 Distribuzione Odoo 6.1:
