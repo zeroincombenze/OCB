@@ -8,8 +8,8 @@
 
 [![en](https://github.com/zeroincombenze/grymb/blob/master/flags/en_US.png)](https://www.facebook.com/groups/openerp.italia/)
 
-Odoo 6.1
-========
+Odoo 6.1 (formerly OpenERP)
+===========================
 
 Odoo is a suite of web based open source business apps.
 
@@ -21,8 +21,8 @@ Purchase Management, Sale Management and other modules.
 
 [![it](https://github.com/zeroincombenze/grymb/blob/master/flags/it_IT.png)](https://www.facebook.com/groups/openerp.italia/)
 
-Odoo 6.1
-========
+Odoo 6.1 (già OpenERP)
+======================
 
 Odoo è una suite di prodotti web open-source.
 
@@ -33,9 +33,6 @@ gestione Acquisti, gestione vendite e molto altro ancora.
 
 Distribuzione Odoo 6.1:
 
-nome | descrizione | licenza | localizzazione italiana | note
---- | --- | --- | --- | ---
-Distribuzione Odoo 6.1:
 nome | descrizione | licenza | localizzazione italiana | note
 --- | --- | --- | --- | ---
 [Odoo](https://github.com/odoo/odoo/tree/6.1) | Odoo nativo | A-GPL | Non disponibile | Fuori assistenza
