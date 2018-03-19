@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2004-TODAY OpenERP S.A. <http://www.openerp.com>
+#    Odoo, Open Source Management Solution
+#    Copyright (C) 2004-TODAY Odoo S.A. <http://www.odoo.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -47,7 +47,7 @@ License :: OSI Approved :: GNU Affero General Public License v3
 Programming Language :: Python
 """
 url = 'https://www.odoo.com'
-author = 'OpenERP S.A.'
+author = 'Odoo S.A.'
 author_email = 'info@odoo.com'
 license = 'AGPL-3'
 
