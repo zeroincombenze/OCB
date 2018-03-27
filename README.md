@@ -22,9 +22,7 @@ Purchase Management, Sale Management and other modules.
 
 [![it](https://github.com/zeroincombenze/grymb/blob/master/flags/it_IT.png)](https://www.facebook.com/groups/openerp.italia/)
 
-[![it](http://www.shs-av.com/wp-content/it_IT.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
-
-Odoo 6.1 (già OpenERP)
+Odoo 7.0 (già OpenERP)
 ======================
 
 Odoo è una suite di prodotti web open-source.
@@ -41,7 +39,7 @@ nome | descrizione | licenza | localizzazione italiana | note
 [Odoo](https://github.com/odoo/odoo/tree/7.0) | Odoo nativo | A-GPL | Non disponibile | Fuori assistenza
 [OCA](https://github.com/OCA/OCB/tree/7.0) | Distributione OCA | A-GPL | Norme fiscali < 2017 | Da 2018 non aggiornato
 [OIA](https://github.com/Odoo-Italia-Associazione/l10n-italy/tree/7.0) | Odoo Italia Associazione | A-GPL | Norme fiscali 2018 | Supportato da associazione
-[Zeroincombenze](https://github.com/zeroincombenze/OCB/tree/7.0) | Zeroincombenze | A-GPL | Norme fiscali 2018 | Supportato da SHS-AV s.r.l.
+[Zeroincombenze](https://github.com/zeroincombenze/OCB/tree/7.0) | Zeroincombenze® | A-GPL | Norme fiscali 2018 | Supportato da SHS-AV s.r.l.
 
 [//]: # (copyright)
 

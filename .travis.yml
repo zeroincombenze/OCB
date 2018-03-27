@@ -1,6 +1,9 @@
+language: python
 sudo: false
-
 cache: pip
+
+python:
+  - "2.7"
 
 git:
   submodules: false
@@ -10,23 +13,12 @@ addons:
     sources:
       - pov-wkhtmltopdf
     packages:
-      - expect-dev  # provides unbuffer utility
-      - python-lxml # because pip installation is slow
+      - expect-dev
+      - python-lxml
       - poppler-utils # document index
       - antiword # document index
       - python-ldap # auth_ldap
       - wkhtmltopdf # report_webkit
-
-language: python
-
-python:
-  - "2.7"
-
-env:
-  - VERSION="7.0" ODOO_REPO="OCA/OCB" LINT_CHECK="0"
-
-virtualenv:
-  system_site_packages: true
 
 before_install:
   - "export DISPLAY=:99.0"
@@ -44,8 +36,13 @@ install:
   - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/openerp/addons ${HOME}/build/${ODOO_REPO}/addons)
     # tests of document_ftp and delivery fail. The following two are excluded because they depend on delivery
   - export EXCLUDE=hw_scanner,hw_escpos,document_ftp,delivery,stock_invoice_directly,claim_from_delivery
-  - export INSTALL_OPTIONS="--without-demo=account"
   - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
+
+env:
+  - VERSION="7.0" ODOO_REPO="zeroincombenze/OCB" LINT_CHECK="0"
+
+virtualenv:
+  system_site_packages: true
 
 script:
   - SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}
@@ -55,4 +52,3 @@ script:
 
 after_success:
   - travis_after_tests_success
-
