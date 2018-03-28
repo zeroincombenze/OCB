@@ -26,8 +26,7 @@ before_install:
   - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --depth=1
   - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
   - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
-  - pwd
-  - dir -lh $PWD
+  - pip install -q os0 z0lib
   - ${HOME}/tools/clodoo/manage_odoo requirements -b'.' -vsy
 
 
