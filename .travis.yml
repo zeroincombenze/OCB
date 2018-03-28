@@ -29,13 +29,12 @@ before_install:
   - pip install -q os0 z0lib
   - ${HOME}/tools/clodoo/manage_odoo requirements -b'.' -vsy -Ozero
 
-
 install:
   - ln -s ${HOME}/build/${ODOO_REPO} ${HOME}/${ODOO_REPO#*/}-${VERSION}
   # - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git ${HOME}/maintainer-quality-tools
   - pip install -r ${HOME}/maintainer-quality-tools/requirements.txt
   # - pip install -q QUnitSuite flake8 coveralls pylint
-  - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
+  # - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
   - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/openerp/addons ${HOME}/build/${ODOO_REPO}/addons)
   - export EXCLUDE=hw_scanner,hw_escpos
   - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
