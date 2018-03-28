@@ -26,17 +26,20 @@ before_install:
   - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --depth=1
   - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
   - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
+  - pwd
+  - dir -lh $PWD
+  - ${HOME}/tools/clodoo/manage_odoo requirements -b'.' -vsy
+
 
 install:
   - ln -s ${HOME}/build/${ODOO_REPO} ${HOME}/${ODOO_REPO#*/}-${VERSION}
   # - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git ${HOME}/maintainer-quality-tools
   - pip install -r ${HOME}/maintainer-quality-tools/requirements.txt
-  - pip install -q QUnitSuite flake8 coveralls pylint
+  # - pip install -q QUnitSuite flake8 coveralls pylint
   - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
   - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/openerp/addons ${HOME}/build/${ODOO_REPO}/addons)
   - export EXCLUDE=hw_scanner,hw_escpos
   - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
-  - pip install pytz
 
 env:
   - VERSION="8.0" ODOO_REPO="zeroincombenze/OCB" LINT_CHECK="0"
