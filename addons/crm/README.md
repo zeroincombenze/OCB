@@ -1,14 +1,17 @@
-[![Build Status](https://travis-ci.org/zeroincombenze/crm.svg?branch=10.0)](https://travis-ci.org/zeroincombenze/crm)
+[![Build Status](https://travis-ci.org/zeroincombenze/addons.svg?branch=10.0)](https://travis-ci.org/zeroincombenze/addons)
 [![license agpl](https://img.shields.io/badge/licence-AGPL--3-blue.svg)](http://www.gnu.org/licenses/agpl-3.0.html)
-[![Coverage Status](https://coveralls.io/repos/github/zeroincombenze/crm/badge.svg?branch=10.0)](https://coveralls.io/github/zeroincombenze/crm?branch=10.0)
-[![codecov](https://codecov.io/gh/zeroincombenze/crm/branch/10.0/graph/badge.svg)](https://codecov.io/gh/zeroincombenze/crm/branch/10.0)
-[![OCA_project](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-10.svg)](https://github.com/OCA/crm/tree/10.0)
-[![Tech Doc](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-10.svg)](http://wiki.zeroincombenze.org/en/Odoo/dev/10.0)
-[![Help](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-10.svg)](http://wiki.zeroincombenze.org/en/Odoo/10.0/)
+[![Coverage Status](https://coveralls.io/repos/github/zeroincombenze/addons/badge.svg?branch=10.0)](https://coveralls.io/github/zeroincombenze/addons?branch=10.0)
+[![codecov](https://codecov.io/gh/zeroincombenze/addons/branch/10.0/graph/badge.svg)](https://codecov.io/gh/zeroincombenze/addons/branch/10.0)
+[![OCA_project](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-10.svg)](https://github.com/OCA/addons/tree/10.0)
+[![Tech Doc](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-10.svg)](http://wiki.zeroincombenze.org/en/Odoo/10.0/dev)
+[![Help](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-10.svg)](http://wiki.zeroincombenze.org/en/Odoo/10.0/man/)
 [![try it](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-10.svg)](http://erp10.zeroincombenze.it)
 
+
+[![en](http://www.shs-av.com/wp-content/en_US.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
+
 Odoo CRM
---------
+========
 
 Boost sales productivity, improve win rates, grow revenue with the Odoo
 <a href="https://www.odoo.com/page/crm">Open Source CRM</a>.
@@ -18,14 +21,12 @@ calls and meetings. Analyse the quality of your leads to make informed
 decisions and save time by integrating emails directly into the application.
 
 Your Sales Funnel, The Way You Like It
---------------------------------------
 
 Track your opportunities pipeline with the revolutionary kanban view. Work
 inside your sales funnel and get instant visual information about next actions,
 new messages, top opportunities and expected revenues.
 
 Lead Management Made Easy
--------------------------
 
 Create leads automatically from incoming emails. Analyse leads efficiency and
 compare performance by campaigns, channels or sales team.
@@ -34,7 +35,6 @@ Find duplicates, merge leads and assign them to the right salesperson in one
 operation. Spend less time on administration and more time on qualifying leads.
 
 Organize Your Opportunities
----------------------------
 
 Get your opportunities organized to stay focused on the best deals. Manage all
 your customer interactions from the opportunity like emails, phone calls,
@@ -44,7 +44,6 @@ Follow opportunities that interest you to get notified upon specific events:
 deal won or lost, stage changed, new customer demand, etc.
 
 Email Integration and Automation
---------------------------------
 
 Work with the email applications you already use every day. Whether your
 company uses Microsoft Outlook or Gmail, no one needs to change the way they
@@ -55,14 +54,12 @@ emails and route them to the right opportunities or sales team. New leads are
 created on the fly and interested salespersons are notified automatically.
 
 Collaborative Agenda
---------------------
 
 Schedule your meetings and phone calls using the integrated calendar. You can
 see your agenda and your colleagues' in one view. As a manager, it's easy to
 see what your team is busy with.
 
 Lead Automation and Marketing Campaigns
----------------------------------------
 
 Drive performance by automating tasks with Odoo <a href="https://www.odoo.com/page/crm">CRM</a>.
 
@@ -76,14 +73,12 @@ about where to invest and show the impact of your marketing activities on your
 company's bottom line.
 
 Customize Your Sales Cycle
---------------------------
 
 Customize your sales cycle by configuring sales stages that perfectly fit your
 sales approach. Control statistics to get accurate forecasts to improve your
 sales performance at every stage of your customer relationship.
 
 Drive Engagement with Gamification
-----------------------------------
 
 ### Leverage your team's natural desire for competition
 
@@ -121,5 +116,9 @@ is mainly designed for Italian law and markeplace.
 Everytime, every Odoo DB and customized code can be deployed on local server too.
 
 [//]: # (end copyright)
+
+[//]: # (addons)
+
+[//]: # (end addons)
 
 [![chat with us](https://www.shs-av.com/wp-content/chat_with_us.gif)](https://tawk.to/85d4f6e06e68dd4e358797643fe5ee67540e408b)

@@ -1,42 +1,48 @@
+language: python
+sudo: false
 cache: pip
+
+python:
+  - "2.7"
+
+git:
+  submodules: false
 
 addons:
   apt:
     sources:
       - pov-wkhtmltopdf
     packages:
-      - expect-dev  # provides unbuffer utility
-      - python-lxml # because pip installation is slow
+      - expect-dev
+      - python-lxml
       - poppler-utils # document index
       - antiword # document index
       - python-ldap # auth_ldap
       - wkhtmltopdf # report_webkit
 
-language: python
-sudo: false
-
-python:
-  - "2.7"
-
-env:
-  - VERSION="10.0" ODOO_REPO="OCA/OCB" LINT_CHECK="0"
-
-virtualenv:
-  system_site_packages: true
-
 before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
+  - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --depth=1
+  - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
+  - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
 
 install:
   - ln -s ${HOME}/build/${ODOO_REPO} ${HOME}/${ODOO_REPO#*/}-${VERSION}
-  - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git ${HOME}/maintainer-quality-tools
+  # - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git ${HOME}/maintainer-quality-tools
   - pip install -r ${HOME}/maintainer-quality-tools/travis/requirements.txt
   - pip install -q QUnitSuite flake8 coveralls pylint
-  - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
+  # - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
   - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/odoo/addons ${HOME}/build/${ODOO_REPO}/addons)
   - export EXCLUDE=hw_scanner,hw_escpos
   - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
+  - pip install pytz
+
+env:
+  - VERSION="10.0" ODOO_REPO="zeroincombenze/OCB" LINT_CHECK="0"
+
+virtualenv:
+  system_site_packages: true
 
 script:
   - SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}
@@ -45,4 +51,3 @@ script:
 
 after_success:
   - travis_after_tests_success
-

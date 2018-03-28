@@ -1,12 +1,23 @@
+[![Build Status](https://travis-ci.org/zeroincombenze/addons.svg?branch=10.0)](https://travis-ci.org/zeroincombenze/addons)
+[![license agpl](https://img.shields.io/badge/licence-AGPL--3-blue.svg)](http://www.gnu.org/licenses/agpl-3.0.html)
+[![Coverage Status](https://coveralls.io/repos/github/zeroincombenze/addons/badge.svg?branch=10.0)](https://coveralls.io/github/zeroincombenze/addons?branch=10.0)
+[![codecov](https://codecov.io/gh/zeroincombenze/addons/branch/10.0/graph/badge.svg)](https://codecov.io/gh/zeroincombenze/addons/branch/10.0)
+[![OCA_project](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-10.svg)](https://github.com/OCA/addons/tree/10.0)
+[![Tech Doc](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-10.svg)](http://wiki.zeroincombenze.org/en/Odoo/10.0/dev)
+[![Help](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-10.svg)](http://wiki.zeroincombenze.org/en/Odoo/10.0/man/)
+[![try it](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-10.svg)](http://erp10.zeroincombenze.it)
+
+
+[![en](http://www.shs-av.com/wp-content/en_US.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
+
 Organize Events, Trainings & Webinars
--------------------------------------
+=====================================
 
 ### Schedule, Promote, Sell, Organize
 
 Organize, promote and sell events online. Whether you organize meetings, conferences, trainings or webinars, Odoo gives you all the features you need to manage your events.
 
 Create Awesome Event Pages
---------------------------
 
 ### Get rid of old WYSIWYG editors
 
@@ -15,7 +26,6 @@ Create beautiful event pages by drag & droping well designed *'Building Blocks'*
 Odoo's unique *'edit inline'* approach makes website creation surprisingly easy. "Want to introduce a speaker? to change the price of a ticket? to update a banner? promote sponsors?" just click and change.
 
 Sell Tickets Online
--------------------
 
 ### Automate the registration and payment process
 
@@ -24,7 +34,6 @@ Sell registrations to your event with the multi-ticketing feature. Events can be
 Boost your sales with early-bird prices, special conditions for members, or extra services with multiple tickets.
 
 A Clean Google Analytics Integration
-------------------------------------
 
 ### Control your sales funnel with Google Analytics
 
@@ -33,14 +42,12 @@ Get a clear visibility of your sales funnel. Odoo's Google Analytics trackers ar
 As Odoo marketing tools (mass mailing, campaigns, etc) are also linked with Google Analytics, you get a full view of your business.
 
 Promote Events Efficiently
---------------------------
 
 ### Mass Mailing & Social Media
 
 Use the segmentation, the social network integration and mass mailing features to promote your events to the right audience. Setup automated emails to attendees to send them last minute details.
 
 Designer-Friendly Themes
-------------------------
 
 ### Designers love working on Odoo
 
@@ -49,7 +56,6 @@ Themes are awesome and easy to design. You don't need to develop to create new p
 The building block approach allows the website to stay clean after the end-users start creating new contents.
 
 Make Your Event More Visible
-----------------------------
 
 ### SEO tools at your finger tips
 
@@ -58,14 +64,12 @@ SEO tools are ready to use, with no configuration required. Odoo suggests keywor
 We even do structured content automatically to promote your events and products efficiently in Google.
 
 Leverage Social Media
----------------------
 
 ### Optimize: from Ads to Conversions
 
 Create new landing pages easily with the Odoo inline edition feature. Send visitors of your different marketing campaigns to event landing pages to optimize conversions.
 
 And Much More...
-----------------
 
 ### Schedule
 
@@ -95,7 +99,6 @@ And Much More...
 -   Automate statisfaction surveys
 
 Fully Integrated With Others Apps
----------------------------------
 
 ### Get hundreds of open source apps for free
 
@@ -113,3 +116,27 @@ Write news, attract new visitors, build customer loyalty.
 ### Our Team
 
 Create a great "About us" page by presenting your team efficiently.
+
+[//]: # (copyright)
+
+----
+
+**Odoo** is a trademark of [Odoo S.A.](https://www.odoo.com/) (formerly OpenERP, formerly TinyERP)
+
+**OCA**, or the [Odoo Community Association](http://odoo-community.org/), is a nonprofit organization whose
+mission is to support the collaborative development of Odoo features and
+promote its widespread use.
+
+**zeroincombenze®** is a trademark of [SHS-AV s.r.l.](http://www.shs-av.com/)
+which distributes and promotes **Odoo** ready-to-use on its own cloud infrastructure.
+[Zeroincombenze® distribution](http://wiki.zeroincombenze.org/en/Odoo)
+is mainly designed for Italian law and markeplace.
+Everytime, every Odoo DB and customized code can be deployed on local server too.
+
+[//]: # (end copyright)
+
+[//]: # (addons)
+
+[//]: # (end addons)
+
+[![chat with us](https://www.shs-av.com/wp-content/chat_with_us.gif)](https://tawk.to/85d4f6e06e68dd4e358797643fe5ee67540e408b)

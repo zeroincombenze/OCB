@@ -637,4 +637,6 @@ class LessStylesheetAsset(PreprocessedCSS):
         except IOError:
             lessc = 'lessc'
         lesspath = get_resource_path('web', 'static', 'lib', 'bootstrap', 'less')
-        return [lessc, '-', '--no-js', '--no-color', '--include-path=%s' % lesspath]
+        # [antoniov: 2018-01-03] lessc error
+        # return [lessc, '-', '--no-js', '--no-color', '--include-path=%s' % lesspath]
+        return [lessc, '-', '--no-color', '--include-path=%s' % lesspath]

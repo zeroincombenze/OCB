@@ -1,5 +1,17 @@
+[![Build Status](https://travis-ci.org/zeroincombenze/addons.svg?branch=10.0)](https://travis-ci.org/zeroincombenze/addons)
+[![license agpl](https://img.shields.io/badge/licence-AGPL--3-blue.svg)](http://www.gnu.org/licenses/agpl-3.0.html)
+[![Coverage Status](https://coveralls.io/repos/github/zeroincombenze/addons/badge.svg?branch=10.0)](https://coveralls.io/github/zeroincombenze/addons?branch=10.0)
+[![codecov](https://codecov.io/gh/zeroincombenze/addons/branch/10.0/graph/badge.svg)](https://codecov.io/gh/zeroincombenze/addons/branch/10.0)
+[![OCA_project](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-10.svg)](https://github.com/OCA/addons/tree/10.0)
+[![Tech Doc](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-10.svg)](http://wiki.zeroincombenze.org/en/Odoo/10.0/dev)
+[![Help](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-10.svg)](http://wiki.zeroincombenze.org/en/Odoo/10.0/man/SD)
+[![try it](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-10.svg)](http://erp10.zeroincombenze.it)
+
+
+[![en](http://www.shs-av.com/wp-content/en_US.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
+
 Odoo e-Commerce
----------------
+===============
 
 ### Optimize sales with an awesome online store.
 
@@ -11,7 +23,6 @@ It's full-featured, integrated with your management software, fully
 customizable and super easy.
 
 Create Awesome Product Pages
-----------------------------
 
 Odoo's unique *'edit inline'* and building blocks approach makes product pages
 creation surprisingly easy. "Want to change the price of a product? or put it
@@ -22,7 +33,6 @@ Drag & Drop well designed *'Building Blocks'* to create beautifull product
 pages that your customer will love.
 
 Increase Your Revenue Per Order
--------------------------------
 
 The built-in cross-selling feature helps you offer extra products related to
 what the shopper put in his cart. (e.g. accessories)
@@ -34,7 +44,6 @@ The inline editing feature allows you to easily change a price, launch a
 promotion or fine tune the description of a product, in a just a click.
 
 A Clean Google Analytics Integration
-------------------------------------
 
 Get a clear visibility of your sales funnel. Odoo's Google Analytics trackers
 are configured by default to track all kind of events related to shopping
@@ -44,7 +53,6 @@ As Odoo marketing tools (mass mailing, campaigns, etc) are also linked with
 Google Analytics, you get a complete view of your business.
 
 Target New Markets
-------------------
 
 Get your website translated in multiple languages with no effort. Odoo proposes
 and propagates translations automatically across pages.
@@ -55,7 +63,6 @@ of your website (a new blog post, a page modification, product descriptions,
 ...) and the translated versions are updated automatically in around 32 hours.
 
 Fine Tune Your Catalog
-----------------------
 
 Get a full control on how you display your products in the catalog page:
 promotional ribbons, related sized of products, discounts, variants, grid/list
@@ -64,7 +71,6 @@ view, etc.
 Edit any product inline to make your website evolve with your customer need.
 
 Acquire New Customers
----------------------
 
 SEO tools are ready to use, with no configuration required. Odoo suggests
 keywords according to Google most searched terms, Google Analytics tracks your
@@ -75,14 +81,12 @@ We even do structured content automatically to promote your product and events
 efficiently in Google.
 
 Leverage Social Media
----------------------
 
 Create new landing pages easily with the Odoo inline edition feature. Send
 visitors of your different marketing campaigns to specific landing pages to
 optimize conversions.
 
 Manage a Reseller Network
--------------------------
 
 Manage a reseller network to target new market, have local presences or broaden
 your distribution. Give them access to your reseller portal for an efficient
@@ -101,7 +105,6 @@ You don't need to interface with your warehouse, sales or accounting software.
 Everything is integrated with Odoo. No pain, real time.
 
 A Clean Checkout Process
-------------------------
 
 Convert most visitor interests into real orders with a clean checkout process
 with a minimal number of steps and a great useability on every page.
@@ -110,7 +113,6 @@ Customize your checkout process to fit your business needs: payment modes,
 delivery methods, cross-selling, special conditions, etc.
 
 And much more...
-----------------
 
 ### Online Sales
 
@@ -138,7 +140,6 @@ And much more...
 -   Persistent shopping cart
 
 Fully Integrated With Other Apps
---------------------------------
 
 ### CMS
 
@@ -152,3 +153,26 @@ Write news, attract new visitors, build customer loyalty.
 
 Schedule, organize, promote or sell events online; conferences, webinars, trainings, etc.
 
+[//]: # (copyright)
+
+----
+
+**Odoo** is a trademark of [Odoo S.A.](https://www.odoo.com/) (formerly OpenERP, formerly TinyERP)
+
+**OCA**, or the [Odoo Community Association](http://odoo-community.org/), is a nonprofit organization whose
+mission is to support the collaborative development of Odoo features and
+promote its widespread use.
+
+**zeroincombenze®** is a trademark of [SHS-AV s.r.l.](http://www.shs-av.com/)
+which distributes and promotes **Odoo** ready-to-use on its own cloud infrastructure.
+[Zeroincombenze® distribution](http://wiki.zeroincombenze.org/en/Odoo)
+is mainly designed for Italian law and markeplace.
+Everytime, every Odoo DB and customized code can be deployed on local server too.
+
+[//]: # (end copyright)
+
+[//]: # (addons)
+
+[//]: # (end addons)
+
+[![chat with us](https://www.shs-av.com/wp-content/chat_with_us.gif)](https://tawk.to/85d4f6e06e68dd4e358797643fe5ee67540e408b)
