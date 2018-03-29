@@ -1,9 +1,4 @@
-language: python
-sudo: false
 cache: pip
-
-python:
-  - "2.7"
 
 git:
   submodules: false
@@ -13,11 +8,24 @@ addons:
     sources:
       - pov-wkhtmltopdf
     packages:
-      - expect-dev
-      - python-lxml
+      - expect-dev  # provides unbuffer utility
+      - python-lxml # because pip installation is slow
       - poppler-utils # document index
       - antiword # document index
+      - python-ldap # auth_ldap
       - wkhtmltopdf # report_webkit
+
+language: python
+sudo: false
+
+python:
+  - "2.7"
+
+env:
+  - VERSION="7.0" ODOO_REPO="OCA/OCB" LINT_CHECK="0" EXTRA_EXCLUDE="theme_bootswatch"
+
+virtualenv:
+  system_site_packages: true
 
 before_install:
   - "export DISPLAY=:99.0"
@@ -30,21 +38,16 @@ before_install:
 
 install:
   - ln -s ${HOME}/build/${ODOO_REPO} ${HOME}/${ODOO_REPO#*/}-${VERSION}
-  - pip install -r ${HOME}/maintainer-quality-tools/requirements.txt
+  # - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git ${HOME}/maintainer-quality-tools
+  - ln -s `which nodejs` $HOME/maintainer-quality-tools/travis/node
+  - npm install less less-plugin-clean-css
+  # - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
   - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/openerp/addons ${HOME}/build/${ODOO_REPO}/addons)
-    # tests of document_ftp and delivery fail. The following two are excluded because they depend on delivery
-  - export EXCLUDE=hw_scanner,hw_escpos,document_ftp,delivery,stock_invoice_directly,claim_from_delivery
-  # - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
-
-env:
-  - VERSION="7.0" LINT_CHECK="0" ODOO_REPO="zeroincombenze/OCB"
-
-virtualenv:
-  system_site_packages: true
+  - export EXCLUDE=hw_scanner,hw_escpos,$EXTRA_EXCLUDE
+  - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
 
 script:
   - SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}
-  - [ -d ${HOME}/${ODOO_REPO#*/}-${VERSION}/server ] && SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}/server
   - export TRAVIS_BUILD_DIR=${SERVER_PATH}/openerp/addons
   - travis_run_tests
 
