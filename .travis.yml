@@ -1,8 +1,4 @@
-language: python
-sudo: false
-
-python:
-  - "2.7"
+cache: pip
 
 git:
   submodules: false
@@ -12,42 +8,47 @@ addons:
     sources:
       - pov-wkhtmltopdf
     packages:
-      - expect-dev
-      - python-lxml
+      - expect-dev  # provides unbuffer utility
+      - python-lxml # because pip installation is slow
       - poppler-utils # document index
       - antiword # document index
+      - python-ldap # auth_ldap
+      - wkhtmltopdf # report_webkit
 
-before_install:
-#  - export TRAVIS_DEBUG_MODE="1"
-# Use Zeroincombenze(R) tools
-  - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --single-branch --depth=1
-  - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
-  - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
-  - pip install -q os0 z0lib
-  - ${HOME}/tools/clodoo/manage_odoo requirements -b'.' -vsy -Ozero
+language: python
+sudo: false
 
-install:
-  - ln -s ${HOME}/build/${ODOO_REPO} ${HOME}/${ODOO_REPO#*/}-${VERSION}
-  - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/openerp/addons ${HOME}/build/${ODOO_REPO}/addons)
-    # tests of document_ftp and delivery fail. The following two are excluded because they depend on delivery
-  - export EXCLUDE=hw_scanner,hw_escpos,document_ftp,delivery,stock_invoice_directly,claim_from_delivery
-  - export INSTALL_OPTIONS="--without-demo=account"
-  # - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
+python:
+  - "2.7"
 
 env:
-  global:
-  - TESTS="0" LINT_CHECK="0" TRANSIFEX="0"
-
-  matrix:
-  - MONGODB_VERSI
-  - VERSION="6.1" TESTS="1" ODOO_REPO="zeroincombenze/OCB"
+  - VERSION="6.1" ODOO_REPO="OCA/OCB" LINT_CHECK="0"
 
 virtualenv:
   system_site_packages: true
 
+before_install:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+
+  - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --depth=1
+  - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
+  - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
+
+install:
+  - ln -s ${HOME}/build/${ODOO_REPO} ${HOME}/${ODOO_REPO#*/}-${VERSION}
+  # - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git ${HOME}/maintainer-quality-tools
+  - pip install -r ${HOME}/maintainer-quality-tools/travis/requirements.txt
+  - pip install -q QUnitSuite flake8 coveralls pylint
+  - ln -s `which nodejs` $HOME/maintainer-quality-tools/travis/node
+  - npm install less less-plugin-clean-css
+  # - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
+  - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/openerp/addons ${HOME}/build/${ODOO_REPO}/addons)
+  - export EXCLUDE=hw_scanner,hw_escpos,$EXTRA_EXCLUDE
+  - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
+
 script:
   - SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}
-  - [ -d ${HOME}/${ODOO_REPO#*/}-${VERSION}/server ] && SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}/server
   - export TRAVIS_BUILD_DIR=${SERVER_PATH}/openerp/addons
   - travis_run_tests
 
