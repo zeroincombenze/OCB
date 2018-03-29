@@ -32,7 +32,8 @@ I principali moduli ERP sono: gestione Magazzino, gestione Progetti,
 Contabilità e Fatturazione, Punto vendite, Dipendenti, Produzione,
 gestione Acquisti, gestione vendite e molto altro ancora.
 
-Distribuzione Odoo 7.0:
+
+Distribuzioni Odoo 7.0:
 
 nome | descrizione | licenza | localizzazione italiana | note
 --- | --- | --- | --- | ---
