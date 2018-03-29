@@ -26,17 +26,18 @@ before_install:
   - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --depth=1
   - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
   - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
+  - pip install -q os0 z0lib
+  - ${HOME}/tools/clodoo/manage_odoo requirements -b'.' -vsy -Ozero
 
 install:
   - ln -s ${HOME}/build/${ODOO_REPO} ${HOME}/${ODOO_REPO#*/}-${VERSION}
   # - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git ${HOME}/maintainer-quality-tools
-  - pip install -r ${HOME}/maintainer-quality-tools/travis/requirements.txt
-  - pip install -q QUnitSuite flake8 coveralls pylint
+  - ln -s `which nodejs` $HOME/maintainer-quality-tools/travis/node
+  - npm install less less-plugin-clean-css
   # - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
   - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/odoo/addons ${HOME}/build/${ODOO_REPO}/addons)
   - export EXCLUDE=hw_scanner,hw_escpos
   - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
-  - pip install pytz
 
 env:
   - VERSION="10.0" ODOO_REPO="zeroincombenze/OCB" LINT_CHECK="0"
