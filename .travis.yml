@@ -41,7 +41,7 @@ install:
   - ln -s `which nodejs` $HOME/maintainer-quality-tools/travis/node
   - "[[ $HOSTNAME =~ shs[a-z0-9]+ ]] || npm install less less-plugin-clean-css"
   - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/odoo/addons ${HOME}/build/${ODOO_REPO}/addons)
-  - export EXCLUDE=hw_scanner,hw_escpos,$EXTRA_EXCLUDE
+   - export EXCLUDE=hw_scanner,hw_escpos,$EXTRA_EXCLUDE
   - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
 
 script:
