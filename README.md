@@ -10,39 +10,42 @@
 [![Build Status](http://runbot.odoo.com/runbot/badge/flat/1/9.0.svg)](http://runbot.odoo.com/runbot)
 [![Nightly Builds](http://img.shields.io/badge/9.0-nightly-8f8f8f.svg?style=flat)](http://nightly.odoo.com/)
 
-Odoo
-----
+
+
+[![en](https://github.com/zeroincombenze/grymb/blob/master/flags/en_US.png)](https://www.facebook.com/groups/openerp.italia/)
+
+Odoo 9.0 (formerly OpenERP)
+===========================
 
 Odoo is a suite of web based open source business apps.
 
-The main Odoo Apps include an <a href="https://www.odoo.com/page/crm">Open Source CRM</a>, <a href="https://www.odoo.com/page/website-builder">Website Builder</a>, <a href="https://www.odoo.com/page/e-commerce">eCommerce</a>, <a href="https://www.odoo.com/page/project-management">Project Management</a>, <a href="https://www.odoo.com/page/accounting">Billing &amp; Accounting</a>, <a href="https://www.odoo.com/page/point-of-sale">Point of Sale</a>, <a href="https://www.odoo.com/page/employees">Human Resources</a>, Marketing, Manufacturing, Purchase Management, ...  
-
-Odoo Apps can be used as stand-alone applications, but they also integrate seamlessly so you get
-a full-featured <a href="https://www.odoo.com">Open Source ERP</a> when you install several Apps.
-
-
-Getting started with Odoo
--------------------------
-For a standard installation please follow the <a href="https://www.odoo.com/documentation/9.0/setup/install.html">Setup instructions</a>
-from the documentation.
-
-If you are a developer you may type the following command at your terminal:
-
-    wget -O- https://raw.githubusercontent.com/odoo/odoo/9.0/odoo.py | python
-
-Then follow <a href="https://www.odoo.com/documentation/9.0/tutorials.html">the developer tutorials</a>
+The main Odoo Apps include an Open Source CRM and Enterprise Resource Planning.
+The main ERP modules are: Warehouse Management, Project Management,
+Billing AND Accounting, Point of Sale, Human Resources, Manufacturing,
+Purchase Management, Sale Management and other modules.
 
 
-For Odoo employees
-------------------
+[![it](https://github.com/zeroincombenze/grymb/blob/master/flags/it_IT.png)](https://www.facebook.com/groups/openerp.italia/)
 
-To add the odoo-dev remote use this command:
+Odoo 9.0 (già OpenERP)
+======================
 
-    $ ./odoo.py setup_git_dev
+Odoo è una suite di prodotti web open-source.
 
-To fetch odoo merge pull requests refs use this command:
+Le principali applicazioni di Odoo includo un Open Source CRM e Enterprise Resource Planning.
+I principali moduli ERP sono: gestione Magazzino, gestione Progetti,
+Contabilità e Fatturazione, Punto vendite, Dipendenti, Produzione,
+gestione Acquisti, gestione vendite e molto altro ancora.
 
-    $ ./odoo.py setup_git_review
+
+Distribuzioni Odoo 9.0:
+
+nome | descrizione | licenza | localizzazione italiana | note
+--- | --- | --- | --- | ---
+[Odoo](https://github.com/odoo/odoo/tree/9.0) | Odoo nativo | A-GPL | Non disponibile | Supporto assistenza
+[OCA](https://github.com/OCA/OCB/tree/9.0) | Distributione OCA | A-GPL | Norme fiscali < 2017 | Da 2018 non aggiornato
+[Zeroincombenze](https://github.com/zeroincombenze/OCB/tree/9.0) | Zeroincombenze® | A-GPL | Norme fiscali < 2017 | Non supportata
+
 
 [//]: # (copyright)
 
