@@ -1,9 +1,5 @@
 language: python
 sudo: false
-cache:
-  apt: true
-  directories:
-    - $HOME/.cache/pip
 
 python:
   - "2.7"
@@ -20,17 +16,9 @@ addons:
       - python-lxml
       - poppler-utils # document index
       - antiword # document index
-#     Search your packages here:
-#       https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
-#     For wkhtmltopdf, see the env section below
 
 before_install:
 #  - export TRAVIS_DEBUG_MODE="1"
-#  - rvm install ruby --latest
-#  - gem install bootstrap-sass
-#  - gem install compass --pre
-#  - "export DISPLAY=:99.0"
-#  - "sh -e /etc/init.d/xvfb start"
 # Use Zeroincombenze(R) tools
   - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --single-branch --depth=1
   - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
@@ -46,11 +34,18 @@ install:
   - export INSTALL_OPTIONS="--without-demo=account"
   # - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
 
+env:
+  global:
+  - TESTS="0" LINT_CHECK="0" TRANSIFEX="0"
+
+  matrix:
+  - MONGODB_VERSI
+  - VERSION="6.1" TESTS="1" ODOO_REPO="zeroincombenze/OCB"
+
 virtualenv:
   system_site_packages: true
 
 script:
-  - VERSION="6.1" TESTS="0" LINT_CHECK="0" TRANSIFEX="0" ODOO_REPO="zeroincombenze/OCB"
   - SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}
   - [ -d ${HOME}/${ODOO_REPO#*/}-${VERSION}/server ] && SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}/server
   - export TRAVIS_BUILD_DIR=${SERVER_PATH}/openerp/addons
