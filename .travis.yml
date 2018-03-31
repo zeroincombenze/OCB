@@ -28,7 +28,7 @@ addons:
 #     For wkhtmltopdf, see the env section below
 
 before_install:
-  - export TRAVIS_DEBUG_MODE="0"
+  - export TRAVIS_DEBUG_MODE="1"
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --depth=1
