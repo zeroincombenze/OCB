@@ -1,5 +1,5 @@
 # Odoo yaml template for travis-ci
-# __version__=0.2.0.25
+# __version__=0.2.1
 
 language: python
 sudo: false
@@ -11,6 +11,9 @@ cache:
 python:
   - "2.7"
 
+virtualenv:
+  system_site_packages: true
+
 git:
   submodules: false
 
@@ -20,6 +23,8 @@ addons:
 #    Search your sources alias here:
 #      https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
     packages:
+      - expect-dev
+      - python-lxml
 #     Search your packages here:
 #       https://github.com/travis-ci/apt-package-whitelist/blob/master/ubuntu-precise
 #     For wkhtmltopdf, see the env section below
@@ -31,13 +36,10 @@ before_install:
   - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --depth=1
   - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
   - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
-  - travis_install_env
 
 install:
+  - travis_install_env
   - export EXCLUDE=hw_scanner,hw_escpos,document_ftp,delivery,stock_invoice_directly,claim_from_delivery
-  - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/openerp/addons ${HOME}/build/${ODOO_REPO}/addons)
-  - export EXCLUDE=hw_scanner,hw_escpos
-  - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
 
 env:
   global:
@@ -47,12 +49,7 @@ env:
   - LINT_CHECK="0"
   - TESTS="1" ODOO_REPO="zeroincombenze/OCB"
 
-virtualenv:
-  system_site_packages: true
-
 script:
-  - SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}
-  - export TRAVIS_BUILD_DIR=${SERVER_PATH}/openerp/addons
   - travis_run_tests
 
 after_success:
