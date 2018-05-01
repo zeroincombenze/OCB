@@ -8,7 +8,9 @@
 [![try it](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-8.svg)](http://erp8.zeroincombenze.it)
 
 
-[![en](https://github.com/zeroincombenze/grymb/blob/master/flags/en_US.png)](https://www.facebook.com/groups/openerp.italia/)
+
+
+[![en](http://www.shs-av.com/wp-content/en_US.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
 
 Odoo 8.0 (formerly OpenERP)
 ===========================
@@ -21,10 +23,8 @@ Billing AND Accounting, Point of Sale, Human Resources, Manufacturing,
 Purchase Management, Sale Management and other modules.
 
 
-[![it](https://github.com/zeroincombenze/grymb/blob/master/flags/it_IT.png)](https://www.facebook.com/groups/openerp.italia/)
 
-Odoo 8.0 (già OpenERP)
-======================
+Odoo 8.0 (già Odoo)
 
 Odoo è una suite di prodotti web open-source.
 
@@ -65,3 +65,4 @@ Everytime, every Odoo DB and customized code can be deployed on local server too
 
 [//]: # (end addons)
 
+[![chat with us](https://www.shs-av.com/wp-content/chat_with_us.gif)](https://tawk.to/85d4f6e06e68dd4e358797643fe5ee67540e408b)
