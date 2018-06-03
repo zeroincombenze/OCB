@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ###################################################################################
-# 
+#
 #    Copyright (C) 2017 MuK IT GmbH
 #
 #    This program is free software: you can redistribute it and/or modify
@@ -22,7 +22,8 @@
 {
     "name": "MuK Preview",
     "summary": """File Preview Dialog""",
-    "description": """ 
+    "description": """
+
         Adds a button to the FieldBinaryFile form widget to
         preview the file content directly in the browser.
         Currently the following file extensions are supported:
@@ -58,5 +59,5 @@
     },
     "application": False,
     "installable": True,
-    
+
 }
