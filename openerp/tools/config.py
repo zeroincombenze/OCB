@@ -3,7 +3,7 @@
 #
 #    Odoo, Open Source Management Solution
 #    Copyright (C) 2004-2009 Tiny SPRL (<http://tiny.be>).
-#    Copyright (C) 2010-2012 Odoo s.a. (<http://openerp.com>).
+#    Copyright (C) 2010-2012 Odoo s.a. (<http://odoo.com>).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -68,7 +68,7 @@ class configmanager(object):
             'admin_passwd': 'admin',
             'csv_internal_sep': ',',
             'login_message': False,
-            'publisher_warranty_url': 'http://services.openerp.com/publisher-warranty/',
+            'publisher_warranty_url': 'http://services.odoo.com/publisher-warranty/',
             'reportgz': False,
             'root_path': None,
         }

@@ -917,7 +917,7 @@ class upload_data_thread(threading.Thread):
         try:
             import urllib
             args = urllib.urlencode(self.args)
-            fp = urllib.urlopen('http://www.odoo.com/scripts/survey.php', args)
+            fp = urllib.urlopen('http://www.openerp.com/scripts/survey.php', args)
             fp.read()
             fp.close()
         except Exception:

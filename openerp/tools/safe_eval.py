@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-#    Copyright (C) 2004-2012 OpenERP s.a. (<http://www.openerp.com>).
+#    Copyright (C) 2004-2012 OpenERP s.a. (<http://odoo.com>).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
