@@ -344,7 +344,7 @@ HTML_4 = """
             <p>You indicated that you wish to use OpenERP in your own company. We would like to know more about your your business needs and requirements, and see how we can help you. When would you be available to discuss your project ?
             </p>
             <p>Best regards, </p>
-            <pre><a href="http://openerp.com">http://openerp.com</a>
+            <pre><a href="http://odoo.com">http://openerp.com</a>
 Belgium: +32.81.81.37.00
 U.S.: +1 (650) 307-6736
 India: +91 (79) 40 500 100
@@ -439,7 +439,7 @@ HOTMAIL_1 = """<div>
             we can help you. When would you be available to discuss your project ?<br>
             Best regards,<br>
             <pre>
-                <a href="http://openerp.com" target="_blank">http://openerp.com</a>
+                <a href="http://odoo.com" target="_blank">http://openerp.com</a>
                 Belgium: +32.81.81.37.00
                 U.S.: +1 (650) 307-6736
                 India: +91 (79) 40 500 100
@@ -546,7 +546,7 @@ MSOFFICE_1 = """
         <pre><p>&nbsp;</p></pre>
         <pre>--<p></p></pre>
         <pre>Nicolas<p></p></pre>
-        <pre><a href="http://openerp.com">http://openerp.com</a><p></p></pre>
+        <pre><a href="http://odoo.com">http://openerp.com</a><p></p></pre>
         <pre>Belgium: +32.81.81.37.00<p></p></pre>
         <pre>U.S.: +1 (650) 307-6736<p></p></pre>
         <pre>India: +91 (79) 40 500 100<p></p></pre>
@@ -649,7 +649,7 @@ MSOFFICE_2 = """
     </pre>
     <pre>--<p></p></pre>
     <pre>Nicolas<p></p></pre>
-    <pre>      <a href="http://openerp.com">http://openerp.com</a>
+    <pre>      <a href="http://odoo.com">http://openerp.com</a>
       <p></p>
     </pre>
     <pre>Belgium: +32.81.81.37.00<p></p></pre>
@@ -773,7 +773,7 @@ MSOFFICE_3 = """<div>
     </pre>
     <pre>--<p></p></pre>
     <pre>Nicolas<p></p></pre>
-    <pre>      <a href="http://openerp.com">http://openerp.com</a>
+    <pre>      <a href="http://odoo.com">http://openerp.com</a>
       <p></p>
     </pre>
     <pre>Belgium: +32.81.81.37.00<p></p></pre>
@@ -829,7 +829,7 @@ OpenERP SA
 Chaussée de Namur, 40
 B-1367 Gérompont
 Tel: +32.81.81.37.00
-Web: http://www.openerp.com</pre>"""
+Web: http://odoo.com</pre>"""
 
 BUG_1_IN = [
     'Hi Migration Team',
@@ -1068,12 +1068,12 @@ BUG2 = """
                   B-1367 Grand Rosières <br>
                   Tel: +32.81.81.37.00 - Fax: +32.81.73.35.01 <br>
                   E-mail : <a href="mailto:ale@openerp.com">ale@openerp.com</a> <br>
-                  Web: <a href="http://www.openerp.com">http://www.openerp.com</a></span></p>
+                  Web: <a href="http://odoo.com">http://www.openerp.com</a></span></p>
             </div>
           </div>
         </div>
         --<br>
-        INZO services <small>Sent by <a style="color:inherit" href="http://www.openerp.com">OpenERP
+        INZO services <small>Sent by <a style="color:inherit" href="http://odoo.com">OpenERP
             S.A.</a> using <a style="color:inherit" href="https://www.openerp.com/">OpenERP</a>.</small>
         <small>Access your messages and documents <a style="color:inherit" href="https://accounts.openerp.com?db=openerp#action=mail.action_mail_redirect&amp;login=che&amp;message_id=5750830">in
 
@@ -1086,7 +1086,7 @@ Chaussée de Namur, 40
 B-1367 Grand Rosières 
 Tel: +32.81.81.37.00 - Fax: +32.81.73.35.01 
 
-Web: <a class="moz-txt-link-freetext" href="http://www.openerp.com">http://www.openerp.com</a> </pre>
+Web: <a class="moz-txt-link-freetext" href="http://odoo.com">http://www.openerp.com</a> </pre>
         <br>
       </div>
       <br>
