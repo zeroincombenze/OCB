@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# Copyright: 2014 - OpenERP S.A. <http://odoo.com>
+# Copyright: 2014 - OpenERP S.A. <http://openerp.com>
 import types
 
 def post_mortem(config, info):

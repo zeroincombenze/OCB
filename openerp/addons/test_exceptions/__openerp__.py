@@ -6,7 +6,7 @@
     'description': """A module to generate exceptions.""",
     'author': 'OpenERP SA',
     'maintainer': 'OpenERP SA',
-    'website': 'http://odoo.com',
+    'website': 'http://www.openerp.com',
     'depends': ['base'],
     'data': ['view.xml', 'ir.model.access.csv'],
     'installable': True,

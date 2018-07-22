@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
-#    Copyright (C) 2004-2014 OpenERP S.A. (<http://odoo.com).
+#    Copyright (C) 2004-2014 OpenERP S.A. (<http://openerp.com).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -242,7 +242,7 @@ class WorkflowItem(object):
                     transitions.append((transition['id'], self.workitem['inst_id']))
 
         if test and transitions:
-            cr.executemany('insert into wkf_witm_trans (trans_id,inst_id) values (%s,%s)', transitions)
+            cr.executemany('insert into wkf_witm_trans (trans_id,inst_id) values (%s,%s) except (select trans_id,inst_id from wkf_witm_trans)', transitions)
             cr.execute('delete from wkf_workitem where id=%s', (self.workitem['id'],))
             for t in transitions:
                 self._join_test(t[0], t[1], stack)

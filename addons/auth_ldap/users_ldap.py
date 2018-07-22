@@ -102,7 +102,7 @@ class CompanyLDAP(osv.osv):
             _logger.warning('Could not format LDAP filter. Your filter should contain one \'%s\'.')
             return False
         try:
-            results = self.query(conf, filter)
+            results = self.query(conf, filter.encode('utf-8'))
 
             # Get rid of (None, attrs) for searchResultReference replies
             results = [i for i in results if i[0]]
@@ -168,7 +168,7 @@ class CompanyLDAP(osv.osv):
         :rtype: dict
         """
 
-        values = { 'name': ldap_entry[1]['cn'][0],
+        values = { 'name': tools.ustr(ldap_entry[1]['cn'][0]),
                    'login': login,
                    'company_id': conf['company']
                    }

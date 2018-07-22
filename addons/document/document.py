@@ -109,12 +109,23 @@ class document_file(osv.osv):
         for parent_id in visible_parent_ids:
             ids.extend(parents[parent_id])
 
+        set_ids = set(ids)
+
         # sort result according to the original sort ordering
         if count:
-            return len(ids)
+            result = len(set_ids)
         else:
-            set_ids = set(ids)
-            return [id for id in orig_ids if id in set_ids]
+            result = [id for id in orig_ids if id in set_ids]
+
+        # if we got a limit and some ids were removed, search again
+        if limit and len(set_ids) < len(orig_ids):
+            # search again with adapted offset+limit
+            return result + self.search(
+                cr, uid, args, offset=offset+limit,
+                limit=limit-len(set_ids), order=order, context=context,
+                count=count)
+
+        return result
 
     def copy(self, cr, uid, id, default=None, context=None):
         if not default:
@@ -620,9 +631,8 @@ class node_context(object):
     def __init__(self, cr, uid, context=None):
         self.dbname = cr.dbname
         self.uid = uid
+        context = dict(context or {})
         self.context = context
-        if context is None:
-            context = {}
         context['uid'] = uid
         self._dirobj = openerp.registry(cr.dbname).get('document.directory')
         self.node_file_class = node_file

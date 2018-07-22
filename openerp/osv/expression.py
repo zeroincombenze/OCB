@@ -842,12 +842,12 @@ class expression(object):
             #    as after transforming the column, it will go through this loop once again
             # ----------------------------------------
 
-            elif len(path) > 1 and column._type == 'many2one' and column._auto_join:
+            elif len(path) > 1 and column and column._type == 'many2one' and column._auto_join:
                 # res_partner.state_id = res_partner__state_id.id
                 leaf.add_join_context(comodel, path[0], 'id', path[0])
                 push(create_substitution_leaf(leaf, (path[1], operator, right), comodel))
 
-            elif len(path) > 1 and column._type == 'one2many' and column._auto_join:
+            elif len(path) > 1 and column and column._type == 'one2many' and column._auto_join:
                 # res_partner.id = res_partner__bank_ids.partner_id
                 leaf.add_join_context(comodel, 'id', column._fields_id, path[0])
                 domain = column._domain(model) if callable(column._domain) else column._domain
@@ -858,19 +858,18 @@ class expression(object):
                         push(create_substitution_leaf(leaf, elem, comodel))
                     push(create_substitution_leaf(leaf, AND_OPERATOR, comodel))
 
-            elif len(path) > 1 and column._auto_join:
+            elif len(path) > 1 and column and column._auto_join:
                 raise NotImplementedError('_auto_join attribute not supported on many2many column %s' % left)
 
-            elif len(path) > 1 and column._type == 'many2one':
+            elif len(path) > 1 and column and column._type == 'many2one':
                 right_ids = comodel.search(cr, uid, [(path[1], operator, right)], context=context)
                 leaf.leaf = (path[0], 'in', right_ids)
                 push(leaf)
 
             # Making search easier when there is a left operand as column.o2m or column.m2m
-            elif len(path) > 1 and column._type in ['many2many', 'one2many']:
+            elif len(path) > 1 and column and column._type in ['many2many', 'one2many']:
                 right_ids = comodel.search(cr, uid, [(path[1], operator, right)], context=context)
-                table_ids = model.search(cr, uid, [(path[0], 'in', right_ids)], context=dict(context, active_test=False))
-                leaf.leaf = ('id', 'in', table_ids)
+                leaf.leaf = (path[0], 'in', right_ids)
                 push(leaf)
 
             elif not column:
@@ -884,7 +883,12 @@ class expression(object):
                     domain = []
                 else:
                     # Let the field generate a domain.
-                    recs = model.browse(cr, uid, [], context)
+                    if len(path) > 1:
+                        right = comodel.search(
+                            cr, uid, [(path[1], operator, right)],
+                            context=context)
+                        operator = 'in'
+                    recs = model.browse(cr, uid, [], context=context)
                     domain = field.determine_domain(recs, operator, right)
 
                 if not domain:
@@ -969,29 +973,41 @@ class expression(object):
                             call_null = False
                             o2m_op = 'not in' if operator in NEGATIVE_TERM_OPERATORS else 'in'
                             push(create_substitution_leaf(leaf, ('id', o2m_op, ids1), model))
+                        elif operator in ('like', 'ilike', 'in', '='):
+                            # no match found with positive search operator => no result (FALSE_LEAF)
+                            call_null = False
+                            push(create_substitution_leaf(leaf, FALSE_LEAF, model))
 
                 if call_null:
                     o2m_op = 'in' if operator in NEGATIVE_TERM_OPERATORS else 'not in'
-                    push(create_substitution_leaf(leaf, ('id', o2m_op, select_distinct_from_where_not_null(cr, column._fields_id, comodel._table)), model))
+                    # determine ids from column._fields_id
+                    if comodel._fields[column._fields_id].store:
+                        ids1 = select_distinct_from_where_not_null(cr, column._fields_id, comodel._table)
+                    else:
+                        ids2 = comodel.search(cr, uid, [(column._fields_id, '!=', False)], context=context)
+                        recs = comodel.browse(cr, SUPERUSER_ID, ids2, {'prefetch_fields': False})
+                        ids1 = recs.mapped(column._fields_id).ids
+                    push(create_substitution_leaf(leaf, ('id', o2m_op, ids1), model))
 
             elif column._type == 'many2many':
                 rel_table, rel_id1, rel_id2 = column._sql_names(model)
                 #FIXME
                 if operator == 'child_of':
-                    def _rec_convert(ids):
-                        if comodel == model:
-                            return ids
-                        return select_from_where(cr, rel_id1, rel_table, rel_id2, ids, operator)
-
                     ids2 = to_ids(right, comodel, context)
                     dom = child_of_domain('id', ids2, comodel)
                     ids2 = comodel.search(cr, uid, dom, context=context)
-                    push(create_substitution_leaf(leaf, ('id', 'in', _rec_convert(ids2)), model))
+                    if comodel == model:
+                        push(create_substitution_leaf(leaf, ('id', 'in', ids2), model))
+                    else:
+                        subquery = 'SELECT "%s" FROM "%s" WHERE "%s" IN %%s' % (rel_id1, rel_table, rel_id2)
+                        # avoid flattening of argument in to_sql()
+                        subquery = cr.mogrify(subquery, [tuple(ids2)])
+                        push(create_substitution_leaf(leaf, ('id', 'inselect', (subquery, [])), internal=True))
                 else:
                     call_null_m2m = True
                     if right is not False:
                         if isinstance(right, basestring):
-                            res_ids = [x[0] for x in comodel.name_search(cr, uid, right, [], operator, context=context)]
+                            res_ids = [x[0] for x in comodel.name_search(cr, uid, right, [], operator, context=context, limit=None)]
                             if res_ids:
                                 operator = 'in'
                         else:
@@ -1008,8 +1024,11 @@ class expression(object):
                                 operator = 'in'  # operator changed because ids are directly related to main object
                         else:
                             call_null_m2m = False
-                            m2m_op = 'not in' if operator in NEGATIVE_TERM_OPERATORS else 'in'
-                            push(create_substitution_leaf(leaf, ('id', m2m_op, select_from_where(cr, rel_id1, rel_table, rel_id2, res_ids, operator) or [0]), model))
+                            subop = 'not inselect' if operator in NEGATIVE_TERM_OPERATORS else 'inselect'
+                            subquery = 'SELECT "%s" FROM "%s" WHERE "%s" IN %%s' % (rel_id1, rel_table, rel_id2)
+                            # avoid flattening of argument in to_sql()
+                            subquery = cr.mogrify(subquery, [tuple(filter(None, res_ids))])
+                            push(create_substitution_leaf(leaf, ('id', subop, (subquery, [])), internal=True))
 
                     if call_null_m2m:
                         m2m_op = 'in' if operator in NEGATIVE_TERM_OPERATORS else 'not in'

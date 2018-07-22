@@ -22,6 +22,7 @@
 from operator import itemgetter
 import time
 
+from openerp import SUPERUSER_ID
 from openerp.osv import fields, osv
 from openerp import api
 
@@ -45,6 +46,7 @@ class account_fiscal_position(osv.osv):
 
     _defaults = {
         'active': True,
+        'company_id': lambda self, cr, uid, ctx: self.pool['res.company']._company_default_get(cr, uid, object='account', context=ctx)
     }
 
     def _check_country(self, cr, uid, ids, context=None):
@@ -109,6 +111,7 @@ class account_fiscal_position(osv.osv):
     def get_fiscal_position(self, cr, uid, company_id, partner_id, delivery_id=None, context=None):
         if not partner_id:
             return False
+        context = dict(context or {}, company_id=company_id, force_company=company_id)
         # This can be easily overriden to apply more complex fiscal rules
         part_obj = self.pool['res.partner']
         partner = part_obj.browse(cr, uid, partner_id, context=context)
@@ -274,6 +277,7 @@ class res_partner(osv.osv):
                          AND cr.currency_id = %%s
                          AND (COALESCE(account_invoice_report.date, NOW()) >= cr.date_start)
                          AND (COALESCE(account_invoice_report.date, NOW()) < cr.date_end OR cr.date_end IS NULL)
+                         AND account_invoice_report.type in ('out_invoice', 'out_refund')
                     """ % where_clause
 
             # price_total is in the currency with rate = 1
@@ -316,7 +320,8 @@ class res_partner(osv.osv):
         return False
 
     def mark_as_reconciled(self, cr, uid, ids, context=None):
-        return self.write(cr, uid, ids, {'last_reconciliation_date': time.strftime('%Y-%m-%d %H:%M:%S')}, context=context)
+        self.pool['account.move.reconcile'].check_access_rights(cr, uid, 'write')
+        return self.write(cr, SUPERUSER_ID, ids, {'last_reconciliation_date': time.strftime('%Y-%m-%d %H:%M:%S')}, context=context)
 
     _columns = {
         'vat_subjected': fields.boolean('VAT Legal Statement', help="Check this box if the partner is subjected to the VAT. It will be used for the VAT legal statement."),

@@ -43,21 +43,18 @@ import pytz
 import re
 import xmlrpclib
 from operator import itemgetter
-from contextlib import contextmanager
 from psycopg2 import Binary
 
 import openerp
 import openerp.tools as tools
+from openerp.sql_db import LazyCursor
 from openerp.tools.translate import _
 from openerp.tools import float_repr, float_round, frozendict, html_sanitize
 import simplejson
-from openerp import SUPERUSER_ID, registry
+from openerp import SUPERUSER_ID
 
-@contextmanager
-def _get_cursor():
-    # yield a valid cursor from any environment or create a new one if none found
-    with registry().cursor() as cr:
-        yield cr
+# deprecated; kept for backward compatibility only
+_get_cursor = LazyCursor
 
 EMPTY_DICT = frozendict()
 
@@ -396,7 +393,7 @@ class float(_column):
     @property
     def digits(self):
         if self._digits_compute:
-            with _get_cursor() as cr:
+            with LazyCursor() as cr:
                 return self._digits_compute(cr)
         else:
             return self._digits
@@ -791,6 +788,7 @@ class one2many(_column):
         context.update(self._context)
         if not values:
             return
+        original_obj = obj
         obj = obj.pool[self._obj]
         rec = obj.browse(cr, user, [], context=context)
         with rec.env.norecompute():
@@ -822,7 +820,8 @@ class one2many(_column):
                     inverse_field = obj._fields.get(self._fields_id)
                     assert inverse_field, 'Trying to unlink the content of a o2m but the pointed model does not have a m2o'
                     # if the o2m has a static domain we must respect it when unlinking
-                    domain = self._domain(obj) if callable(self._domain) else self._domain
+                    domain = (self._domain(original_obj)
+                              if callable(self._domain) else self._domain)
                     extra_domain = domain or []
                     ids_to_unlink = obj.search(cr, user, [(self._fields_id,'=',id)] + extra_domain, context=context)
                     # If the model has cascade deletion, we delete the rows because it is the intended behavior,
@@ -1323,7 +1322,7 @@ class function(_column):
     @property
     def digits(self):
         if self._digits_compute:
-            with _get_cursor() as cr:
+            with LazyCursor() as cr:
                 return self._digits_compute(cr)
         else:
             return self._digits

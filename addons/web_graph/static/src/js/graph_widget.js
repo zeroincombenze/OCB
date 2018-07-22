@@ -66,7 +66,16 @@ openerp.web_graph.Graph = openerp.web.Widget.extend({
             self.pivot_options.col_groupby = self.create_field_values(self.pivot_options.col_groupby || []);
             self.pivot_options.measures = self.create_field_values(self.pivot_options.measures || [{field:'__count', type: 'integer', string:'Count'}]);
             self.pivot = new openerp.web_graph.PivotTable(self.model, self.domain, self.fields, self.pivot_options);
-            self.pivot.update_data().then(function () {
+            var deferred = jQuery.when();
+            if (!self.graph_view ||
+                self.graph_view.ViewManager.ActionManager.inner_action
+                .flags.auto_search === undefined ||
+                self.graph_view.ViewManager.ActionManager.inner_action
+                .flags.auto_search)
+            {
+                deferred = self.pivot.update_data();
+            }
+            deferred.then(function () {
                 self.display_data();
                 if (self.graph_view) {
                     self.graph_view.register_groupby(self.pivot.rows.groupby, self.pivot.cols.groupby);
@@ -822,7 +831,7 @@ openerp.web_graph.Graph = openerp.web.Widget.extend({
                 return p || _t('Undefined');
             }).join('/');
             if (dim_x === 0) {
-                title = self.measure_label;
+                title = self.measure_label || _t('Undefined');
             }
             return {x: title, y: self.pivot.get_total(row)[0]};
         });
@@ -850,10 +859,15 @@ openerp.web_graph.Graph = openerp.web.Widget.extend({
     // ----------------------------------------------------------------------
     export_xls: function() {
         var c = openerp.webclient.crashmanager;
+        var table = this.build_table(true);
+        if(table.measure_row.length + 1 > 256) {
+            c.show_message(_t("For Excel compatibility, data cannot be exported if there is more than 256 columns.\n\nTip: try to flip axis, filter further or reduce the number of measures."))
+            return;
+        }
         openerp.web.blockUI();
         this.session.get_file({
             url: '/web_graph/export_xls',
-            data: {data: JSON.stringify(this.build_table(true))},
+            data: {data: JSON.stringify(table)},
             complete: openerp.web.unblockUI,
             error: c.rpc_error.bind(c)
         });

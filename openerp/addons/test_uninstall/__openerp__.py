@@ -6,7 +6,7 @@
     'description': """A module to test the uninstall feature.""",
     'author': 'OpenERP SA',
     'maintainer': 'OpenERP SA',
-    'website': 'http://odoo.com',
+    'website': 'http://www.openerp.com',
     'depends': ['base'],
     'data': ['ir.model.access.csv'],
     'installable': True,
