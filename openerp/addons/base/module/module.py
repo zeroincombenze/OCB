@@ -184,7 +184,11 @@ class module(osv.osv):
                     'output_encoding': 'unicode',
                     'xml_declaration': False,
                 }
-                output = publish_string(source=module.description or '', settings_overrides=overrides, writer=MyWriter())
+                # [antoniov 2018-08-31] Avoid translation error
+                try:
+                    output = publish_string(source=module.description or '', settings_overrides=overrides, writer=MyWriter())
+                except:
+                    output = 'Error in Description'
                 res[module.id] = html_sanitize(output)
         return res
 
