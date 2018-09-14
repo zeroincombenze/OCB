@@ -38,14 +38,21 @@ class Currency(models.Model):
         date = self._context.get('date') or fields.Datetime.now()
         company_id = self._context.get('company_id') or self.env['res.users']._get_company().id
         # the subquery selects the last rate before 'date' for the given currency/company
-        query = """SELECT c.id, (SELECT r.rate FROM res_currency_rate r
-                                  WHERE r.currency_id = c.id AND r.name <= %s
-                                    AND (r.company_id IS NULL OR r.company_id = %s)
-                               ORDER BY r.company_id, r.name DESC
-                                  LIMIT 1) AS rate
-                   FROM res_currency c
-                   WHERE c.id IN %s"""
-        self._cr.execute(query, (date, company_id, tuple(self.ids)))
+        # query = """SELECT r.id, (SELECT r.rate FROM res_currency_rate r
+        #                           WHERE r.currency_id = c.id AND r.name <= %s
+        #                             AND (r.company_id IS NULL OR r.company_id = %s)
+        #                        ORDER BY r.company_id, r.name DESC
+        #                           LIMIT 1) AS rate
+        #            FROM res_currency c
+        #            WHERE c.id IN %s"""
+        # [antoniov: 2018-09-11] if currency rate does not exist return 1.0
+        # [antoniov: 2018-09-11] company is not important in rate evaluation!
+        query = """
+        select r.id,r.rate from res_currency c,res_currency_rate r
+               where r.currency_id = c.id and r.name <= %s and c.id in %s
+               order by r.name desc limit 1"""
+        # self._cr.execute(query, (date, company_id, tuple(self.ids)))
+        self._cr.execute(query, (date, tuple(self.ids)))
         currency_rates = dict(self._cr.fetchall())
         for currency in self:
             currency.rate = currency_rates.get(currency.id) or 1.0

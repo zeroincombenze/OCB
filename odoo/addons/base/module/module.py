@@ -170,7 +170,11 @@ class Module(models.Model):
                     'output_encoding': 'unicode',
                     'xml_declaration': False,
                 }
-                output = publish_string(source=module.description or '', settings_overrides=overrides, writer=MyWriter())
+                # [antoniov 2018-09-04] Avoid translation error
+                try:
+                    output = publish_string(source=module.description or '', settings_overrides=overrides, writer=MyWriter())
+                except:
+                    output = 'Error in Description'
                 module.description_html = tools.html_sanitize(output)
 
     @api.depends('name')
