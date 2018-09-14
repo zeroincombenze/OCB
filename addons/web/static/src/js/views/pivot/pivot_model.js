@@ -17,7 +17,6 @@ odoo.define('web.PivotModel', function (require) {
  */
 
 var AbstractModel = require('web.AbstractModel');
-var concurrency = require('web.concurrency');
 var core = require('web.core');
 var session = require('web.session');
 var utils = require('web.utils');
@@ -33,7 +32,6 @@ var PivotModel = AbstractModel.extend({
         this._super.apply(this, arguments);
         this.numbering = {};
         this.data = null;
-        this._loadDataDropPrevious = new concurrency.DropPrevious();
     },
 
     //--------------------------------------------------------------------------
@@ -252,7 +250,6 @@ var PivotModel = AbstractModel.extend({
             this.data.colGroupBys = params.context.pivot_column_groupby || this.data.colGroupBys;
             this.data.groupedBy = params.context.pivot_row_groupby || this.data.groupedBy;
             this.data.measures = this._processMeasures(params.context.pivot_measures) || this.data.measures;
-            this.defaultGroupedBy = this.data.groupedBy.length ? this.data.groupedBy : this.defaultGroupedBy;
         }
         if ('domain' in params) {
             this.data.domain = params.domain;
@@ -281,7 +278,7 @@ var PivotModel = AbstractModel.extend({
 
             self._updateTree(old_col_root, self.data.main_col.root);
             new_groupby_length = self._getHeaderDepth(self.data.main_col.root) - 1;
-            self.data.main_row.groupbys = old_row_root.groupbys.slice(0, new_groupby_length);
+            self.data.main_row.groupbys = old_col_root.groupbys.slice(0, new_groupby_length);
         });
     },
     /**
@@ -534,7 +531,7 @@ var PivotModel = AbstractModel.extend({
             }
         }
 
-        return this._loadDataDropPrevious.add($.when.apply(null, groupBys.map(function (groupBy) {
+        return $.when.apply(null, groupBys.map(function (groupBy) {
             return self._rpc({
                     model: self.modelName,
                     method: 'read_group',
@@ -544,7 +541,7 @@ var PivotModel = AbstractModel.extend({
                     groupBy: groupBy,
                     lazy: false,
                 });
-        }))).then(function () {
+        })).then(function () {
             var data = Array.prototype.slice.call(arguments);
             if (data[0][0].__count === 0) {
                 self.data.has_data = false;

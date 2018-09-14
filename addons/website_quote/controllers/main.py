@@ -8,7 +8,6 @@ from odoo.http import request
 from odoo.addons.portal.controllers.portal import get_records_pager
 from odoo.addons.sale.controllers.portal import CustomerPortal
 from odoo.addons.portal.controllers.mail import _message_post_helper
-from odoo.osv import expression
 
 
 class CustomerPortal(CustomerPortal):
@@ -50,7 +49,7 @@ class sale_quote(http.Controller):
         if Order and request.session.get('view_quote_%s' % Order.id) != now and request.env.user.share:
             request.session['view_quote_%s' % Order.id] = now
             body = _('Quotation viewed by customer')
-            _message_post_helper(res_model='sale.order', res_id=Order.id, message=body, token=Order.access_token, message_type='notification', subtype="mail.mt_note", partner_ids=Order.user_id.sudo().partner_id.ids)
+            _message_post_helper(res_model='sale.order', res_id=Order.id, message=body, token=token, message_type='notification', subtype="mail.mt_note", partner_ids=Order.user_id.sudo().partner_id.ids)
         if not Order:
             return request.render('website.404')
 
@@ -90,11 +89,7 @@ class sale_quote(http.Controller):
         }
 
         if order_sudo.require_payment or values['need_payment']:
-            domain = expression.AND([
-                ['&', ('website_published', '=', True), ('company_id', '=', order_sudo.company_id.id)],
-                ['|', ('specific_countries', '=', False), ('country_ids', 'in', [order_sudo.partner_id.country_id.id])]
-            ])
-            acquirers = request.env['payment.acquirer'].sudo().search(domain)
+            acquirers = request.env['payment.acquirer'].sudo().search([('website_published', '=', True), ('company_id', '=', order_sudo.company_id.id)])
 
             values['form_acquirers'] = [acq for acq in acquirers if acq.payment_flow == 'form' and acq.view_template_id]
             values['s2s_acquirers'] = [acq for acq in acquirers if acq.payment_flow == 's2s' and acq.registration_view_template_id]

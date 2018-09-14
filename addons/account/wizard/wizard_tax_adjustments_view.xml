@@ -12,7 +12,6 @@
             <group>
                 <group>
                     <field name="amount"/>
-                    <field name="adjustment_type"/>
                 </group>
                 <group>
                     <field name="tax_id" widget="selection"/>
@@ -27,14 +26,8 @@
                 </group>
             </group>
             <footer>
-              <div attrs="{'invisible': [('adjustment_type', '=', 'credit')]}">
-                <button name="create_move_debit" string="Create and post move" type="object" default_focus="1" class="oe_highlight"/>
+                <button name="create_move" string="Create and post move" type="object" default_focus="1" class="oe_highlight"/>
                 <button string="Cancel" class="btn btn-default" special="cancel" />
-              </div>
-              <div attrs="{'invisible': [('adjustment_type', '!=', 'credit')]}">
-                <button name="create_move_credit" string="Create and post move" type="object" default_focus="1" class="oe_highlight"/>
-                <button string="Cancel" class="btn btn-default" special="cancel" />
-              </div>
             </footer>
         </form>
         </field>

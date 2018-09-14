@@ -53,7 +53,7 @@ var BarcodeEvents = core.Class.extend(mixins.PropertiesMixin, {
                        navigator.userAgent.match(/iPod/i) ||
                        navigator.userAgent.match(/BlackBerry/i) ||
                        navigator.userAgent.match(/Windows Phone/i);
-        this.isChromeMobile = isMobile && navigator.userAgent.match(/Chrome/i);
+        this.isChromeMobile = isMobile && window.chrome;
 
         // Creates an input who will receive the barcode scanner value.
         if (this.isChromeMobile) {
@@ -61,17 +61,13 @@ var BarcodeEvents = core.Class.extend(mixins.PropertiesMixin, {
                 name: 'barcode',
                 type: 'text',
                 css: {
-                    'position': 'fixed',
-                    'top': '50%',
-                    'transform': 'translateY(-50%)',
-                    'z-index': '-1',
+                    'position': 'absolute',
+                    'opacity': 0,
                 },
             });
-            // Avoid to show autocomplete for a non appearing input
-            this.$barcodeInput.attr('autocomplete', 'off');
         }
 
-        this.__blurBarcodeInput = _.debounce(this._blurBarcodeInput, this.inputTimeOut);
+        this.__removeBarcodeField = _.debounce(this._removeBarcodeField, this.inputTimeOut);
     },
 
     handle_buffered_keys: function() {
@@ -234,7 +230,7 @@ var BarcodeEvents = core.Class.extend(mixins.PropertiesMixin, {
                     this.max_time_between_keys_in_ms);
             }
             // if the barcode input doesn't receive keydown for a while, remove it.
-            this.__blurBarcodeInput();
+            this.__removeBarcodeField();
         }
     },
 
@@ -249,22 +245,21 @@ var BarcodeEvents = core.Class.extend(mixins.PropertiesMixin, {
         var barcodeValue = this.$barcodeInput.val();
         if (barcodeValue.match(this.regexp)) {
             core.bus.trigger('barcode_scanned', barcodeValue, $(e.target).parent()[0]);
-            this._blurBarcodeInput();
+            this.$barcodeInput.val('');
         }
     },
 
     /**
-     * Removes the value and focus from the barcode input.
-     * If nothing happens, the focus will be lost and
-     * the virtual keyboard on mobile devices will be closed.
+     * Remove the temporary input created to store the barcode value.
+     * If nothing happens, this input will be removed, so the focus will be lost
+     * and the virtual keyboard on mobile devices will be closed.
      *
      * @private
      */
-    _blurBarcodeInput: function () {
+    _removeBarcodeField: function () {
         if (this.$barcodeInput) {
-            // Close the virtual keyboard on mobile browsers
-            // FIXME: actually we can't prevent keyboard from opening
-            this.$barcodeInput.val('').blur();
+            // Reset the value and remove from the DOM.
+            this.$barcodeInput.val('').remove();
         }
     },
 

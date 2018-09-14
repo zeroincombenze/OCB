@@ -1800,17 +1800,12 @@ $.summernote.pluginEvents.indent = function (event, editor, layoutInfo, outdent)
     var $dom = $(ancestor);
 
     if (!dom.isList(ancestor)) {
-        // to indent a selection, we indent the child nodes of the common
-        // ancestor that contains this selection
         $dom = $(dom.node(ancestor)).children();
     }
-    if (!$dom.not('br').length) {
-        // if selection is inside a list, we indent its list items
-        $dom = $(dom.ancestor(r.sc, dom.isList));
+    if (!$dom.length) {
+        $dom = $(dom.ancestor(r.sc, dom.isList) || dom.ancestor(r.sc, dom.isCell));
         if (!$dom.length) {
-            // if the selection is contained in a single HTML node, we indent
-            // the first ancestor 'content block' (P, H1, PRE, ...) or TD
-            $dom = $(r.sc).closest(options.styleTags.join(',')+',td');
+            $dom = $(r.sc).closest(options.styleTags.join(','));
         }
     }
 
@@ -1975,13 +1970,7 @@ eventHandler.modules.toolbar.button.updateRecentColor = function (elBtn, sEvent,
 };
 
 $(document).on('click keyup', function () {
-    var current_range = {};
-    try {
-        current_range = range.create() || {};
-    } catch (e) {
-        // if range is on Restricted element ignore error
-    }
-    var $popover = $(current_range.sc).closest('[contenteditable]');
+    var $popover = $((range.create()||{}).sc).closest('[contenteditable]');
     var popover_history = ($popover.data()||{}).NoteHistory;
     if (!popover_history || popover_history === history) return;
     var editor = $popover.parent('.note-editor');

@@ -11,7 +11,6 @@
             file="account.report_invoice_with_payments"
             attachment="(object.state in ('open','paid')) and ('INV'+(object.number or '').replace('/','')+'.pdf')"
             print_report_name="(object._get_printed_report_name())"
-            groups="account.group_account_invoice"
         />
 
         <report

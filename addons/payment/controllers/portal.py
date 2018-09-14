@@ -89,7 +89,6 @@ class WebsitePayment(http.Controller):
                 'amount': float(amount),
                 'currency_id': currency_id,
                 'partner_id': partner_id,
-                'type': 'form_save' if acquirer.save_token != 'none' and partner_id else 'form',
             }
 
             tx = request.env['payment.transaction'].sudo().create(values)
@@ -118,8 +117,7 @@ class WebsitePayment(http.Controller):
             'amount': float(amount),
             'currency_id': int(currency_id),
             'partner_id': partner_id,
-            'payment_token_id': pm_id,
-            'type': 'form_save' if token.acquirer_id.save_token != 'none' and partner_id else 'form',
+            'payment_token_id': pm_id
         }
 
         tx = request.env['payment.transaction'].sudo().create(values)

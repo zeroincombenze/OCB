@@ -472,8 +472,7 @@ define([
         onImageUpload: options.onImageUpload,
         onImageUploadError: options.onImageUploadError,
         onMediaDelete: options.onMediaDelete,
-        onToolbarClick: options.onToolbarClick,
-        onUpload: options.onUpload,
+        onToolbarClick: options.onToolbarClick
       });
 
       var styleInfo = modules.editor.styleFromNode(layoutInfo.editable());

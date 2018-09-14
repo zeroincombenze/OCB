@@ -3,9 +3,11 @@ odoo.define('website_sale_wishlist.wishlist', function (require) {
 
 require('web.dom_ready');
 var ajax = require('web.ajax');
+var rpc = require('web.rpc');
 var Widget = require('web.Widget');
 var base = require('web_editor.base');
 var website_sale_utils = require('website_sale.utils');
+var weContext = require('web_editor.context');
 
 if(!$('.oe_website_sale').length) {
     return $.Deferred().reject("DOM doesn't contain '.oe_website_sale'");
@@ -69,13 +71,13 @@ var ProductWishlist = Widget.extend({
         });
 
     },
-    add_new_products: function($el, e){
+    add_new_products:function($el, e){
         var self = this;
         var product_id = parseInt($el.data('product-product-id'), 10);
         if (!product_id && e.currentTarget.classList.contains('o_add_wishlist_dyn')) {
             product_id = parseInt($el.parent().find('.product_id').val());
         }
-        if (product_id && !_.contains(self.wishlist_product_ids, product_id)) {
+        if (!_.contains(self.wishlist_product_ids, product_id)) {
             return ajax.jsonRpc('/shop/wishlist/add', 'call', {
                 'product_id': product_id
             }).then(function () {
@@ -110,9 +112,14 @@ var ProductWishlist = Widget.extend({
         var product = tr.data('product-id');
         var self = this;
 
-        ajax.jsonRpc('/shop/wishlist/remove/' + wish).done(function () {
-            $(tr).hide();
-        });
+        rpc.query({
+                model: 'product.wishlist',
+                method: 'write',
+                args: [[wish], { active: false }, weContext.getExtra()],
+            })
+            .then(function(){
+                $(tr).hide();
+            });
 
         this.wishlist_product_ids = _.without(this.wishlist_product_ids, product);
         if (this.wishlist_product_ids.length === 0) {

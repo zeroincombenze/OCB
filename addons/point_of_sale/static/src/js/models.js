@@ -259,7 +259,6 @@ exports.PosModel = Backbone.Model.extend({
             // we attribute a role to the user, 'cashier' or 'manager', depending
             // on the group the user belongs.
             var pos_users = [];
-            var current_cashier = self.get_cashier();
             for (var i = 0; i < users.length; i++) {
                 var user = users[i];
                 for (var j = 0; j < user.groups_id.length; j++) {
@@ -277,8 +276,6 @@ exports.PosModel = Backbone.Model.extend({
                 // replace the current user with its updated version
                 if (user.id === self.user.id) {
                     self.user = user;
-                }
-                if (user.id === current_cashier.id) {
                     self.set_cashier(user);
                 }
             }
@@ -632,7 +629,7 @@ exports.PosModel = Backbone.Model.extend({
     // changes the current cashier
     set_cashier: function(user){
         this.set('cashier', user);
-        this.db.set_cashier(this.get('cashier'));
+        this.db.set_cashier(this.cashier);
     },
     //creates a new empty order and sets it as the current order
     add_new_order: function(){
@@ -943,7 +940,6 @@ exports.PosModel = Backbone.Model.extend({
                 model: 'pos.order',
                 method: 'create_from_ui',
                 args: args,
-                kwargs: {context: session.user_context},
             }, {
                 timeout: timeout,
                 shadow: !options.to_invoice
@@ -1388,8 +1384,7 @@ exports.Orderline = Backbone.Model.extend({
                 if (unit.rounding) {
                     this.quantity    = round_pr(quant, unit.rounding);
                     var decimals = this.pos.dp['Product Unit of Measure'];
-                    this.quantity = round_di(this.quantity, decimals)
-                    this.quantityStr = field_utils.format.float(this.quantity, {digits: [69, decimals]});
+                    this.quantityStr = field_utils.format.float(round_di(this.quantity, decimals), {digits: [69, decimals]});
                 } else {
                     this.quantity    = round_pr(quant, 1);
                     this.quantityStr = this.quantity.toFixed(0);

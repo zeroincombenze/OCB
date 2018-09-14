@@ -147,22 +147,12 @@ var PDFSlidesViewer = (function(){
 
     PDFSlidesViewer.prototype.toggleFullScreenFooter = function(){
         if(document.fullscreenElement || document.mozFullScreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
-            var $navBarFooter = $('div#PDFViewer > div.navbar-fixed-bottom');
-            $navBarFooter.toggleClass('oe_show_footer');
-
-            if ($navBarFooter.css('display') === 'none') {
-                $navBarFooter.css('display', 'block');
-                $('div#PDFViewer').css('padding-bottom', '50px');
-            } else {
-                $navBarFooter.css('display', 'none');
-                $('div#PDFViewer').css('padding-bottom', '0');
-            }
+            $('div#PDFViewer > div.navbar-fixed-bottom').toggleClass('oe_show_footer');
         }
     }
 
     PDFSlidesViewer.prototype.toggleFullScreen = function(){
-        // The canvas and the navigation bar needs to be fullscreened
-        var el = this.canvas.parentNode.parentNode;
+        var el = this.canvas.parentNode;
 
         var isFullscreenAvailable = document.fullscreenEnabled || document.mozFullScreenEnabled || document.webkitFullscreenEnabled || document.msFullscreenEnabled || false;
         if(isFullscreenAvailable){ // Full screen supported

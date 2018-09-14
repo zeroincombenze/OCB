@@ -617,21 +617,13 @@ class Meeting(models.Model):
             event_date = event_date.astimezone(timezone)  # transform "+hh:mm" timezone
             rset1 = rrule.rrulestr(str(self.rrule), dtstart=event_date, forceset=True, tzinfos={})
         recurring_meetings = self.search([('recurrent_id', '=', self.id), '|', ('active', '=', False), ('active', '=', True)])
-
-        # We handle a maximum of 50,000 meetings at a time, and clear the cache at each step to
-        # control the memory usage.
-        invalidate = False
-        for meetings in self.env.cr.split_for_in_conditions(recurring_meetings, size=50000):
-            if invalidate:
-                self.invalidate_cache()
-            for meeting in meetings:
-                recurring_date = fields.Datetime.from_string(meeting.recurrent_id_date)
-                if use_naive_datetime:
-                    recurring_date = recurring_date.replace(tzinfo=None)
-                else:
-                    recurring_date = todate(meeting.recurrent_id_date)
-                rset1.exdate(recurring_date)
-            invalidate = True
+        for meeting in recurring_meetings:
+            recurring_date = fields.Datetime.from_string(meeting.recurrent_id_date)
+            if use_naive_datetime:
+                recurring_date = recurring_date.replace(tzinfo=None)
+            else:
+                recurring_date = todate(meeting.recurrent_id_date)
+            rset1.exdate(recurring_date)
         return [d.astimezone(pytz.UTC) if d.tzinfo else d for d in rset1]
 
     @api.multi
@@ -655,13 +647,7 @@ class Meeting(models.Model):
             }[data['rrule_type']]
 
             deadline = fields.Datetime.from_string(data['stop'])
-            computed_final_date = False
-            while not computed_final_date and count > 0:
-                try:  # may crash if year > 9999 (in case of recurring events)
-                    computed_final_date = deadline + relativedelta(**{delay: count * mult})
-                except ValueError:
-                    count -= data['interval']
-            return computed_final_date or deadline
+            return deadline + relativedelta(**{delay: count * mult})
         return final_date
 
     @api.multi
@@ -1162,7 +1148,6 @@ class Meeting(models.Model):
         def key(record):
             # we need to deal with undefined fields, as sorted requires an homogeneous iterable
             def boolean_product(x):
-                x = False if (isinstance(x, models.Model) and not x) else x
                 if isinstance(x, bool):
                     return (x, x)
                 return (True, x)
@@ -1243,12 +1228,7 @@ class Meeting(models.Model):
     def _rrule_parse(self, rule_str, data, date_start):
         day_list = ['mo', 'tu', 'we', 'th', 'fr', 'sa', 'su']
         rrule_type = ['yearly', 'monthly', 'weekly', 'daily']
-        ddate = fields.Datetime.from_string(date_start)
-        if 'Z' in rule_str and not ddate.tzinfo:
-            ddate = ddate.replace(tzinfo=pytz.timezone('UTC'))
-            rule = rrule.rrulestr(rule_str, dtstart=ddate)
-        else:
-            rule = rrule.rrulestr(rule_str, dtstart=ddate)
+        rule = rrule.rrulestr(rule_str, dtstart=fields.Datetime.from_string(date_start))
 
         if rule._freq > 0 and rule._freq < 4:
             data['rrule_type'] = rrule_type[rule._freq]

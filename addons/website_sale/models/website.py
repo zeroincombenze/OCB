@@ -149,11 +149,8 @@ class Website(models.Model):
 
     @api.model
     def sale_get_payment_term(self, partner):
-        return (
-            partner.property_payment_term_id or
-            self.env.ref('account.account_payment_term_immediate', False) or
-            self.env['account.payment.term'].sudo().search([('company_id', '=', self.company_id.id)], limit=1)
-        ).id
+        DEFAULT_PAYMENT_TERM = 'account.account_payment_term_immediate'
+        return partner.property_payment_term_id.id or self.env.ref(DEFAULT_PAYMENT_TERM, False).id
 
     @api.multi
     def _prepare_sale_order_values(self, partner, pricelist):

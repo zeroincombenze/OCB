@@ -221,19 +221,6 @@ class Product(models.Model):
             domain + loc_domain + ['!'] + dest_loc_domain if dest_loc_domain else domain + loc_domain
         )
 
-    def _search_qty_available(self, operator, value):
-        # In the very specific case we want to retrieve products with stock available, we only need
-        # to use the quants, not the stock moves. Therefore, we bypass the usual
-        # '_search_product_quantity' method and call '_search_qty_available_new' instead. This
-        # allows better performances.
-        if value == 0.0 and operator == '>' and not ({'from_date', 'to_date'} & set(self.env.context.keys())):
-            product_ids = self._search_qty_available_new(
-                operator, value, self.env.context.get('lot_id'), self.env.context.get('owner_id'),
-                self.env.context.get('package_id')
-            )
-            return [('id', 'in', product_ids)]
-        return self._search_product_quantity(operator, value, 'qty_available')
-
     def _search_virtual_available(self, operator, value):
         # TDE FIXME: should probably clean the search methods
         return self._search_product_quantity(operator, value, 'virtual_available')
@@ -258,13 +245,24 @@ class Product(models.Model):
 
         # TODO: Still optimization possible when searching virtual quantities
         ids = []
-        for product in self.with_context(prefetch_fields=False).search([]):
+        for product in self.search([]):
             if OPERATORS[operator](product[field], value):
                 ids.append(product.id)
         return [('id', 'in', ids)]
 
+    def _search_qty_available(self, operator, value):
+        # TDE FIXME: should probably clean the search methods
+        if value == 0.0 and operator in ('=', '>=', '<='):
+            return self._search_product_quantity(operator, value, 'qty_available')
+        product_ids = self._search_qty_available_new(operator, value, self._context.get('lot_id'), self._context.get('owner_id'), self._context.get('package_id'))
+        if (value > 0 and operator in ('<=', '<')) or (value < 0 and operator in ('>=', '>')):
+            # include also unavailable products
+            domain = self._search_product_quantity(operator, value, 'qty_available')
+            product_ids += domain[0][2]
+        return [('id', 'in', product_ids)]
+
     def _search_qty_available_new(self, operator, value, lot_id=False, owner_id=False, package_id=False):
-        ''' Optimized method which doesn't search on stock.moves, only on stock.quants. '''
+        # TDE FIXME: should probably clean the search methods
         product_ids = set()
         domain_quant = self._get_domain_locations()[0]
         if lot_id:
@@ -412,11 +410,8 @@ class ProductTemplate(models.Model):
     outgoing_qty = fields.Float(
         'Outgoing', compute='_compute_quantities', search='_search_outgoing_qty',
         digits=dp.get_precision('Product Unit of Measure'))
-    # The goal of these fields is not to be able to search a location_id/warehouse_id but
-    # to properly make these fields "dummy": only used to put some keys in context from
-    # the search view in order to influence computed field
-    location_id = fields.Many2one('stock.location', 'Location', store=False, search=lambda operator, operand, vals: [])
-    warehouse_id = fields.Many2one('stock.warehouse', 'Warehouse', store=False, search=lambda operator, operand, vals: [])
+    location_id = fields.Many2one('stock.location', 'Location')
+    warehouse_id = fields.Many2one('stock.warehouse', 'Warehouse')
     route_ids = fields.Many2many(
         'stock.location.route', 'stock_route_product', 'product_id', 'route_id', 'Routes',
         domain=[('product_selectable', '=', True)],
@@ -508,7 +503,7 @@ class ProductTemplate(models.Model):
         if 'uom_id' in vals:
             new_uom = self.env['product.uom'].browse(vals['uom_id'])
             updated = self.filtered(lambda template: template.uom_id != new_uom)
-            done_moves = self.env['stock.move'].search([('product_id', 'in', updated.with_context(active_test=False).mapped('product_variant_ids').ids)], limit=1)
+            done_moves = self.env['stock.move'].search([('product_id', 'in', updated.mapped('product_variant_ids').ids)], limit=1)
             if done_moves:
                 raise UserError(_("You can not change the unit of measure of a product that has already been used in a done stock move. If you need to change the unit of measure, you may deactivate this product."))
         if 'type' in vals and vals['type'] != 'product' and sum(self.mapped('nbr_reordering_rules')) != 0:

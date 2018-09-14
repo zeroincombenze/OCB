@@ -8,7 +8,6 @@ from odoo import api, fields, models, _
 from odoo.addons.payment.models.payment_acquirer import ValidationError
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
-from odoo.tools.float_utils import float_round
 
 _logger = logging.getLogger(__name__)
 
@@ -107,7 +106,7 @@ class PaymentTransactionStripe(models.Model):
     def _create_stripe_charge(self, acquirer_ref=None, tokenid=None, email=None):
         api_url_charge = 'https://%s/charges' % (self.acquirer_id._get_stripe_api_url())
         charge_params = {
-            'amount': int(self.amount if self.currency_id.name in INT_CURRENCIES else float_round(self.amount * 100, 2)),
+            'amount': int(self.amount if self.currency_id.name in INT_CURRENCIES else self.amount*100),
             'currency': self.currency_id.name,
             'metadata[reference]': self.reference,
             'description': self.reference,
@@ -127,7 +126,7 @@ class PaymentTransactionStripe(models.Model):
     @api.multi
     def stripe_s2s_do_transaction(self, **kwargs):
         self.ensure_one()
-        result = self._create_stripe_charge(acquirer_ref=self.payment_token_id.acquirer_ref, email=self.partner_email)
+        result = self._create_stripe_charge(acquirer_ref=self.payment_token_id.acquirer_ref)
         return self._stripe_s2s_validate_tree(result)
 
 
@@ -136,7 +135,7 @@ class PaymentTransactionStripe(models.Model):
 
         refund_params = {
             'charge': self.acquirer_reference,
-            'amount': int(float_round(self.amount * 100, 2)), # by default, stripe refund the full amount (we don't really need to specify the value)
+            'amount': int(self.amount*100), # by default, stripe refund the full amount (we don't really need to specify the value)
             'metadata[reference]': self.reference,
         }
 
