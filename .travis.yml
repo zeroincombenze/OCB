@@ -1,3 +1,6 @@
+# Odoo yaml template for travis-ci
+# __version__=0.2.0.25
+
 language: python
 sudo: false
 cache:
@@ -6,49 +9,65 @@ cache:
     - $HOME/.cache/pip
 
 python:
-  - "3.5"
+  - "3.4"
+
+virtualenv:
+  system_site_packages: true
+
+git:
+  submodules: false
+  depth: false
 
 addons:
   apt:
+    sources:
+      - pov-wkhtmltopdf
+#    Search your sources alias here:
+#      https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
     packages:
-      - expect-dev  # provides unbuffer utility
+      - python-dev
+      - libxml2-dev
+      - libxslt1-dev
+      - zlib1g-dev
+      - pdftk
+      - python-ldap
+      - cups
+      - python-simplejson
+      - nodejs
+      - npm
+      - python-psycopg2
+      - build-essential
+      - expect-dev
+      - libffi-dev
+      - libssl-dev
+      - python-setuptools
+      # - java
+      # - tesseract
+
+before_install:
+  - export TRAVIS_DEBUG_MODE="1"
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --depth=1
+  - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
+  - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
+
+install:
+  - travis_install_env
+  - export EXCLUDE=hw_scanner,hw_escpos,theme_bootswatch
+  - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/odoo/addons ${HOME}/build/${ODOO_REPO}/addons)
 
 env:
   global:
-  - VERSION="11.0" ODOO_REPO="OCA/OCB" LINT_CHECK="0" WEBSITE_REPO="1"
-  - EXCLUDE="hw_escpos,hw_scanner,theme_bootswatch"
-  - WKHTMLTOPDF_VERSION="0.12.4"
+  - VERSION="11.0" TESTS="0" LINT_CHECK="0" TRANSIFEX="0" ODOO_REPO="$TRAVIS_REPO_SLUG" WEBSITE_REPO="1"
+
   matrix:
-  - INCLUDE="applications"
-  - INCLUDE="no_applications" TESTS="1"
-  - INCLUDE="localization"
-
-before_install:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-
-install:
-  - git clone --depth=1 https://github.com/OCA/maintainer-quality-tools.git ${HOME}/maintainer-quality-tools
-  - sed -i "s/'phantomjs'/'disable_phantomjs'/g" ${TRAVIS_BUILD_DIR}/odoo/tests/common.py
-  - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
-  - travis_install_nightly
-  - rm -rf ${HOME}/${ODOO_REPO#*/}-${VERSION}; ln -s ${TRAVIS_BUILD_DIR} ${HOME}/${ODOO_REPO#*/}-${VERSION}
-  - pip install gengo
-  - cp ${HOME}/maintainer-quality-tools/cfg/.coveragerc .
+  - LINT_CHECK="0"
+  - TESTS="1" ODOO_TEST_SELECT="NO-CORE" ODOO_REPO="zeroincombenze/OCB"
 
 script:
-  - if [ $INCLUDE = 'applications' ]; then
-        sed -i "s/self.url_open(url)/self.url_open(url, timeout=100)/g" ${TRAVIS_BUILD_DIR}/addons/website/tests/test_crawl.py;
-        export INCLUDE=$(getaddons.py -m --only-applications ${TRAVIS_BUILD_DIR}/odoo/addons ${TRAVIS_BUILD_DIR}/addons);
-    elif [ $INCLUDE = 'no_applications' ]; then
-        export INCLUDE=$(getaddons.py -m --exclude-applications --exclude-localization ${TRAVIS_BUILD_DIR}/addons);
-    elif [ $INCLUDE = 'localization' ]; then
-        export INCLUDE=$(getaddons.py -m --only-localization ${TRAVIS_BUILD_DIR}/odoo/addons ${TRAVIS_BUILD_DIR}/addons);
-        sed -i "/'_auto_install_l10n'/d" ${TRAVIS_BUILD_DIR}/addons/account/__manifest__.py  ;
-    fi
-  - SERVER_PATH=${HOME}/${ODOO_REPO#*/}-${VERSION}
-  - export TRAVIS_BUILD_DIR=${SERVER_PATH}/odoo/addons
   - travis_run_tests
 
 after_success:
   - travis_after_tests_success
+
