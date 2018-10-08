@@ -315,7 +315,7 @@ class HttpCase(TransactionCase):
         Other lines are relayed to the test log.
 
         """
-        logger = _logger.getChild('phantomjs')
+        logger = _logger.getChild('disable_phantomjs')
         t0 = datetime.now()
         td = timedelta(seconds=timeout)
         buf = bytearray()
@@ -455,7 +455,7 @@ class HttpCase(TransactionCase):
         self.authenticate(login, login)
 
         phantomtest = os.path.join(os.path.dirname(__file__), 'phantomtest.js')
-        cmd = ['phantomjs', phantomtest, json.dumps(options)]
+        cmd = ['disable_phantomjs', phantomtest, json.dumps(options)]
         self.phantom_run(cmd, timeout)
 
 def can_import(module):
