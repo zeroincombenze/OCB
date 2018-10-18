@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Odoo, Open Source Management Solution
-#    Copyright (C) 2010 Odoo S.A. http://www.odoo.com
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2010 OpenERP S.A. http://www.openerp.com
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -85,7 +85,7 @@ class Query(object):
 
             :param implicit: False if the join is an explicit join. This allows
                 to fall back on the previous implementation of ``join`` before
-                Odoo 7.0. It therefore adds the JOIN specified in ``connection``
+                OpenERP 7.0. It therefore adds the JOIN specified in ``connection``
                 If True, the join is done implicitely, by adding the table alias
                 in the from clause and the join condition in the where clause
                 of the query. Implicit joins do not handle outer parameter.

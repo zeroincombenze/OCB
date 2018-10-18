@@ -36,7 +36,6 @@ from openerp.tools import config, ustr
 
 from .. import http
 openerpweb = http
-# from tndb import tndb
 
 #----------------------------------------------------------
 # Odoo Web helpers
@@ -564,23 +563,7 @@ html_template = """<!DOCTYPE html>
 </html>
 """
 
-# tndb.wlog('web_skin', openerp.tools.config['web_skin'])
-if openerp.tools.config['web_skin'] != 'odoo':
-    html_template = html_template.replace('favicon.ico',
-                                          openerp.tools.config['web_skin'] + '.ico')
-    html_template = html_template.replace('<meta http-equiv="content-type" content="text/html; charset=utf-8" />',
-                                          '<meta http-equiv="content-type" content="text/html; charset=utf-8" />' +
-                                          '\n<meta name="viewport" content="width=device-width, initial-scale=1.0">')
-    html_template = html_template.replace('<title>Odoo</title>',
-                                          '<title>' +
-                                          openerp.tools.config['web_skin'][0].upper() +
-                                          openerp.tools.config['web_skin'][1:] +
-                                          '</title>')
-    # tndb.wlog(html_template)
-
-
 class Home(openerpweb.Controller):
-    global html_template
     _cp_path = '/'
 
     @openerpweb.httprequest
@@ -592,24 +575,12 @@ class Home(openerpweb.Controller):
         js = "\n        ".join('<script type="text/javascript" src="%s"></script>' % i for i in manifest_list(req, 'js', db=db))
         css = "\n        ".join('<link rel="stylesheet" href="%s">' % i for i in manifest_list(req, 'css', db=db))
 
-        # tndb.wlog('index(web_skin)', openerp.tools.config['web_skin'])
-        if openerp.tools.config['web_skin'] != 'odoo':
-            r = html_template % {
-                'js': js,
-                'css': css,
-                'modules': simplejson.dumps(module_boot(req, db=db)),
-                'init': 'var wc = new s.web.WebClient();wc.appendTo($(document.body));'
-            }
-            r = r.replace(
-                'base.css', openerp.tools.config['web_skin'] + '.css')
-        else:
-            r = html_template % {
-                'js': js,
-                'css': css,
-                'modules': simplejson.dumps(module_boot(req, db=db)),
-                'init': 'var wc = new s.web.WebClient();wc.appendTo($(document.body));'
-            }
-        # tndb.wlog(r)
+        r = html_template % {
+            'js': js,
+            'css': css,
+            'modules': simplejson.dumps(module_boot(req, db=db)),
+            'init': 'var wc = new s.web.WebClient();wc.appendTo($(document.body));'
+        }
         return r
 
     @openerpweb.httprequest
@@ -1082,7 +1053,8 @@ class DataSet(openerpweb.Controller):
     def search_read(self, req, model, fields=False, offset=0, limit=False, domain=None, sort=None):
         return self.do_search_read(req, model, fields, offset, limit, domain, sort)
 
-    def do_search_read(self, req, model, fields=False, offset=0, limit=False, domain=None, sort=None):
+    def do_search_read(self, req, model,
+                       fields=False, offset=0, limit=False, domain=None, sort=None):
         """ Performs a search() followed by a read() (if needed) using the
         provided search criteria
 

@@ -23,7 +23,6 @@ import cStringIO
 import csv
 import logging
 import os.path
-import pickle
 import re
 
 # for eval context:
@@ -53,7 +52,7 @@ from translate import _
 # List of etree._Element subclasses that we choose to ignore when parsing XML.
 from misc import SKIPPED_ELEMENT_TYPES
 
-from misc import unquote
+from misc import pickle, unquote
 
 # Import of XML records requires the unsafe eval as well,
 # almost everywhere, which is ok because it supposedly comes
@@ -697,13 +696,15 @@ form: module.record_id""" % (xml_id,)
             if rec_src_count:
                 count = int(rec_src_count)
                 if len(ids) != count:
-                    self.assertion_report.record_failure()
                     msg = 'assertion "%s" failed!\n'    \
                           ' Incorrect search count:\n'  \
                           ' expected count: %d\n'       \
-                          ' obtained count: %d\n'       \
-                          % (rec_string, count, len(ids))
-                    _logger.error(msg)
+                          ' obtained count: %d\n'
+                    msg_args = (rec_string, count, len(ids))
+                    _logger.error(msg, msg_args)
+                    self.assertion_report.record_failure(details=dict(module=self.module,
+                                                                      msg=msg,
+                                                                      msg_args=msg_args))
                     return
 
         assert ids is not None,\
@@ -725,13 +726,15 @@ form: module.record_id""" % (xml_id,)
                 expected_value = _eval_xml(self, test, self.pool, cr, uid, self.idref, context=context) or True
                 expression_value = unsafe_eval(f_expr, globals_dict)
                 if expression_value != expected_value: # assertion failed
-                    self.assertion_report.record_failure()
                     msg = 'assertion "%s" failed!\n'    \
                           ' xmltag: %s\n'               \
                           ' expected value: %r\n'       \
-                          ' obtained value: %r\n'       \
-                          % (rec_string, etree.tostring(test), expected_value, expression_value)
-                    _logger.error(msg)
+                          ' obtained value: %r\n'
+                    msg_args = (rec_string, etree.tostring(test), expected_value, expression_value)
+                    self.assertion_report.record_failure(details=dict(module=self.module,
+                                                                      msg=msg,
+                                                                      msg_args=msg_args))
+                    _logger.error(msg, msg_args)
                     return
         else: # all tests were successful for this assertion tag (no break)
             self.assertion_report.record_success()

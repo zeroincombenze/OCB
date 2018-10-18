@@ -45,8 +45,7 @@ class ir_ui_menu(osv.osv):
         partner_id = self.pool.get('res.users').read(cr, uid, uid, ['partner_id'], context=context)['partner_id'][0]
         follower_obj = self.pool.get('mail.followers')
         for menu in self.browse(cr, uid, ids, context=context):
-            # [antoniov: 2015-12-13] added test on None to avoid some toruble
-            if menu and menu.mail_group_id:
+            if menu.mail_group_id:
                 sub_ids = follower_obj.search(cr, SUPERUSER_ID, [
                     ('partner_id', '=', partner_id),
                     ('res_model', '=', 'mail.group'),

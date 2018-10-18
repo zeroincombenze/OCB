@@ -157,7 +157,11 @@ class module(osv.osv):
         for module in self.browse(cr, uid, ids, context=context):
             overrides = dict(embed_stylesheet=False, doctitle_xform=False,
                              output_encoding='unicode', xml_declaration=False)
-            output = publish_string(source=module.description, settings_overrides=overrides, writer=MyWriter())
+            # [antoniov 2018-08-31] Avoid translation error
+            try:
+                output = publish_string(source=module.description, settings_overrides=overrides, writer=MyWriter())
+            except:
+                output = 'Error in Description'
             res[module.id] = html_sanitize(output)
         return res
 

@@ -50,6 +50,6 @@ author = 'Odoo S.A.'
 author_email = 'info@odoo.com'
 license = 'AGPL-3'
 
-nt_service_name = "odoo-server-" + serie
+nt_service_name = "openerp-server-" + serie
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

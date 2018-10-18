@@ -917,10 +917,6 @@ class mail_thread(osv.AbstractModel):
         msg_dict['from'] = decode(message.get('from'))
         msg_dict['to'] = decode(message.get('to'))
         msg_dict['cc'] = decode(message.get('cc'))
-        # [antoniov: 2018-03.02] Force all mail addresses to lowercase
-        for p in ('from', 'to', 'cc'):
-            if isinstance(msg_dict[p], basestring):
-                msg_dict[p] = msg_dict[p].lower()
 
         if message.get('From'):
             author_ids = self._message_find_partners(cr, uid, message, ['From'], context=context)

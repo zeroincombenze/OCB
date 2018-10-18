@@ -128,7 +128,7 @@ class ExportService(object):
         return cls._services[name]
 
     # Dispatch a RPC call w.r.t. the method name. The dispatching
-    # w.r.t. the service (this class) is done by OdooDispatcher.
+    # w.r.t. the service (this class) is done by OpenERPDispatcher.
     def dispatch(self, method, params):
         raise Exception("stub dispatch at %s" % self.__name)
 

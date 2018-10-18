@@ -26,7 +26,7 @@ from openerp.osv.orm import intersect, except_orm
 import openerp.tools
 from openerp.tools.translate import _
 
-from decimal_precision import decimal_precision as dp
+from openerp.addons.decimal_precision import decimal_precision as dp
 
 _logger = logging.getLogger(__name__)
 

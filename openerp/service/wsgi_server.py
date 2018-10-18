@@ -401,7 +401,7 @@ def application_unproxied(environ, start_response):
     """ WSGI entry point."""
     # cleanup db/uid trackers - they're set at HTTP dispatch in
     # web.session.OdooSession.send() and at RPC dispatch in
-    # odoo.service.web_services.objects_proxy.dispatch().
+    # openerp.service.web_services.objects_proxy.dispatch().
     # /!\ The cleanup cannot be done at the end of this `application`
     # method because werkzeug still produces relevant logging afterwards 
     if hasattr(threading.current_thread(), 'uid'):

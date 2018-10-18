@@ -138,7 +138,7 @@ class purchase_order(osv.osv):
         for purchase in self.browse(cursor, user, ids, context=context):
             res[purchase.id] = all(line.invoiced for line in purchase.order_line)
         return res
-
+    
     def _get_journal(self, cr, uid, context=None):
         if context is None:
             context = {}
@@ -148,7 +148,7 @@ class purchase_order(osv.osv):
         res = journal_obj.search(cr, uid, [('type', '=', 'purchase'),
                                             ('company_id', '=', company_id)],
                                                 limit=1)
-        return res and res[0] or False
+        return res and res[0] or False  
 
     STATE_SELECTION = [
         ('draft', 'Draft PO'),
@@ -432,7 +432,7 @@ class purchase_order(osv.osv):
         try:
             compose_form_id = ir_model_data.get_object_reference(cr, uid, 'mail', 'email_compose_message_wizard_form')[1]
         except ValueError:
-            compose_form_id = False
+            compose_form_id = False 
         ctx = dict(context)
         ctx.update({
             'default_model': 'purchase.order',
@@ -627,8 +627,6 @@ class purchase_order(osv.osv):
                     wf_service.trg_validate(uid, 'account.invoice', inv.id, 'invoice_cancel', cr)
             self.pool['purchase.order.line'].write(cr, uid, [l.id for l in  purchase.order_line],
                     {'state': 'cancel'})
-        # [antoniov: 2015-11-12] cancel did not work, added write
-        self.write(cr,uid,ids,{'state':'cancel'})
 
         for id in ids:
             wf_service.trg_validate(uid, 'purchase.order', id, 'purchase_cancel', cr)
@@ -638,7 +636,7 @@ class purchase_order(osv.osv):
         """ Convert date values expressed in user's timezone to
         server-side UTC timestamp, assuming a default arbitrary
         time of 12:00 AM - because a time is needed.
-
+    
         :param str userdate: date string in in user time zone
         :return: UTC datetime string for server-side use
         """
@@ -1318,7 +1316,7 @@ class mail_compose_message(osv.Model):
 
 class account_invoice(osv.Model):
     _inherit = 'account.invoice'
-
+    
     def invoice_validate(self, cr, uid, ids, context=None):
         res = super(account_invoice, self).invoice_validate(cr, uid, ids, context=context)
         purchase_order_obj = self.pool.get('purchase.order')
@@ -1339,7 +1337,7 @@ class account_invoice(osv.Model):
                     not all(picking.invoice_state in ['invoiced'] for picking in order.picking_ids)):
                 shipped = False
             for po_line in order.order_line:
-                if (po_line.invoice_lines and
+                if (po_line.invoice_lines and 
                         all(line.invoice_id.state not in ['draft', 'cancel'] for line in po_line.invoice_lines)):
                     invoiced.append(po_line.id)
             if invoiced and shipped:

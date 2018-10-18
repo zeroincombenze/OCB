@@ -577,11 +577,11 @@ class account_bank_statement_line(osv.osv):
         'type': 'general',
     }
 
-    def copy(self, cr, uid, id, default=None, context=None):
+    def copy_data(self, cr, uid, id, default=None, context=None):
         if default is None:
             default = {}
         default = dict(default, move_ids=[])
-        return super(account_bank_statement_line, self).copy(
+        return super(account_bank_statement_line, self).copy_data(
             cr, uid, id, default=default, context=context)
 
 account_bank_statement_line()

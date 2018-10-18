@@ -1,15 +1,3 @@
-[![Build Status](https://travis-ci.org/zeroincombenze/javascript-state-machine.svg?branch=7.0)](https://travis-ci.org/zeroincombenze/javascript-state-machine)
-[![license agpl](https://img.shields.io/badge/licence-AGPL--3-blue.svg)](http://www.gnu.org/licenses/agpl-3.0.html)
-[![Coverage Status](https://coveralls.io/repos/github/zeroincombenze/javascript-state-machine/badge.svg?branch=7.0)](https://coveralls.io/github/zeroincombenze/javascript-state-machine?branch=7.0)
-[![codecov](https://codecov.io/gh/zeroincombenze/javascript-state-machine/branch/7.0/graph/badge.svg)](https://codecov.io/gh/zeroincombenze/javascript-state-machine/branch/7.0)
-[![OCA_project](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-7.svg)](https://github.com/OCA/javascript-state-machine/tree/7.0)
-[![Tech Doc](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-7.svg)](http://wiki.zeroincombenze.org/en/Odoo/7.0/dev)
-[![Help](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-7.svg)](http://wiki.zeroincombenze.org/en/Odoo/7.0/man/)
-[![try it](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-7.svg)](http://erp7.zeroincombenze.it)
-
-
-[![en](http://www.shs-av.com/wp-content/en_US.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
-
 Javascript Finite State Machine (v2.1.0)
 ========================================
 
@@ -20,6 +8,7 @@ This standalone javascript micro-framework provides a finite state machine for y
  * You can find a [working demo here](http://codeincomplete.com/posts/2011/8/19/javascript_state_machine_v2/example/)
 
 Download
+========
 
 You can download [state-machine.js](https://github.com/jakesgordon/javascript-state-machine/raw/master/state-machine.js),
 or the [minified version](https://github.com/jakesgordon/javascript-state-machine/raw/master/state-machine.min.js)
@@ -35,15 +24,7 @@ Alternatively:
  * Demo can be found in /index.html
  * QUnit tests can be found in /test/index.html
 
-Installation
-------------
-
-Configuration
--------------
-
 Usage
------
-
 =====
 
 Include `state-machine.min.js` in your application.
@@ -74,6 +55,7 @@ along with the following members:
  * fsm.cannot(e) - return true if event `e` cannot be fired in the current state
 
 Multiple 'from' and 'to' states for a single event
+==================================================
 
 If an event is allowed **from** multiple states, and always transitions to the same
 state, then simply provide an array of states in the `from` attribute of an event. However,
@@ -105,6 +87,7 @@ allowed from any current state.
 the same name if you prefer the verbose approach.
 
 Callbacks
+=========
 
 4 callbacks are available if your state machine has methods using the following naming conventions:
 
@@ -164,6 +147,7 @@ Additionally, they can be added and removed from the state machine at any time:
     fsm.onchangestate = function(event, from, to) { document.body.className = to; };
 
 Asynchronous State Transitions
+==============================
 
 Sometimes, you need to execute some asynchronous code during a state transition and ensure the
 new state is not entered until your code has completed.
@@ -211,6 +195,7 @@ For example, using jQuery effects:
 
 
 State Machine Classes
+=====================
 
 You can also turn all instances of a  _class_ into an FSM by applying
 the state machine functionality to the prototype, including your callbacks
@@ -244,6 +229,7 @@ instances:
 This should be easy to adjust to fit your appropriate mechanism for object construction.
 
 Initialization Options
+======================
 
 How the state machine should initialize can depend on your application requirements, so
 the library provides a number of simple options.
@@ -301,6 +287,7 @@ same as the first example in this section where you simply define your own start
 So you have a number of choices available to you when initializing your state machine.
 
 Handling Failures
+======================
 
 By default, if you try to call an event method that is not allowed in the current state, the
 state machine will throw an exception. If you prefer to handle the problem yourself, you can
@@ -318,14 +305,17 @@ define a custom `error` handler:
     alert(fsm.calm()); // "event calm was naughty :- event not allowed in current state green"
 
 Release Notes
+=============
 
 See [RELEASE NOTES](https://github.com/jakesgordon/javascript-state-machine/blob/master/RELEASE_NOTES.md) file.
 
 License
+=======
 
 See [LICENSE](https://github.com/jakesgordon/javascript-state-machine/blob/master/LICENSE) file.
 
 Contact
+=======
 
 If you have any ideas, feedback, requests or bug reports, you can reach me at
 [jake@codeincomplete.com](mailto:jake@codeincomplete.com), or via
@@ -335,26 +325,3 @@ my website: [Code inComplete](http://codeincomplete.com/posts/2011/8/19/javascri
 
 
 
-[//]: # (copyright)
-
-----
-
-**Odoo** is a trademark of [Odoo S.A.](https://www.odoo.com/) (formerly OpenERP, formerly TinyERP)
-
-**OCA**, or the [Odoo Community Association](http://odoo-community.org/), is a nonprofit organization whose
-mission is to support the collaborative development of Odoo features and
-promote its widespread use.
-
-**zeroincombenze®** is a trademark of [SHS-AV s.r.l.](http://www.shs-av.com/)
-which distributes and promotes **Odoo** ready-to-use on its own cloud infrastructure.
-[Zeroincombenze® distribution](http://wiki.zeroincombenze.org/en/Odoo)
-is mainly designed for Italian law and markeplace.
-Everytime, every Odoo DB and customized code can be deployed on local server too.
-
-[//]: # (end copyright)
-
-[//]: # (addons)
-
-[//]: # (end addons)
-
-[![chat with us](https://www.shs-av.com/wp-content/chat_with_us.gif)](https://tawk.to/85d4f6e06e68dd4e358797643fe5ee67540e408b)
