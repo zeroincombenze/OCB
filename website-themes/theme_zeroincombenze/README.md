@@ -1,0 +1,4 @@
+# Dimensione logo 7.0
+logo.png:  180x46px, trasparent
+logo2.png: 190x46px trasparent
+no_logo.png: 180x46px, trasparent
