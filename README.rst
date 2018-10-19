@@ -3,7 +3,7 @@
 |en|
 
 ===========================
-Odoo 8.0 (formerly OpenERP)
+Odoo 9.0 (formerly OpenERP)
 ===========================
 
 Odoo is a suite of web based open source business apps.
@@ -14,7 +14,7 @@ The main Odoo Apps include an Open Source CRM and Enterprise Resource Planning. 
 |it|
 
 =======================
-Odoo 8.0 (gia' OpenERP)
+Odoo 9.0 (gia' OpenERP)
 =======================
 
 Odoo è una suite di prodotti web open-source.
@@ -23,22 +23,24 @@ Le principali applicazioni di Odoo includono un Open Source CRM e Enterprise Res
 
 
 
-Distributions / Distribuzioni Odoo 8.0:
+Distributions / Distribuzioni Odoo 9.0:
 =======================================
 
 
 
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| name / nome | description / descrizione        | Italy / Localizzazione Italiana    | Maintainers                                                  | License / Licenza |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| Odoo        | Native Odoo / Odoo nativo        | |no_check|                     (1) | No more supported by `Odoo S.A. <https://www.odoo.com/>`__   | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| OCA         | OCA distribution                 | |warning| Norme fiscali < 2107 (2) | `Odoo Community Association <http://odoo-community.org/>`__  | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| OIA         | Odoo Italia                      | |check| Aggiornato al 2018     (3) | `Associazione Odoo Italia <https://www.odoo-italia.org/>`__  | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| Zero        | Zeroincombenze(R)                | |check| Aggiornato al 2018     (3) | `SHS-AV s.r.l. <http://www.shs-av.com/>`__                   | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
+| name / nome | description / descrizione        | Italy / Localizzazione Italiana    | Maintainers                                                  | License / Licenza                                                                  |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
+| Odoo EE     | Odoo Enterprise Edition          | |check| Tramite partner        (1) | `Odoo S.A. <https://www.odoo.com/>`__                        | `OPL <https://www.odoo.com/documentation/user/9.0/legal/licenses/licenses.html>`__ |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
+| Odoo CE     | Odoo Community Edition           | |no_check|                         | `Odoo S.A. <https://www.odoo.com/>`__                        | |license gpl|                                                                      |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
+| OCA         | Odoo CE                          | |warning| Norme fiscali < 2107 (2) | `Odoo Community Association <http://odoo-community.org/>`__  | |license gpl|                                                                      |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
+| OIA         | Odoo CE                          | |warning| Norme fiscali < 2107 (3) | `Associazione Odoo Italia <https://www.odoo-italia.org/>`__  | |license gpl|                                                                      |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
+| Zero        | Zeroincombenze(R)                | |warning| Norme fiscali < 2107 (3) | `SHS-AV s.r.l. <http://www.shs-av.com/>`__                   | |license gpl|                                                                      |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
 
 Notes / Note:
 -------------
@@ -65,7 +67,7 @@ Installation / Installazione
 +---------------------------------+------------------------------------------+
 | Suggested deployment is         | Posizione suggerita per l'installazione: |
 +---------------------------------+------------------------------------------+
-| **/opt/odoo/8.0**                                                          |
+| **/opt/odoo/9.0**                                                          |
 +----------------------------------------------------------------------------+
 
 |
@@ -77,11 +79,11 @@ Installation / Installazione
     cd ./tools
     ./install_tools.sh -p
     export PATH=$HOME/dev:$PATH
-    odoo_install_repository OCB -b 8.0 -O zero
+    odoo_install_repository OCB -b 9.0 -O zero
     for pkg in os0 z0lib; do
         pip install $pkg -U
     done
-    sudo manage_odoo requirements -b 8.0 -vsy -o /opt/odoo/8.0
+    sudo manage_odoo requirements -b 9.0 -vsy -o /opt/odoo/9.0
 
 
 
@@ -112,29 +114,29 @@ Last Update / Ultimo aggiornamento: 2018-10-19
 .. |Maturity| image:: https://img.shields.io/badge/maturity-Alfa-red.png
     :target: https://odoo-community.org/page/development-status
     :alt: Alfa
-.. |Build Status| image:: https://travis-ci.org/zeroincombenze/OCB.svg?branch=8.0
+.. |Build Status| image:: https://travis-ci.org/zeroincombenze/OCB.svg?branch=9.0
     :target: https://travis-ci.org/zeroincombenze/OCB
     :alt: github.com
-.. |license gpl| image:: https://img.shields.io/badge/licence-AGPL--3-blue.svg
-    :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
-    :alt: License: AGPL-3
-.. |Coverage Status| image:: https://coveralls.io/repos/github/zeroincombenze/OCB/badge.svg?branch=8.0
-    :target: https://coveralls.io/github/zeroincombenze/OCB?branch=8.0
+.. |license gpl| image:: https://img.shields.io/badge/licence-LGPL--3-7379c3.svg
+    :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
+    :alt: License: LGPL-3
+.. |Coverage Status| image:: https://coveralls.io/repos/github/zeroincombenze/OCB/badge.svg?branch=9.0
+    :target: https://coveralls.io/github/zeroincombenze/OCB?branch=9.0
     :alt: Coverage
-.. |Codecov Status| image:: https://codecov.io/gh/zeroincombenze/OCB/branch/8.0/graph/badge.svg
-    :target: https://codecov.io/gh/zeroincombenze/OCB/branch/8.0
+.. |Codecov Status| image:: https://codecov.io/gh/zeroincombenze/OCB/branch/9.0/graph/badge.svg
+    :target: https://codecov.io/gh/zeroincombenze/OCB/branch/9.0
     :alt: Codecov
-.. |OCA project| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-8.svg
-    :target: https://github.com/OCA/OCB/tree/8.0
+.. |OCA project| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-9.svg
+    :target: https://github.com/OCA/OCB/tree/9.0
     :alt: OCA
-.. |Tech Doc| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-8.svg
-    :target: https://wiki.zeroincombenze.org/en/Odoo/8.0/dev
+.. |Tech Doc| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-9.svg
+    :target: https://wiki.zeroincombenze.org/en/Odoo/9.0/dev
     :alt: Technical Documentation
-.. |Help| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-8.svg
-    :target: https://wiki.zeroincombenze.org/it/Odoo/8.0/man
+.. |Help| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-9.svg
+    :target: https://wiki.zeroincombenze.org/it/Odoo/9.0/man
     :alt: Technical Documentation
-.. |Try Me| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-8.svg
-    :target: https://erp8.zeroincombenze.it
+.. |Try Me| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-9.svg
+    :target: https://erp9.zeroincombenze.it
     :alt: Try Me
 .. |Odoo Italia Associazione| image:: https://www.odoo-italia.org/images/Immagini/Odoo%20Italia%20-%20126x56.png
    :target: https://odoo-italia.org
