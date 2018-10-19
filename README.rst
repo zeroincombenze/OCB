@@ -63,12 +63,14 @@ Installation / Installazione
 |                                 |                                          |
 | Installation is based on:       | L'installazione è basata su:             |
 +---------------------------------+------------------------------------------+
-| `Zeroincombenze Tools <https://github.com/zeroincombenze/tools>`__ |
+| `Zeroincombenze Tools <https://github.com/zeroincombenze/tools>`__         |
 +---------------------------------+------------------------------------------+
 | Suggested deployment is         | Posizione suggerita per l'installazione: |
 +---------------------------------+------------------------------------------+
-| /opt/odoo/7.0                                                       |
+| **/opt/odoo/7.0**                                                              |
 +----------------------------------------------------------------------------+
+
+|
 
 ::
 
@@ -105,7 +107,7 @@ and deploy on local server.
 
 
 
-
+|
 
 Last Update / Ultimo aggiornamento: 2018-10-19
 
