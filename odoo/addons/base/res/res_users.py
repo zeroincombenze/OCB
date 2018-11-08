@@ -492,7 +492,11 @@ class Users(models.Model):
                         base = user_agent_env['base_location']
                         ICP = api.Environment(cr, uid, {})['ir.config_parameter']
                         if not ICP.get_param('web.base.url.freeze'):
-                            ICP.set_param('web.base.url', base)
+                            if ICP.get_param('web.base.url.cvt2https'):
+                                ICP.set_param('web.base.url',
+                                              base.replace('http:', 'https:'))
+                            else:
+                                ICP.set_param('web.base.url', base)
                 except Exception:
                     _logger.exception("Failed to update web.base.url configuration parameter")
         return uid
