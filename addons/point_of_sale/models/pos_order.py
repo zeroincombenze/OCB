@@ -169,7 +169,7 @@ class PosOrder(models.Model):
             'comment': self.note or '',
             # considering partner's sale pricelist's currency
             'currency_id': self.pricelist_id.currency_id.id,
-            'user_id': self.env.uid,
+            'user_id': self.user_id.id,
         }
 
     def _action_create_invoice_line(self, line=False, invoice_id=False):
@@ -406,6 +406,12 @@ class PosOrder(models.Model):
                 # It may be interesting to have the Traceback logged anyway
                 # for debugging and support purposes
                 _logger.exception('Reconciliation did not work for order %s', order.name)
+
+    def _filtered_for_reconciliation(self):
+        filter_states = ['invoiced', 'done']
+        if self.env['ir.config_parameter'].sudo().get_param('point_of_sale.order_reconcile_mode', 'all') == 'partner_only':
+            return self.filtered(lambda order: order.state in filter_states and order.partner_id)
+        return self.filtered(lambda order: order.state in filter_states)
 
     def _default_session(self):
         return self.env['pos.session'].search([('state', '=', 'opened'), ('user_id', '=', self.env.uid)], limit=1)

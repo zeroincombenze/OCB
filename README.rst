@@ -11,7 +11,12 @@ Odoo 10.0 (formerly OpenERP)
 Overview / Panoramica
 =====================
 
-|en| 
+|en| Odoo is a suite of web based open source business apps.
+
+The main Odoo Apps include an Open Source CRM, Website Builder, eCommerce, Warehouse Management, Project Management, Billing & Accounting, Point of Sale, Human Resources, Marketing, Manufacturing, Purchase Management, ...
+
+Odoo Apps can be used as stand-alone applications, but they also integrate seamlessly so you get a full-featured Open Source ERP when you install several Apps.
+
 
 |it| Odoo è una suite di prodotti web open-source.
 
@@ -67,7 +72,7 @@ Avaiable Addons / Moduli disponibili
 +--------------------------------------+------------+------------+----------------------------------------------------+
 | account_check_printing               | 10.0.1.0   | |same|     | Check printing commons                             |
 +--------------------------------------+------------+------------+----------------------------------------------------+
-| account_lock                         | |no_check| | 10.0.1.0   | Irreversible Lock Date                             |
+| account_lock                         | 10.0.1.0   | |same|     | Irreversible Lock Date                             |
 +--------------------------------------+------------+------------+----------------------------------------------------+
 | account_tax_cash_basis               | 10.0.1.1   | |same|     | Allow to have cash basis on tax                    |
 +--------------------------------------+------------+------------+----------------------------------------------------+
@@ -418,7 +423,7 @@ Avaiable Addons / Moduli disponibili
 +--------------------------------------+------------+------------+----------------------------------------------------+
 | sale_service_rating                  | 10.0.0.0   | |same|     | Sale Service Rating                                |
 +--------------------------------------+------------+------------+----------------------------------------------------+
-| sale_stock                           | 10.0.1.0.1 | 10.0.1.0   | Quotation, Sale Orders, Delivery & Invoicing Contr |
+| sale_stock                           | 10.0.1.0   | |same|     | Quotation, Sale Orders, Delivery & Invoicing Contr |
 +--------------------------------------+------------+------------+----------------------------------------------------+
 | sale_timesheet                       | 10.0.0.0   | |same|     | Sell based on timesheets                           |
 +--------------------------------------+------------+------------+----------------------------------------------------+
@@ -668,7 +673,7 @@ An Enhancement Proposal may be submitted if your idea gains ground.
 
 |
 
-Last Update / Ultimo aggiornamento: 2018-11-08
+Last Update / Ultimo aggiornamento: 2018-11-12
 
 .. |Maturity| image:: https://img.shields.io/badge/maturity-Alfa-red.png
     :target: https://odoo-community.org/page/development-status

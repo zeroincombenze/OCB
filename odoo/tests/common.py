@@ -288,7 +288,7 @@ class HttpCase(TransactionCase):
         session.db = db
         session.uid = uid
         session.login = user
-        session.session_token = uid and security.compute_session_token(session)
+        session.session_token = uid and security.compute_session_token(session, env)
         session.context = env['res.users'].context_get() or {}
         session.context['uid'] = uid
         session._fix_lang(session.context)
@@ -441,7 +441,7 @@ class HttpCase(TransactionCase):
         self.authenticate(login, login)
 
         phantomtest = os.path.join(os.path.dirname(__file__), 'phantomtest.js')
-        cmd = ['disable_phantomjs', phantomtest, json.dumps(options)]
+        cmd = ['phantomjs', phantomtest, json.dumps(options)]
         self.phantom_run(cmd, timeout)
 
 def can_import(module):

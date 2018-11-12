@@ -341,7 +341,9 @@ class MailThread(models.AbstractModel):
                         'email_link': email_link
                     }
                 }
-            return "%(static_help)s<p>%(dyn_help)s" % {
+            # do not add alias two times if it was added previously
+            if not help or help.find("oe_view_nocontent_alias") == -1:
+                return '%(static_help)s<p class="oe_view_nocontent_alias">%(dyn_help)s</p>' % {
                     'static_help': help or '',
                     'dyn_help': _("You could also add a new %(document)s by sending an email to: %(email_link)s.") %  {
                         'document': document_name,
@@ -1360,7 +1362,13 @@ class MailThread(models.AbstractModel):
         located in tools. """
         if not body:
             return body, attachments
-        root = lxml.html.fromstring(body)
+        try:
+            root = lxml.html.fromstring(body)
+        except ValueError:
+            # In case the email client sent XHTML, fromstring will fail because 'Unicode strings
+            # with encoding declaration are not supported'.
+            root = lxml.html.fromstring(body.encode('utf-8'))
+
         postprocessed = False
         to_remove = []
         for node in root.iter():

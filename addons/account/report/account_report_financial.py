@@ -79,8 +79,6 @@ class ReportFinancial(models.AbstractModel):
         return res
 
     def get_account_lines(self, data):
-        import pdb
-        pdb.set_trace()
         lines = []
         account_report = self.env['account.financial.report'].search([('id', '=', data['account_report_id'][0])])
         child_reports = account_report._get_children_by_order()

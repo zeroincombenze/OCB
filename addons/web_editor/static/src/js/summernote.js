@@ -1115,7 +1115,14 @@ $.summernote.pluginEvents.untab = function (event, editor, layoutInfo) {
 $.summernote.pluginEvents.up = function (event, editor, layoutInfo) {
     var r = range.create();
     var node = dom.firstChild(r.sc.childNodes[r.so] || r.sc);
-    if (!r.isOnCell() || (!dom.isCell(node) && dom.hasContentBefore(node) && (!dom.isBR(dom.hasContentBefore(node)) || !dom.isText(node) || dom.isVisibleText(node) || dom.hasContentBefore(dom.hasContentBefore(node))))) {
+    if (!r.isOnCell()) {
+        return;
+    }
+    // check if an ancestor between node and cell has content before
+    var ancestor = dom.ancestor(node, function (ancestorNode) {
+        return dom.hasContentBefore(ancestorNode) || dom.isCell(ancestorNode);
+    });
+    if (!dom.isCell(ancestor) && (!dom.isBR(dom.hasContentBefore(ancestor)) || !dom.isText(node) || dom.isVisibleText(node) || dom.hasContentBefore(dom.hasContentBefore(ancestor)))) {
         return;
     }
     event.preventDefault();
@@ -1132,7 +1139,14 @@ $.summernote.pluginEvents.up = function (event, editor, layoutInfo) {
 $.summernote.pluginEvents.down = function (event, editor, layoutInfo) {
     var r = range.create();
     var node = dom.firstChild(r.sc.childNodes[r.so] || r.sc);
-    if (!r.isOnCell() || (!dom.isCell(node) && dom.hasContentAfter(node) && (!dom.isBR(dom.hasContentAfter(node)) || !dom.isText(node) || dom.isVisibleText(node) || dom.hasContentAfter(dom.hasContentAfter(node))))) {
+    if (!r.isOnCell()) {
+        return;
+    }
+    // check if an ancestor between node and cell has content after
+    var ancestor = dom.ancestor(node, function (ancestorNode) {
+        return dom.hasContentAfter(ancestorNode) || dom.isCell(ancestorNode);
+    });
+    if (!dom.isCell(ancestor) && (!dom.isBR(dom.hasContentAfter(ancestor)) || !dom.isText(node) || dom.isVisibleText(node) || dom.hasContentAfter(dom.hasContentAfter(ancestor)))) {
         return;
     }
     event.preventDefault();
@@ -1856,12 +1870,17 @@ $.summernote.pluginEvents.indent = function (event, editor, layoutInfo, outdent)
     var $dom = $(ancestor);
 
     if (!dom.isList(ancestor)) {
+        // to indent a selection, we indent the child nodes of the common
+        // ancestor that contains this selection
         $dom = $(dom.node(ancestor)).children();
     }
-    if (!$dom.length) {
-        $dom = $(dom.ancestor(r.sc, dom.isList) || dom.ancestor(r.sc, dom.isCell));
+    if (!$dom.not('br').length) {
+        // if selection is inside a list, we indent its list items
+        $dom = $(dom.ancestor(r.sc, dom.isList));
         if (!$dom.length) {
-            $dom = $(r.sc).closest(options.styleTags.join(','));
+            // if the selection is contained in a single HTML node, we indent
+            // the first ancestor 'content block' (P, H1, PRE, ...) or TD
+            $dom = $(r.sc).closest(options.styleTags.join(',')+',td');
         }
     }
 
@@ -1998,7 +2017,13 @@ eventHandler.modules.toolbar.button.updateRecentColor = function (elBtn, sEvent,
 };
 
 $(document).on('click keyup', function () {
-    var $popover = $((range.create()||{}).sc).closest('[contenteditable]');
+    var current_range = {};
+    try {
+        current_range = range.create() || {};
+    } catch (e) {
+        // if range is on Restricted element ignore error
+    }
+    var $popover = $(current_range.sc).closest('[contenteditable]');
     var popover_history = ($popover.data()||{}).NoteHistory;
     if(!popover_history || popover_history == history) return;
     var editor = $popover.parent('.note-editor');

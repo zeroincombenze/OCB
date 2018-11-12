@@ -84,12 +84,9 @@ class Partner(models.Model):
                  'associate_member.membership_state')
     def _compute_membership_cancel(self):
         for partner in self:
-            if partner.membership_state == 'canceled':
-                partner.membership_cancel = self.env['membership.membership_line'].search([
-                    ('partner', '=', partner.id)
-                ], limit=1, order='date_cancel').date_cancel
-            else:
-                partner.membership_cancel = False
+            partner.membership_cancel = self.env['membership.membership_line'].search([
+                ('partner', '=', partner.id)
+            ], limit=1, order='date_cancel desc').date_cancel
 
     def _membership_state(self):
         """This Function return Membership State For Given Partner. """
@@ -161,8 +158,10 @@ class Partner(models.Model):
 
     @api.model
     def _cron_update_membership(self):
-        # used to recompute 'membership_state'; should no longer be necessary
-        pass
+        partners = self.search([('membership_state', 'in', ['invoiced', 'paid'])])
+        # mark the field to be recomputed, and recompute it
+        partners._recompute_todo(self._fields['membership_state'])
+        self.recompute()
 
     @api.multi
     def create_membership_invoice(self, product_id=None, datas=None):

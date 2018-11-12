@@ -169,6 +169,7 @@ class Module(models.Model):
                     'doctitle_xform': False,
                     'output_encoding': 'unicode',
                     'xml_declaration': False,
+                    'file_insertion_enabled': False,
                 }
                 # [antoniov 2018-09-04] Avoid translation error
                 try:
@@ -603,7 +604,7 @@ class Module(models.Model):
         res = [0, 0]    # [update, add]
 
         default_version = modules.adapt_version('1.0')
-        known_mods = self.search([])
+        known_mods = self.with_context(lang=None).search([])
         known_mods_names = {mod.name: mod for mod in known_mods}
 
         # iterate through detected modules and update/create them in db
@@ -627,11 +628,10 @@ class Module(models.Model):
                     mod.write(updated_values)
             else:
                 mod_path = modules.get_module_path(mod_name)
-                if not mod_path:
+                if not mod_path or not terp:
                     continue
-                if not terp or not terp.get('installable', True):
-                    continue
-                mod = self.create(dict(name=mod_name, state='uninstalled', **values))
+                state = "uninstalled" if terp.get('installable', True) else "uninstallable"
+                mod = self.create(dict(name=mod_name, state=state, **values))
                 res[1] += 1
 
             mod._update_dependencies(terp.get('depends', []))

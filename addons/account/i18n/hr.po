@@ -1057,7 +1057,7 @@ msgstr "Odabrane stavke temeljnica su već proknjižene."
 #: code:addons/account/models/account_bank_statement.py:883
 #, python-format
 msgid "A selected statement line was already reconciled with an account move."
-msgstr ""
+msgstr "Odabrana stavka izvoda je već zatvorena s transakcijom računa."
 
 #. module: account
 #: code:addons/account/models/account_bank_statement.py:218
@@ -1554,6 +1554,11 @@ msgstr "Adresa"
 #: model:ir.model.fields,field_description:account.field_tax_adjustments_wizard_tax_id
 msgid "Adjustment Tax"
 msgstr "Prilagodba poreza"
+
+#. module: account
+#: model:ir.model.fields,field_description:account.field_tax_adjustments_wizard_adjustment_type
+msgid "Adjustment Type"
+msgstr "Vrsta prilagodbe"
 
 #. module: account
 #: model:ir.ui.view,arch_db:account.view_account_tax_template_form
@@ -2256,7 +2261,7 @@ msgstr "Izvod banke"
 #: code:addons/account/models/account_bank_statement.py:935
 #, python-format
 msgid "Bank Statement %s"
-msgstr ""
+msgstr "Izvod banke%s"
 
 #. module: account
 #: model:ir.model,name:account.model_account_bank_statement_line
@@ -5732,7 +5737,7 @@ msgstr "Lipanj"
 #. module: account
 #: model:ir.model.fields,field_description:account.field_tax_adjustments_wizard_reason
 msgid "Justification"
-msgstr ""
+msgstr "Opravdanje"
 
 #. module: account
 #: model:ir.model.fields,field_description:account.field_account_journal_kanban_dashboard
@@ -11147,3 +11152,11 @@ msgstr "wizard.multi.charts.accounts"
 #: model:ir.ui.view,arch_db:account.view_bank_statement_form
 msgid "→ Count"
 msgstr "→ Prebroji"
+
+#. module: account
+#: code:addons/account/models/account.py:309
+#, python-format
+msgid ""
+"Currency field should only be set if the journal's currency is different "
+"from the company's. Leave the field blank to use company currency."
+msgstr ""

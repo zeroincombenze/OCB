@@ -159,7 +159,7 @@ var History = function History ($editable) {
 
         if (aUndo[pos]) {
             pos = Math.min(pos, aUndo.length);
-            aUndo.splice(Math.max(pos,1), aUndo.length);
+            aUndo.splice(pos, aUndo.length);
         }
 
         // => make a snap when the user change editable zone (because: don't make snap for each keydown)
@@ -326,9 +326,12 @@ var RTE = Widget.extend({
         });
 
         // start element observation
-        $(document).on('content_changed', '.o_editable', function (event) {
+        $(document).on('content_changed', '.o_editable', function (ev) {
             self.trigger('change', this);
-            $(this).addClass('o_dirty');
+            if (!ev.__isDirtyHandled) {
+                $(this).addClass('o_dirty');
+                ev.__isDirtyHandled = true;
+            }
         });
 
         $('#wrapwrap, .o_editable').on('click.rte', '*', this, this.onClick.bind(this));
@@ -357,6 +360,10 @@ var RTE = Widget.extend({
 
         this.__saved = {}; // list of allready saved views and data
 
+
+        $('.o_editable')
+            .destroy()
+            .removeClass('o_editable o_is_inline_editable');
         var defs = $('.o_dirty')
             .removeAttr('contentEditable')
             .removeClass('o_dirty oe_carlos_danger o_is_inline_editable')
@@ -510,6 +517,14 @@ var RTE = Widget.extend({
         if (!$editable.length) {
             return;
         }
+
+        // Removes strange _moz_abspos attribute when it appears. Cannot
+        // find another solution which works in all cases. A grabber still
+        // appears at the same time which I did not manage to remove.
+        // TODO find a complete and better solution
+        _.defer(function () {
+            $editable.find('[_moz_abspos]').removeAttr('_moz_abspos');
+        });
 
         if ($target.is('a')) {
             /**

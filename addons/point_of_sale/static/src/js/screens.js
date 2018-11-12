@@ -1224,6 +1224,9 @@ var ClientListScreenWidget = ScreenWidget.extend({
         fields.id           = partner.id || false;
         fields.country_id   = fields.country_id || false;
 
+        var contents = this.$(".client-details-contents");
+        contents.off("click", ".button.save");
+
         new Model('res.partner').call('create_from_ui',[fields]).then(function(partner_id){
             self.saved_client_details(partner_id);
         },function(err,event){
@@ -1237,6 +1240,7 @@ var ClientListScreenWidget = ScreenWidget.extend({
                 'title': _t('Error: Could not Save Changes'),
                 'body': error_body,
             });
+            contents.on('click','.button.save',function(){ self.save_client_details(partner); });
         });
     },
     
@@ -1254,6 +1258,8 @@ var ClientListScreenWidget = ScreenWidget.extend({
                 // has created, and reload_partner() must have loaded the newly created partner. 
                 self.display_client_details('hide');
             }
+        }).always(function(){
+            $(".client-details-contents").on('click','.button.save',function(){ self.save_client_details(partner); });
         });
     },
 
@@ -1317,6 +1323,9 @@ var ClientListScreenWidget = ScreenWidget.extend({
     reload_partners: function(){
         var self = this;
         return this.pos.load_new_partners().then(function(){
+            // partners may have changed in the backend
+            self.partner_cache = new DomCache();
+
             self.render_list(self.pos.db.get_partners_sorted(1000));
             
             // update the currently assigned client if it has been changed in db.

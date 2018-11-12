@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-#
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 {
     'name': 'Sales and Warehouse Management',
-    'version': '10.0.1.0.1',
+    'version': '1.0',
     'category': 'Hidden',
     'summary': 'Quotation, Sale Orders, Delivery & Invoicing Control',
     'description': """
@@ -25,7 +24,6 @@ You can choose flexible invoicing methods:
 * *On Delivery Order*: Invoices are generated from picking (delivery)
 * *Before Delivery*: A Draft invoice is created and must be paid before delivery
 """,
-    'author': 'Odoo SA',
     'website': 'https://www.odoo.com/page/warehouse',
     'depends': ['sale', 'stock_account'],
     'data': [

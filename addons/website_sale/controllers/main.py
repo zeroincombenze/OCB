@@ -2,7 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 import json
 import logging
-from werkzeug.exceptions import Forbidden
+from werkzeug.exceptions import Forbidden, NotFound
 
 from odoo import http, tools, _
 from odoo.http import request
@@ -193,6 +193,11 @@ class WebsiteSale(http.Controller):
         else:
             ppg = PPG
 
+        if category:
+            category = request.env['product.public.category'].search([('id', '=', int(category))], limit=1)
+            if not category:
+                raise NotFound()
+
         attrib_list = request.httprequest.args.getlist('attrib')
         attrib_values = [map(int, v.split("-")) for v in attrib_list if v]
         attributes_ids = set([v[0] for v in attrib_values])
@@ -213,9 +218,6 @@ class WebsiteSale(http.Controller):
         url = "/shop"
         if search:
             post["search"] = search
-        if category:
-            category = request.env['product.public.category'].browse(int(category))
-            url = "/shop/category/%s" % slug(category)
         if attrib_list:
             post['attrib'] = attrib_list
 
@@ -224,6 +226,7 @@ class WebsiteSale(http.Controller):
 
         parent_category_ids = []
         if category:
+            url = "/shop/category/%s" % slug(category)
             parent_category_ids = [category.id]
             current_category = category
             while current_category.parent_id:
@@ -338,6 +341,9 @@ class WebsiteSale(http.Controller):
     @http.route(['/shop/cart'], type='http', auth="public", website=True)
     def cart(self, **post):
         order = request.website.sale_get_order()
+        if order and order.state != 'draft':
+            request.session['sale_order_id'] = None
+            order = request.website.sale_get_order()
         if order:
             from_currency = order.company_id.currency_id
             to_currency = order.pricelist_id.currency_id
@@ -367,7 +373,11 @@ class WebsiteSale(http.Controller):
 
     @http.route(['/shop/cart/update'], type='http', auth="public", methods=['POST'], website=True, csrf=False)
     def cart_update(self, product_id, add_qty=1, set_qty=0, **kw):
-        request.website.sale_get_order(force_create=1)._cart_update(
+        sale_order = request.website.sale_get_order(force_create=True)
+        if sale_order.state != 'draft':
+            request.session['sale_order_id'] = None
+            sale_order = request.website.sale_get_order(force_create=True)
+        sale_order._cart_update(
             product_id=int(product_id),
             add_qty=add_qty,
             set_qty=set_qty,
