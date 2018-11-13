@@ -494,7 +494,11 @@ class res_users(osv.osv):
                     base = user_agent_env['base_location']
                     ICP = self.pool.get('ir.config_parameter')
                     if not ICP.get_param(cr, uid, 'web.base.url.freeze'):
-                        ICP.set_param(cr, uid, 'web.base.url', base)
+                        if ICP.get_param(cr, uid, 'web.base.url.cvt2https'):
+                            ICP.set_param(cr, uid, 'web.base.url',
+                                          base.replace('http:', 'https:'))
+                        else:
+                            ICP.set_param(cr, uid, 'web.base.url', base)
                     cr.commit()
                 except Exception:
                     _logger.exception("Failed to update web.base.url configuration parameter")
