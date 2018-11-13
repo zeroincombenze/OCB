@@ -13,14 +13,13 @@ Overview / Panoramica
 
 |en| Odoo is a suite of web based open source business apps.
 
-The main Odoo Apps include an Open Source CRM, Website Builder, eCommerce, Warehouse Management, Project Management, Billing & Accounting, Point of Sale, Human Resources, Marketing, Manufacturing, Purchase Management, ...
-
-Odoo Apps can be used as stand-alone applications, but they also integrate seamlessly so you get a full-featured Open Source ERP when you install several Apps.
+The main Odoo Apps include an Open Source CRM and Enterprise Resource Planning. The main ERP modules are: Warehouse Management, Project Management, Billing AND Accounting, Point of Sale, Human Resources, Manufacturing, Purchase Management, Sale Management and other modules.
 
 
 |it| Odoo è una suite di prodotti web open-source.
 
 Le principali applicazioni di Odoo includono un Open Source CRM e Enterprise Resource Planning.
+
 I principali moduli ERP sono: gestione Magazzino, gestione Progetti, Contabilità e Fatturazione, Punto vendite, Dipendenti, Produzione, gestione Acquisti, gestione vendite e molto altro ancora.
 
 
@@ -28,19 +27,19 @@ Distributions / Distribuzioni Odoo 10.0:
 ========================================
 
 
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
-| name / nome | description / descrizione        | Italy / Localizzazione Italiana    | Maintainers                                                  | License / Licenza                                                                  |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
-|             | Odoo EE - Enterprise Edition     | |check| Tramite partner        (1) | `Odoo S.A. <https://www.odoo.com/>`__                        | `OPL <https://www.odoo.com/documentation/user/9.0/legal/licenses/licenses.html>`__ |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
-| odoo        | Odoo CE - Community Edition      | |no_check|                         | `Odoo S.A. <https://www.odoo.com/>`__                        | |license gpl|                                                                      |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
-| oca         | Odoo CE by OCA                   | |warning| Norme fiscali < 2107 (2) | `Odoo Community Association <http://odoo-community.org/>`__  | |license gpl|                                                                      |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
-| oia         | Odoo CE by OIA                   | |warning| Norme fiscali < 2107 (3) | `Associazione Odoo Italia <https://www.odoo-italia.org/>`__  | |license gpl|                                                                      |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
-| zero        | Zeroincombenze(R)                | |warning| Norme fiscali < 2107 (3) | `SHS-AV s.r.l. <http://www.shs-av.com/>`__                   | |license gpl|                                                                      |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+------------------------------------------------------------------------------------+
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
+| name / nome | description / descrizione        | Italy / Localizzazione Italiana    | Maintainers                                                  | License / Licenza |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
+|             | Odoo EE - Enterprise Edition     | |check| Tramite partner        (1) | `Odoo S.A. <https://www.odoo.com/>`__                        | |license opl|     |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
+| odoo        | Odoo CE - Community Edition      | |no_check|                         | `Odoo S.A. <https://www.odoo.com/>`__                        | |license gpl|     |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
+| oca         | Odoo CE by OCA                   | |warning| Norme fiscali < 2107 (2) | `Odoo Community Association <http://odoo-community.org/>`__  | |license gpl|     |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
+| oia         | Odoo CE by OIA                   | |warning| Norme fiscali < 2107 (3) | `Associazione Odoo Italia <https://www.odoo-italia.org/>`__  | |license gpl|     |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
+| zero        | Zeroincombenze(R)                | |warning| Norme fiscali < 2107 (3) | `SHS-AV s.r.l. <http://www.shs-av.com/>`__                   | |license gpl|     |
++-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
 
 Notes / Note:
 -------------
@@ -605,7 +604,7 @@ Installation / Installazione
 +---------------------------------+------------------------------------------+
 | `Zeroincombenze Tools <https://github.com/zeroincombenze/tools>`__         |
 +---------------------------------+------------------------------------------+
-| Suggested deployment is         | Posizione suggerita per l'installazione: |
+| Suggested deployment is:        | Posizione suggerita per l'installazione: |
 +---------------------------------+------------------------------------------+
 | /opt/odoo/10.0                                                             |
 +----------------------------------------------------------------------------+
@@ -637,8 +636,7 @@ Upgrade / Aggiornamento
 
 ::
 
-    cd /opt/odoo/10.0
-    git pull origin 10.0
+    odoo_install_repository OCB -b 10.0 -O zero -U
     # Adjust following statements as per your system
     sudo systemctl restart odoo
 
@@ -668,6 +666,30 @@ If you have a proposal to change this module, you may want to send an email to
 <moderatore@odoo-italia.org> for initial feedback.
 An Enhancement Proposal may be submitted if your idea gains ground.
 
+Credits / Titoli di coda
+========================
+
+Copyright
+---------
+
+Odoo is a trademark of `Odoo S.A. <https://www.odoo.com/>`__ (formerly OpenERP)
+
+----------------
+
+
+**zeroincombenze®** is a trademark of `SHS-AV s.r.l. <https://www.shs-av.com/>`__
+which distributes and promotes **Odoo** ready-to-use on own cloud infrastructure.
+`Zeroincombenze® distribution of Odoo <https://wiki.zeroincombenze.org/en/Odoo>`__
+is mainly designed to cover Italian law and markeplace.
+
+Users can download from `Zeroincombenze® distribution <https://github.com/zeroincombenze/OCB>`__
+and deploy on local server or can download from
+`Odoo Italia Associazine repository <https://github.com/Odoo-Italia-Associazione/OCB>`__
+
+
+|chat_with_us|
+
+
 |
 
 Last Update / Ultimo aggiornamento: 2018-11-13
@@ -681,6 +703,9 @@ Last Update / Ultimo aggiornamento: 2018-11-13
 .. |license gpl| image:: https://img.shields.io/badge/licence-LGPL--3-7379c3.svg
     :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
     :alt: License: LGPL-3
+.. |license opl| image:: https://img.shields.io/badge/licence-OPL-7379c3.svg
+    :target: https://www.odoo.com/documentation/user/9.0/legal/licenses/licenses.html
+    :alt: License: OPL
 .. |Coverage Status| image:: https://coveralls.io/repos/github/zeroincombenze/OCB/badge.svg?branch=10.0
     :target: https://coveralls.io/github/zeroincombenze/OCB?branch=10.0
     :alt: Coverage
