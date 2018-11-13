@@ -76,8 +76,7 @@ Avaiable Addons / Moduli disponibili
 +--------------------------------------+------------+------------+----------------------------------------------------+
 | account_tax_cash_basis               | 10.0.1.1   | |same|     | Allow to have cash basis on tax                    |
 +--------------------------------------+------------+------------+----------------------------------------------------+
-| account_tax_python                   | 10.0.1.0   | |same|     | 
-        Allows to use python code to define taxes |
+| account_tax_python                   | 10.0.1.0   | |same|     | Allows to use python code to define taxes          |
 +--------------------------------------+------------+------------+----------------------------------------------------+
 | account_test                         | 10.0.1.0   | |same|     | Accounting Consistency Tests                       |
 +--------------------------------------+------------+------------+----------------------------------------------------+
@@ -303,8 +302,7 @@ Avaiable Addons / Moduli disponibili
 +--------------------------------------+------------+------------+----------------------------------------------------+
 | partner_contact_birthdate            | 10.0.1.0.0 | |no_check| | Contact's birthdate                                |
 +--------------------------------------+------------+------------+----------------------------------------------------+
-| partner_contact_configuration        | 10.0.1.0.0 | |no_check| | 
-        Adds menu configuration access through th |
+| partner_contact_configuration        | 10.0.1.0.0 | |no_check| | Adds menu configuration access through the 'contac |
 +--------------------------------------+------------+------------+----------------------------------------------------+
 | partner_contact_gender               | 10.0.1.1.0 | |no_check| | Add gender field to contacts                       |
 +--------------------------------------+------------+------------+----------------------------------------------------+
@@ -356,8 +354,7 @@ Avaiable Addons / Moduli disponibili
 +--------------------------------------+------------+------------+----------------------------------------------------+
 | portal_stock                         | 10.0.0.1   | |same|     | Portal Stock                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------+
-| pos_cache                            | 10.0.1.0   | |same|     | 
-        Enable a cache on products for a lower PO |
+| pos_cache                            | 10.0.1.0   | |same|     | Enable a cache on products for a lower POS loading |
 +--------------------------------------+------------+------------+----------------------------------------------------+
 | pos_data_drinks                      | 10.0.1.0   | |same|     | Common Drinks data for points of sale              |
 +--------------------------------------+------------+------------+----------------------------------------------------+
@@ -673,7 +670,7 @@ An Enhancement Proposal may be submitted if your idea gains ground.
 
 |
 
-Last Update / Ultimo aggiornamento: 2018-11-12
+Last Update / Ultimo aggiornamento: 2018-11-13
 
 .. |Maturity| image:: https://img.shields.io/badge/maturity-Alfa-red.png
     :target: https://odoo-community.org/page/development-status
