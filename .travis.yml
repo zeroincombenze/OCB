@@ -49,7 +49,7 @@ before_install:
   - export TRAVIS_DEBUG_MODE="1"
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
-  - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --depth=1
+  - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --single-branch --depth=1
   - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
   - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
 
@@ -59,7 +59,7 @@ install:
 
 env:
   global:
-  - VERSION="10.0" TESTS="0" LINT_CHECK="0" TRANSIFEX="0" ODOO_REPO="$TRAVIS_REPO_SLUG" WEBSITE_REPO="1"
+  - VERSION="10.0" TESTS="0" LINT_CHECK="0" TRANSIFEX="0" WEBSITE_REPO="1"
 
   matrix:
   - LINT_CHECK="0"
