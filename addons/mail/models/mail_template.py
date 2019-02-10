@@ -389,9 +389,6 @@ class MailTemplate(models.Model):
             'ctx': self._context,  # context kw would clash with mako internals
         }
         for res_id, record in res_to_rec.iteritems():
-            if res_id == 2264:
-                import pdb
-                pdb.set_trace()
             variables['object'] = record
             try:
                 render_result = template.render(variables)
