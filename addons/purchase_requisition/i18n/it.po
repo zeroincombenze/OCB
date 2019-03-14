@@ -1,34 +1,35 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # * purchase_requisition
-# 
+#
 # Translators:
-# Martin Trigaux, 2016
-# Paolo Valier, 2016
+# Marius Marolla <mariusmarolla@entersys.it>, 2016
 # Giacomo Grasso <giacomo.grasso.82@gmail.com>, 2016
+# Giuseppe Castellani <giuseppecastellani@gmail.com>, 2016
 # Francesco Garganese <francesco.garganese@aeromnia.aero>, 2016
 # p_amoruso <p.amoruso@elvenstudio.it>, 2016
-# Marius Marolla <mariusmarolla@entersys.it>, 2016
-# Giuseppe Castellani <giuseppecastellani@gmail.com>, 2016
+# Martin Trigaux, 2016
 # Fabio Genovese <ing.fabiogenovese@gmail.com>, 2017
+# Paolo Valier, 2018
+# Léonie Bouchat <lbo@odoo.com>, 2019
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0\n"
+"Project-Id-Version: Odoo (10.0)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-11-14 15:54+0000\n"
-"PO-Revision-Date: 2016-11-14 15:54+0000\n"
-"Last-Translator: Fabio Genovese <ing.fabiogenovese@gmail.com>, 2017\n"
-"Language-Team: Italian (https://www.transifex.com/odoo/teams/41243/it/)\n"
+"PO-Revision-Date: 2016-09-07 09:27+0000\n"
+"Last-Translator: Antonio M. Vigliotti <antoniomaria.vigliotti@gmail.com>\n"
+"Language-Team: Zeroincombenze (https://www.zeroincombenze.it)\n"
+"Language: it_IT\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: \n"
-"Language: it\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisitions
 msgid "<strong>Call for Tender Reference:</strong><br/>"
-msgstr ""
+msgstr "<strong>Riferimento bando di gara:</strong><br/>"
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisitions
@@ -43,7 +44,7 @@ msgstr "<strong>Descrizione</strong>"
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisitions
 msgid "<strong>Product UoM</strong>"
-msgstr ""
+msgstr "<strong>UdM prodotto</strong>"
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisitions
@@ -53,7 +54,7 @@ msgstr "<strong>Q.tà</strong>"
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisitions
 msgid "<strong>Reference </strong>"
-msgstr ""
+msgstr "<strong>Riferimento </strong>"
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisitions
@@ -68,17 +69,17 @@ msgstr "<strong>Data d'Ordine prevista:</strong><br/>"
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisitions
 msgid "<strong>Selection Type:</strong><br/>"
-msgstr ""
+msgstr "<strong>Tipo selezione:</strong><br/>"
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisitions
 msgid "<strong>Source:</strong><br/>"
-msgstr ""
+msgstr "<strong>Fonte:</strong><br/>"
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisitions
 msgid "<strong>Vendor </strong>"
-msgstr ""
+msgstr "<strong>Fornitore </strong>"
 
 #. module: purchase_requisition
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_date_end
@@ -110,6 +111,7 @@ msgstr "Conto Analitico"
 
 #. module: purchase_requisition
 #: selection:purchase.requisition,state:0
+#: selection:purchase.requisition,state
 msgid "Bid Selection"
 msgstr "Scelta Offerta"
 
@@ -122,7 +124,7 @@ msgstr ""
 #: model:ir.actions.report.xml,name:purchase_requisition.action_report_purchase_requisitions
 #: model:ir.ui.view,arch_db:purchase_requisition.report_purchaserequisitions
 msgid "Call for Tenders"
-msgstr ""
+msgstr "Bando di gara"
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_form
@@ -131,14 +133,15 @@ msgstr "Annulla richiesta"
 
 #. module: purchase_requisition
 #: selection:purchase.requisition,state:0
+#: selection:purchase.requisition,state
 msgid "Cancelled"
 msgstr "Annullato"
 
 #. module: purchase_requisition
 #: code:addons/purchase_requisition/models/purchase_requisition.py:76
-#, python-format
+#: code:addons/purchase_requisition/models/purchase_requisition.py:76
 msgid "Cancelled by the agreement associated to this quotation."
-msgstr ""
+msgstr "Annullato dal contratto associato a questo preventivo"
 
 #. module: purchase_requisition
 #: model:ir.actions.act_window,help:purchase_requisition.action_purchase_requisition
@@ -159,11 +162,13 @@ msgstr "Conferma"
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_filter
 #: selection:purchase.requisition,state:0
+#: selection:purchase.requisition,state
 msgid "Confirmed"
 msgstr "Confermato"
 
 #. module: purchase_requisition
 #: selection:product.template,purchase_requisition:0
+#: selection:product.template,purchase_requisition
 msgid "Create a draft purchase order"
 msgstr "Crea bozza di ordine di acquisto"
 
@@ -179,7 +184,7 @@ msgstr "Creato da"
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_line_create_date
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_type_create_date
 msgid "Created on"
-msgstr "Creato il"
+msgstr "Data di creazione"
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_type_form
@@ -201,10 +206,11 @@ msgstr "Descrizione"
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_line_display_name
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_type_display_name
 msgid "Display Name"
-msgstr "Nome Visualizzato"
+msgstr "Nome visualizzato"
 
 #. module: purchase_requisition
 #: selection:purchase.requisition.type,line_copy:0
+#: selection:purchase.requisition.type,line_copy
 msgid "Do not create RfQ lines automatically"
 msgstr "Non creare righe di RdP automaticamente"
 
@@ -212,12 +218,14 @@ msgstr "Non creare righe di RdP automaticamente"
 #: model:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_filter
 #: model:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_form
 #: selection:purchase.requisition,state:0
+#: selection:purchase.requisition,state
 msgid "Done"
 msgstr "Fatto"
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_filter
 #: selection:purchase.requisition,state:0
+#: selection:purchase.requisition,state
 msgid "Draft"
 msgstr "Bozza"
 
@@ -229,14 +237,16 @@ msgstr "Fine mese"
 #. module: purchase_requisition
 #: model:ir.actions.act_window,help:purchase_requisition.action_purchase_requisition
 msgid ""
-"Example of purchase agreements include call for tenders and blanket orders."
+"Example of purchase agreements include call for tenders and blanket "
+"orders."
 msgstr ""
 
 #. module: purchase_requisition
 #: model:ir.actions.act_window,help:purchase_requisition.action_purchase_requisition
 msgid ""
 "For a blanket order, you can record an agreement for a specifc period\n"
-"            (e.g. a year) and you order products within this agreement, benefiting\n"
+"            (e.g. a year) and you order products within this agreement, "
+"benefiting\n"
 "            from the negociated prices."
 msgstr ""
 
@@ -256,22 +266,30 @@ msgstr "ID"
 #: model:ir.actions.act_window,help:purchase_requisition.action_purchase_requisition
 msgid ""
 "In a call for tenders, you can record the products you need to buy\n"
-"            and generate the creation of RfQs to vendors. Once the tenders have\n"
+"            and generate the creation of RfQs to vendors. Once the "
+"tenders have\n"
 "            been registered, you can review and compare them and you can\n"
 "            validate some and cancel others."
 msgstr ""
+"Nel caso di un bando di gara, è possibile registrare i prodotti che si "
+"desidera acquistare\n"
+"            e generare richieste di preventivo per i fornitori. Una volta"
+" che le offerte\n"
+"            sono state registrate, è possibile esaminarle e confrontarle,"
+"\n"
+"            convalidarne alcune e cancellarne altre. "
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_filter
 msgid "In negotiation"
-msgstr ""
+msgstr "In corso di negoziazione"
 
 #. module: purchase_requisition
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition___last_update
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_line___last_update
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_type___last_update
 msgid "Last Modified on"
-msgstr "Ultima modifica il"
+msgstr "Data ultima modifica"
 
 #. module: purchase_requisition
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_line_write_uid
@@ -285,7 +303,7 @@ msgstr "Ultima modifica di"
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_type_write_date
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_write_date
 msgid "Last Updated on"
-msgstr "Ultima modifica il"
+msgstr "Data ultima modifica"
 
 #. module: purchase_requisition
 #: model:ir.model.fields,field_description:purchase_requisition.field_procurement_order_requisition_id
@@ -368,6 +386,7 @@ msgstr "Prodotti da acquistare"
 
 #. module: purchase_requisition
 #: selection:product.template,purchase_requisition:0
+#: selection:product.template,purchase_requisition
 msgid "Propose a call for tenders"
 msgstr "Proponi un bando di gara"
 
@@ -431,7 +450,7 @@ msgstr "Riga di Richiesta d'Acquisto"
 
 #. module: purchase_requisition
 #: code:addons/purchase_requisition/models/purchase_requisition.py:315
-#, python-format
+#: code:addons/purchase_requisition/models/purchase_requisition.py:315
 msgid "Purchase Requisition created"
 msgstr ""
 
@@ -483,7 +502,7 @@ msgstr "Richiesta"
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_form
 msgid "Reset to Draft"
-msgstr "Reimposta a 'Bozza'"
+msgstr "Riporta in bozza"
 
 #. module: purchase_requisition
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_user_id
@@ -503,20 +522,25 @@ msgstr "Cerca Contratti d'Acquisto"
 
 #. module: purchase_requisition
 #: selection:purchase.requisition.type,exclusive:0
+#: selection:purchase.requisition.type,exclusive
 msgid "Select multiple RFQ"
 msgstr "Seleziona più Richieste di Preventivo"
 
 #. module: purchase_requisition
 #: selection:purchase.requisition.type,exclusive:0
+#: selection:purchase.requisition.type,exclusive
 msgid "Select only one RFQ (exclusive)"
 msgstr "Seleziona solo una Richiesta di Preventivo (esclusiva)"
 
 #. module: purchase_requisition
 #: model:ir.model.fields,help:purchase_requisition.field_purchase_requisition_type_exclusive
 msgid ""
-"Select only one RFQ (exclusive):  when a purchase order is confirmed, cancel the remaining purchase order.\n"
+"Select only one RFQ (exclusive):  when a purchase order is confirmed, "
+"cancel the remaining purchase order.\n"
 "\n"
-"                    Select multiple RFQ: allows multiple purchase orders. On confirmation of a purchase order it does not cancel the remaining orders"
+"                    Select multiple RFQ: allows multiple purchase orders."
+" On confirmation of a purchase order it does not cancel the remaining "
+"orders"
 msgstr ""
 
 #. module: purchase_requisition
@@ -526,6 +550,7 @@ msgstr "Sequenza"
 
 #. module: purchase_requisition
 #: selection:purchase.requisition.type,quantity_copy:0
+#: selection:purchase.requisition.type,quantity_copy
 msgid "Set quantities manually"
 msgstr ""
 
@@ -553,8 +578,11 @@ msgstr "Termini e Condizioni"
 #. module: purchase_requisition
 #: model:ir.model.fields,help:purchase_requisition.field_purchase_requisition_schedule_date
 msgid ""
-"The expected and scheduled delivery date where all the products are received"
+"The expected and scheduled delivery date where all the products are "
+"received"
 msgstr ""
+"La data di consegna prevista e pianificata in cui vengono ricevuti tutti "
+"i prodotti"
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_filter
@@ -573,11 +601,13 @@ msgstr "Prezzo Unitario"
 
 #. module: purchase_requisition
 #: selection:purchase.requisition.type,line_copy:0
+#: selection:purchase.requisition.type,line_copy
 msgid "Use lines of agreement"
 msgstr "Utilizza righe del contratto"
 
 #. module: purchase_requisition
 #: selection:purchase.requisition.type,quantity_copy:0
+#: selection:purchase.requisition.type,quantity_copy
 msgid "Use quantities of agreement"
 msgstr "Utilizza quantità del contratto"
 
@@ -589,7 +619,7 @@ msgstr "Valida"
 #. module: purchase_requisition
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_vendor_id
 msgid "Vendor"
-msgstr "Venditore"
+msgstr "Fornitore"
 
 #. module: purchase_requisition
 #: model:ir.model.fields,field_description:purchase_requisition.field_purchase_requisition_warehouse_id
@@ -598,19 +628,23 @@ msgstr "Magazzino"
 
 #. module: purchase_requisition
 #: code:addons/purchase_requisition/models/purchase_requisition.py:82
-#, python-format
+#: code:addons/purchase_requisition/models/purchase_requisition.py:82
 msgid "You cannot confirm call because there is no product line."
 msgstr ""
 
 #. module: purchase_requisition
 #: code:addons/purchase_requisition/models/purchase_requisition.py:99
-#, python-format
+#: code:addons/purchase_requisition/models/purchase_requisition.py:99
 msgid ""
 "You have to cancel or validate every RfQ before closing the purchase "
 "requisition."
 msgstr ""
+"È necessario annullare o convalidare ogni richiesta di preventivo prima "
+"di chiudere la richiesta di acquisto."
 
 #. module: purchase_requisition
 #: model:ir.ui.view,arch_db:purchase_requisition.view_purchase_requisition_form
 msgid "e.g. PO0025"
 msgstr "es. PO0025"
+
+

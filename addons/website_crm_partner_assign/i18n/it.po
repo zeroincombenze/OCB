@@ -1,64 +1,81 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # * website_crm_partner_assign
-# 
+#
 # Translators:
-# p_amoruso <p.amoruso@elvenstudio.it>, 2016
-# Martin Trigaux, 2016
-# Paolo Valier, 2016
 # Massimo Bianchi <bianchi.massimo@gmail.com>, 2016
-# Christian <chris@effeci.info>, 2016
-# Simone Bernini <simone@aperturelabs.it>, 2016
-# Francesco Garganese <francesco.garganese@aeromnia.aero>, 2016
 # Lorenzo Battistini <lorenzo.battistini@agilebg.com>, 2016
 # Matteo Boscolo <matteo.boscolo.76@gmail.com>, 2016
+# Simone Bernini <simone@aperturelabs.it>, 2016
+# p_amoruso <p.amoruso@elvenstudio.it>, 2016
 # Giacomo Grasso <giacomo.grasso.82@gmail.com>, 2016
+# Christian <chris@effeci.info>, 2016
+# Francesco Garganese <francesco.garganese@aeromnia.aero>, 2016
+# Martin Trigaux, 2016
+# Paolo Valier, 2018
 # Léonie Bouchat <lbo@odoo.com>, 2018
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0\n"
+"Project-Id-Version: Odoo (10.0)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-11-14 15:55+0000\n"
-"PO-Revision-Date: 2016-11-14 15:55+0000\n"
-"Last-Translator: Léonie Bouchat <lbo@odoo.com>, 2018\n"
-"Language-Team: Italian (https://www.transifex.com/odoo/teams/41243/it/)\n"
+"PO-Revision-Date: 2016-09-07 09:31+0000\n"
+"Last-Translator: Antonio M. Vigliotti <antoniomaria.vigliotti@gmail.com>\n"
+"Language-Team: Zeroincombenze (https://www.zeroincombenze.it)\n"
+"Language: it_IT\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: \n"
-"Language: it\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
 
 #. module: website_crm_partner_assign
 #: model:mail.template,body_html:website_crm_partner_assign.email_template_lead_forward_mail
+#, python-format
 msgid ""
 "\n"
 "<p>Hello,</p>\n"
 "\n"
 "\n"
-"<p>We have been contacted by those prospects that are in your region. Thus, the following leads have been assigned to ${ctx['partner_id'].name}:</p>\n"
+"<p>We have been contacted by those prospects that are in your region. "
+"Thus, the following leads have been assigned to "
+"${ctx['partner_id'].name}:</p>\n"
 "\n"
 "<ol>\n"
 "% for lead in ctx['partner_leads']:\n"
-"     <li><a href=\"${lead.lead_link}\">${lead.lead_id.name or 'Subject Undefined'}</a>, ${lead.lead_id.partner_name or lead.lead_id.contact_name or 'Contact Name Undefined'}, ${lead.lead_id.country_id and lead.lead_id.country_id.name or 'Country Undefined' }, ${lead.lead_id.email_from or 'Email Undefined'}, ${lead.lead_id.phone or ''} </li></br>\n"
+"     <li><a href=\"${lead.lead_link}\">${lead.lead_id.name or 'Subject "
+"Undefined'}</a>, ${lead.lead_id.partner_name or lead.lead_id.contact_name"
+" or 'Contact Name Undefined'}, ${lead.lead_id.country_id and "
+"lead.lead_id.country_id.name or 'Country Undefined' }, "
+"${lead.lead_id.email_from or 'Email Undefined'}, ${lead.lead_id.phone or "
+"''} </li></br>\n"
 "% endfor\n"
 "</ol>\n"
 "\n"
 "% if ctx.get('partner_in_portal'):\n"
-"<p>Please connect to your <a href=\"${object.get_portal_url()}\">Partner Portal</a> to get details. On each lead are two buttons on the top left corner that you should press after having contacted the lead: \"I'm interested\" & \"I'm not interested\".</p>\n"
+"<p>Please connect to your <a href=\"${object.get_portal_url()}\">Partner "
+"Portal</a> to get details. On each lead are two buttons on the top left "
+"corner that you should press after having contacted the lead: \"I'm "
+"interested\" & \"I'm not interested\".</p>\n"
 "% else:\n"
 "<p>\n"
 "    You do not have yet a portal access to our database. Please contact \n"
-"    ${ctx['partner_id'].user_id and ctx['partner_id'].user_id.email and 'your account manager %s (%s)' % (ctx['partner_id'].user_id.name,ctx['partner_id'].user_id.email) or 'us'}.\n"
+"    ${ctx['partner_id'].user_id and ctx['partner_id'].user_id.email and "
+"'your account manager %s (%s)' % "
+"(ctx['partner_id'].user_id.name,ctx['partner_id'].user_id.email) or "
+"'us'}.\n"
 "</p>\n"
 "% endif\n"
-"<p>The lead will be sent to another partner if you do not contact the lead before 20 days.</p>\n"
+"<p>The lead will be sent to another partner if you do not contact the "
+"lead before 20 days.</p>\n"
 "\n"
 "<p>Thanks,</p>\n"
 "\n"
-"${ctx['partner_id'].user_id and ctx['partner_id'].user_id.signature or '' | safe}\n"
+"${ctx['partner_id'].user_id and ctx['partner_id'].user_id.signature or ''"
+" | safe}\n"
 "\n"
 "% if not ctx['partner_id'].user_id:\n"
-"PS: It looks like you do not have an account manager assigned to you, please contact us.\n"
+"PS: It looks like you do not have an account manager assigned to you, "
+"please contact us.\n"
 "% endif\n"
 "            "
 msgstr ""
@@ -91,7 +108,7 @@ msgstr "<i class=\"fa fa-fw fa-times\"/> Non sono interessato"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/models/crm_lead.py:192
-#, python-format
+#: code:addons/website_crm_partner_assign/models/crm_lead.py:192
 msgid "<p>I am interested by this lead.</p>"
 msgstr "<p>Sono interessato a questo lead.</p>"
 
@@ -99,45 +116,53 @@ msgstr "<p>Sono interessato a questo lead.</p>"
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.view_crm_lead_geo_assign_form
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.view_crm_opportunity_geo_assign_form
 msgid ""
-"<span class=\"oe_grey\" attrs=\"{'invisible':[('partner_latitude','&lt;=',0)]}\">N </span>\n"
-"                                <span class=\"oe_grey\" attrs=\"{'invisible':[('partner_latitude','&gt;=',0)]}\">S </span>"
+"<span class=\"oe_grey\" "
+"attrs=\"{'invisible':[('partner_latitude','&lt;=',0)]}\">N </span>\n"
+"                                <span class=\"oe_grey\" "
+"attrs=\"{'invisible':[('partner_latitude','&gt;=',0)]}\">S </span>"
 msgstr ""
-"<span class=\"oe_grey\" attrs=\"{'invisible':[('partner_latitude','&lt;=',0)]}\">N </span>\n"
-"                                <span class=\"oe_grey\" attrs=\"{'invisible':[('partner_latitude','&gt;=',0)]}\">S </span>"
+"<span class=\"oe_grey\" "
+"attrs=\"{'invisible':[('partner_latitude','&lt;=',0)]}\">N </span>\n"
+"                                <span class=\"oe_grey\" "
+"attrs=\"{'invisible':[('partner_latitude','&gt;=',0)]}\">S </span>"
 
 #. module: website_crm_partner_assign
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.view_crm_lead_geo_assign_form
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.view_crm_opportunity_geo_assign_form
 msgid ""
-"<span class=\"oe_grey\" attrs=\"{'invisible':[('partner_longitude','&lt;=',0)]}\">E </span>\n"
-"                                <span class=\"oe_grey\" attrs=\"{'invisible':[('partner_longitude','&gt;=',0)]}\">W </span>\n"
+"<span class=\"oe_grey\" "
+"attrs=\"{'invisible':[('partner_longitude','&lt;=',0)]}\">E </span>\n"
+"                                <span class=\"oe_grey\" "
+"attrs=\"{'invisible':[('partner_longitude','&gt;=',0)]}\">W </span>\n"
 "                                <span class=\"oe_grey\">) </span>"
 msgstr ""
-"<span class=\"oe_grey\" attrs=\"{'invisible':[('partner_longitude','&lt;=',0)]}\">E </span>\n"
-"                                <span class=\"oe_grey\" attrs=\"{'invisible':[('partner_longitude','&gt;=',0)]}\">O </span>\n"
+"<span class=\"oe_grey\" "
+"attrs=\"{'invisible':[('partner_longitude','&lt;=',0)]}\">E </span>\n"
+"                                <span class=\"oe_grey\" "
+"attrs=\"{'invisible':[('partner_longitude','&gt;=',0)]}\">O </span>\n"
 "                                <span class=\"oe_grey\">) </span>"
 
 #. module: website_crm_partner_assign
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_lead
 msgid ""
 "<span class=\"text-danger error_partner_assign_desinterested\" "
-"style=\"display:none;\">You need to fill up the next action and contact the "
-"customer before accepting the lead</span>"
+"style=\"display:none;\">You need to fill up the next action and contact "
+"the customer before accepting the lead</span>"
 msgstr ""
 "<span class=\"text-danger error_partner_assign_desinterested\" "
-"style=\"display:none;\">Devi informare la prossima azione e contattare il "
-"cliente prima di accettare il lead</span>"
+"style=\"display:none;\">Devi informare la prossima azione e contattare il"
+" cliente prima di accettare il lead</span>"
 
 #. module: website_crm_partner_assign
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_lead
 msgid ""
 "<span class=\"text-danger error_partner_assign_interested\" "
-"style=\"display:none;\">You need to fill up the next action and contact the "
-"customer before accepting the lead</span>"
+"style=\"display:none;\">You need to fill up the next action and contact "
+"the customer before accepting the lead</span>"
 msgstr ""
 "<span class=\"text-danger error_partner_assign_desinterested\" "
-"style=\"display:none;\">Devi informare la prossima azione e contattare il "
-"cliente prima di accettare il lead</span>"
+"style=\"display:none;\">Devi informare la prossima azione e contattare il"
+" cliente prima di accettare il lead</span>"
 
 #. module: website_crm_partner_assign
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_opportunity
@@ -167,7 +192,7 @@ msgstr "Attivo"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/models/crm_lead.py:235
-#, python-format
+#: code:addons/website_crm_partner_assign/models/crm_lead.py:235
 msgid "Activity Done"
 msgstr ""
 
@@ -179,19 +204,19 @@ msgstr "Indirizzo"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:94
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:94
 msgid "All"
 msgstr "Tutto"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:206
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:206
 msgid "All Categories"
 msgstr "Tutte le categorie"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:223
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:223
 msgid "All Countries"
 msgstr "Tutte le nazionalità"
 
@@ -296,7 +321,8 @@ msgstr "Conferma"
 #: code:addons/website_crm_partner_assign/controllers/main.py:106
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_leads
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_opportunities
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:50
+#: code:addons/website_crm_partner_assign/controllers/main.py:106
 msgid "Contact Name"
 msgstr "Nome Contatto"
 
@@ -341,7 +367,7 @@ msgstr "Creato da"
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_res_partner_activation_create_date
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_res_partner_grade_create_date
 msgid "Created on"
-msgstr "Creato il"
+msgstr "Data di creazione"
 
 #. module: website_crm_partner_assign
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_opportunities
@@ -404,7 +430,7 @@ msgstr "Dettagli Prossima Attività"
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_res_partner_activation_display_name
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_res_partner_grade_display_name
 msgid "Display Name"
-msgstr "Nome Visualizzato"
+msgstr "Nome visualizzato"
 
 #. module: website_crm_partner_assign
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_lead
@@ -444,7 +470,7 @@ msgstr "Chiusura Prevista:"
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:107
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_opportunities
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:107
 msgid "Expected Revenue"
 msgstr "Entrata prevista"
 
@@ -508,8 +534,8 @@ msgid ""
 "Gives the probability to assign a lead to this partner. (0 means no "
 "assignation.)"
 msgstr ""
-"Fornisce la probabilità di assegnare una lead a questo Partner. (0 significa"
-" nessuna assegnazione)."
+"Fornisce la probabilità di assegnare una lead a questo Partner. (0 "
+"significa nessuna assegnazione)."
 
 #. module: website_crm_partner_assign
 #: model:res.partner.grade,name:website_crm_partner_assign.res_partner_grade_gold
@@ -530,18 +556,19 @@ msgstr "Raggruppa per"
 
 #. module: website_crm_partner_assign
 #: selection:crm.lead.report.assign,priority:0
+#: selection:crm.lead.report.assign,priority
 msgid "High"
 msgstr "Alta"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/models/crm_lead.py:203
-#, python-format
+#: code:addons/website_crm_partner_assign/models/crm_lead.py:203
 msgid "I am not interested by this lead. I contacted the lead."
 msgstr "Non sono interessato a questo lead. Ho contattato il lead."
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/models/crm_lead.py:205
-#, python-format
+#: code:addons/website_crm_partner_assign/models/crm_lead.py:205
 msgid "I am not interested by this lead. I have not contacted the lead."
 msgstr "Non sono interessato a questo lead. Non ho contattato il lead."
 
@@ -580,7 +607,7 @@ msgstr "Data della fattura"
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_res_partner_activation___last_update
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_res_partner_grade___last_update
 msgid "Last Modified on"
-msgstr "Ultima modifica il"
+msgstr "Data ultima modifica"
 
 #. module: website_crm_partner_assign
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_crm_lead_assignation_write_uid
@@ -596,7 +623,7 @@ msgstr "Ultima modifica di"
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_res_partner_activation_write_date
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_res_partner_grade_write_date
 msgid "Last Updated on"
-msgstr "Ultima modifica il"
+msgstr "Data ultima modifica"
 
 #. module: website_crm_partner_assign
 #: model:ir.model.fields,help:website_crm_partner_assign.field_crm_lead_date_assign
@@ -613,6 +640,7 @@ msgstr "Ultima revisione partner"
 #. module: website_crm_partner_assign
 #: selection:crm.lead.report.assign,type:0
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_crm_lead_assignation_lead_id
+#: selection:crm.lead.report.assign,type
 msgid "Lead"
 msgstr "Lead"
 
@@ -683,12 +711,13 @@ msgstr "Stai Cercando un Negozio Vicino a Te?"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:100
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:100
 msgid "Lost"
 msgstr "Perso"
 
 #. module: website_crm_partner_assign
 #: selection:crm.lead.report.assign,priority:0
+#: selection:crm.lead.report.assign,priority
 msgid "Low"
 msgstr "Bassa"
 
@@ -729,14 +758,16 @@ msgstr "Mie Opportunità"
 #: model:ir.model.fields,field_description:website_crm_partner_assign.field_res_partner_activation_name
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_leads
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_opportunities
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:49
+#: code:addons/website_crm_partner_assign/controllers/main.py:105
 msgid "Name"
 msgstr "Nome"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:48
 #: code:addons/website_crm_partner_assign/controllers/main.py:104
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:48
+#: code:addons/website_crm_partner_assign/controllers/main.py:104
 msgid "Newest"
 msgstr "Recenti"
 
@@ -768,6 +799,7 @@ msgstr "Nessun risultato"
 
 #. module: website_crm_partner_assign
 #: selection:crm.lead.report.assign,priority:0
+#: selection:crm.lead.report.assign,priority
 msgid "Normal"
 msgstr "Normale"
 
@@ -804,6 +836,7 @@ msgstr "Analisi assegnamento opportunità"
 
 #. module: website_crm_partner_assign
 #: selection:crm.lead.report.assign,type:0
+#: selection:crm.lead.report.assign,type
 msgid "Opportunity"
 msgstr "Opportunità"
 
@@ -819,7 +852,7 @@ msgstr "I Nostri Partner"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:98
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:98
 msgid "Overdue Activities"
 msgstr "Attività scadute"
 
@@ -835,7 +868,7 @@ msgstr "Scadenza superata"
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.grade_in_detail
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.view_report_crm_partner_assign_filter
 msgid "Partner"
-msgstr "Partner"
+msgstr "Soggetto"
 
 #. module: website_crm_partner_assign
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.view_crm_partner_assign_form
@@ -890,7 +923,7 @@ msgstr "Il partner di questo caso è stato inoltrato/assegnato a"
 #. module: website_crm_partner_assign
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.index
 msgid "Partners"
-msgstr "Partner"
+msgstr "Soggetti"
 
 #. module: website_crm_partner_assign
 #: model:ir.actions.act_window,name:website_crm_partner_assign.action_report_crm_partner_assign
@@ -938,7 +971,7 @@ msgstr "Piorità:"
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:108
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_opportunity
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:108
 msgid "Probability"
 msgstr "Probabililtà"
 
@@ -1009,11 +1042,13 @@ msgstr "Sequenza"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/wizard/crm_forward_to_partner.py:72
+#: code:addons/website_crm_partner_assign/wizard/crm_forward_to_partner.py:72
 #, python-format
 msgid "Set an email address for the partner %s"
 msgstr "Imposta un indirizzo mail per il partner %s"
 
 #. module: website_crm_partner_assign
+#: code:addons/website_crm_partner_assign/wizard/crm_forward_to_partner.py:70
 #: code:addons/website_crm_partner_assign/wizard/crm_forward_to_partner.py:70
 #, python-format
 msgid "Set an email address for the partner(s): %s"
@@ -1032,7 +1067,7 @@ msgstr "Spam"
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:109
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_opportunities
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:109
 msgid "Stage"
 msgstr "Stadio"
 
@@ -1059,7 +1094,7 @@ msgstr "Tag"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/wizard/crm_forward_to_partner.py:60
-#, python-format
+#: code:addons/website_crm_partner_assign/wizard/crm_forward_to_partner.py:60
 msgid "The Forward Email Template is not in the database"
 msgstr "Il modello dell'inoltro delle mail è mancante nel database"
 
@@ -1076,16 +1111,16 @@ msgstr ""
 #. module: website_crm_partner_assign
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_leads
 msgid "There are no leads."
-msgstr "Non ci sono lead."
+msgstr "Non c'è nessun lead."
 
 #. module: website_crm_partner_assign
 #: model:ir.ui.view,arch_db:website_crm_partner_assign.portal_my_opportunities
 msgid "There are no opportunities."
-msgstr "Non ci sono opportunità."
+msgstr "Non c'è nessuna opportunità."
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:96
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:96
 msgid "This Week Activities"
 msgstr "Attività settimanali"
 
@@ -1096,7 +1131,7 @@ msgstr "Questo lead è un spam"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:95
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:95
 msgid "Today Activities"
 msgstr "Archiviato Oggi"
 
@@ -1123,6 +1158,7 @@ msgstr "Utente"
 
 #. module: website_crm_partner_assign
 #: selection:crm.lead.report.assign,priority:0
+#: selection:crm.lead.report.assign,priority
 msgid "Very High"
 msgstr "Molto alta"
 
@@ -1143,7 +1179,7 @@ msgstr "Perchè non sei interessato a questo lead?"
 
 #. module: website_crm_partner_assign
 #: code:addons/website_crm_partner_assign/controllers/main.py:99
-#, python-format
+#: code:addons/website_crm_partner_assign/controllers/main.py:99
 msgid "Won"
 msgstr "Vinto"
 
@@ -1176,6 +1212,7 @@ msgstr "CAP"
 
 #. module: website_crm_partner_assign
 #: selection:crm.lead.forward.to.partner,forward_type:0
+#: selection:crm.lead.forward.to.partner,forward_type
 msgid "a single partner: manual selection of partner"
 msgstr "un partner singolo: selezione manuale del partner"
 
@@ -1233,9 +1270,12 @@ msgstr "res.partner.grade"
 
 #. module: website_crm_partner_assign
 #: selection:crm.lead.forward.to.partner,forward_type:0
+#: selection:crm.lead.forward.to.partner,forward_type
 msgid ""
-"several partners: automatic assignation, using GPS coordinates and partner's"
-" grades"
+"several partners: automatic assignation, using GPS coordinates and "
+"partner's grades"
 msgstr ""
-"partner molteplici: assegnazione automatica, usando le coordinate GPS e i "
-"loro gradi"
+"partner molteplici: assegnazione automatica, usando le coordinate GPS e i"
+" loro gradi"
+
+

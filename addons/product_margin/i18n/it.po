@@ -1,7 +1,7 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # * product_margin
-# 
+#
 # Translators:
 # Francesco Garganese <francesco.garganese@aeromnia.aero>, 2016
 # Martin Trigaux <mat@odoo.com>, 2016
@@ -14,17 +14,17 @@
 # Giovanni Perteghella <giovanni@perteghella.org>, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0c\n"
+"Project-Id-Version: Odoo (10.0)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-09-07 08:57+0000\n"
 "PO-Revision-Date: 2016-09-07 08:57+0000\n"
-"Last-Translator: Giovanni Perteghella <giovanni@perteghella.org>, 2016\n"
-"Language-Team: Italian (https://www.transifex.com/odoo/teams/41243/it/)\n"
+"Last-Translator: Antonio M. Vigliotti <antoniomaria.vigliotti@gmail.com>\n"
+"Language-Team: Zeroincombenze (https://www.zeroincombenze.it)\n"
+"Language: it_IT\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: \n"
-"Language: it\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
 
 #. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_product_purchase_num_invoiced
@@ -85,12 +85,12 @@ msgstr "Creato da"
 #. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_margin_create_date
 msgid "Created on"
-msgstr "Creato il"
+msgstr "Data di creazione"
 
 #. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_product_taxes_id
 msgid "Customer Taxes"
-msgstr "Imposte cliente"
+msgstr "IVA v/clienti"
 
 #. module: product_margin
 #: model:ir.model.fields,help:product_margin.field_product_product_membership_date_from
@@ -105,11 +105,13 @@ msgstr "Date fino a cui l'Iscrizione rimarrà attiva."
 #. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_margin_display_name
 msgid "Display Name"
-msgstr "Nome Visualizzato"
+msgstr "Nome visualizzato"
 
 #. module: product_margin
 #: selection:product.margin,invoice_state:0
 #: selection:product.product,invoice_state:0
+#: selection:product.margin,invoice_state
+#: selection:product.product,invoice_state
 msgid "Draft, Open and Paid"
 msgstr "Bozza, aperta e pagata"
 
@@ -177,7 +179,7 @@ msgstr "Stato fattura"
 #. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_margin___last_update
 msgid "Last Modified on"
-msgstr "Ultima modifica il"
+msgstr "Data ultima modifica"
 
 #. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_margin_write_uid
@@ -187,7 +189,7 @@ msgstr "Ultima modifica di"
 #. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_margin_write_date
 msgid "Last Updated on"
-msgstr "Ultima modifica il"
+msgstr "Data ultima modifica"
 
 #. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_product_date_from
@@ -237,12 +239,16 @@ msgstr "Margini Aperti"
 #. module: product_margin
 #: selection:product.margin,invoice_state:0
 #: selection:product.product,invoice_state:0
+#: selection:product.margin,invoice_state
+#: selection:product.product,invoice_state
 msgid "Open and Paid"
 msgstr "Aperto e pagato"
 
 #. module: product_margin
 #: selection:product.margin,invoice_state:0
 #: selection:product.product,invoice_state:0
+#: selection:product.margin,invoice_state
+#: selection:product.product,invoice_state
 msgid "Paid"
 msgstr "Pagato"
 
@@ -268,7 +274,7 @@ msgstr "Margine prodotto"
 #: model:ir.ui.view,arch_db:product_margin.view_product_margin_form
 #: model:ir.ui.view,arch_db:product_margin.view_product_margin_graph
 #: model:ir.ui.view,arch_db:product_margin.view_product_margin_tree
-#, python-format
+#: code:addons/product_margin/wizard/product_margin.py:49
 msgid "Product Margins"
 msgstr "Margini Prodotti"
 
@@ -306,23 +312,21 @@ msgstr "Prezzo Standard"
 #. module: product_margin
 #: model:ir.model.fields,help:product_margin.field_product_product_normal_cost
 msgid "Sum of Multiplication of Cost price and quantity of Vendor Bills"
-msgstr ""
-"Totale del prodotto del costo per la quantità nelle fatture di acquisto"
+msgstr "Totale del prodotto del costo per la quantità nelle fatture di acquisto"
 
 #. module: product_margin
 #: model:ir.model.fields,help:product_margin.field_product_product_turnover
-msgid ""
-"Sum of Multiplication of Invoice price and quantity of Customer Invoices"
+msgid "Sum of Multiplication of Invoice price and quantity of Customer Invoices"
 msgstr ""
-"Somma del Prodotto del prezzo di Vendita Fattura e quantità delle Fatture "
-"Clienti"
+"Somma del Prodotto del prezzo di Vendita Fattura e quantità delle Fatture"
+" Clienti"
 
 #. module: product_margin
 #: model:ir.model.fields,help:product_margin.field_product_product_total_cost
 msgid "Sum of Multiplication of Invoice price and quantity of Vendor Bills "
 msgstr ""
-"Totale del prodotto del prezzo in fattura per la quantità nelle fatture di "
-"acquisto"
+"Totale del prodotto del prezzo in fattura per la quantità nelle fatture "
+"di acquisto"
 
 #. module: product_margin
 #: model:ir.model.fields,help:product_margin.field_product_product_sale_expected
@@ -346,20 +350,20 @@ msgstr "Somma della quantità nelle fatture di acquisto"
 #. module: product_margin
 #: model:ir.model.fields,help:product_margin.field_product_product_property_account_expense_id
 msgid ""
-"This account will be used for invoices instead of the default one to value "
-"expenses for the current product."
+"This account will be used for invoices instead of the default one to "
+"value expenses for the current product."
 msgstr ""
-"Questo conto sarà usato per le fatture al posto di quello predefinito per "
-"valorizzare il costo per il prodotto selezionato."
+"Questo conto sarà usato per le fatture al posto di quello predefinito per"
+" valorizzare il costo per il prodotto selezionato."
 
 #. module: product_margin
 #: model:ir.model.fields,help:product_margin.field_product_product_property_account_income_id
 msgid ""
-"This account will be used for invoices instead of the default one to value "
-"sales for the current product."
+"This account will be used for invoices instead of the default one to "
+"value sales for the current product."
 msgstr ""
-"Questo conto sarà usato per le fatture al posto di quello predefinito per "
-"valorizzare la vendita del prodotto selezionato."
+"Questo conto sarà usato per le fatture al posto di quello predefinito per"
+" valorizzare la vendita del prodotto selezionato."
 
 #. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_margin_to_date
@@ -401,15 +405,17 @@ msgstr "Fatturato - Prezzo standard"
 #. module: product_margin
 #: model:ir.model.fields,field_description:product_margin.field_product_product_supplier_taxes_id
 msgid "Vendor Taxes"
-msgstr "Imposte fornitore"
+msgstr "IVA da fornitori"
 
 #. module: product_margin
 #: model:ir.model.fields,help:product_margin.field_product_product_email_template_id
 msgid ""
-"When validating an invoice, an email will be sent to the customer based on "
-"this template. The customer will receive an email for each product linked to"
-" an email template."
+"When validating an invoice, an email will be sent to the customer based "
+"on this template. The customer will receive an email for each product "
+"linked to an email template."
 msgstr ""
 "Quando viene validata una fattura, un email sarà inviata al cliente "
-"utilizzando questo template. Il cliente riceverà una email per ogni prodotto"
-" collegato a un template email."
+"utilizzando questo template. Il cliente riceverà una email per ogni "
+"prodotto collegato a un template email."
+
+

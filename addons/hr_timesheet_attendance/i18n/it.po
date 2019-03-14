@@ -1,28 +1,28 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # * hr_timesheet_attendance
-# 
+#
 # Translators:
-# Sergio Zanchetta <primes2h@gmail.com>, 2016
-# Martin Trigaux, 2016
-# Giacomo Grasso <giacomo.grasso.82@gmail.com>, 2016
 # Simone Bernini <simone@aperturelabs.it>, 2016
 # Paolo Valier, 2016
+# Giacomo Grasso <giacomo.grasso.82@gmail.com>, 2016
 # Francesco Garganese <francesco.garganese@aeromnia.aero>, 2016
+# Martin Trigaux, 2016
 # Maurizio Delmonte <maurizio.delmonte@gmail.com>, 2017
+# Sergio Zanchetta <primes2h@gmail.com>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0c\n"
+"Project-Id-Version: Odoo (10.0)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-09-07 08:57+0000\n"
-"PO-Revision-Date: 2016-09-07 08:57+0000\n"
-"Last-Translator: Maurizio Delmonte <maurizio.delmonte@gmail.com>, 2017\n"
-"Language-Team: Italian (https://www.transifex.com/odoo/teams/41243/it/)\n"
+"PO-Revision-Date: 2016-09-07 09:22+0000\n"
+"Last-Translator: Antonio M. Vigliotti <antoniomaria.vigliotti@gmail.com>\n"
+"Language-Team: Zeroincombenze (https://www.zeroincombenze.it)\n"
+"Language: it_IT\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: \n"
-"Language: it\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
 
 #. module: hr_timesheet_attendance
 #: model:ir.ui.view,arch_db:hr_timesheet_attendance.hr_timesheet_sheet_form
@@ -36,7 +36,8 @@ msgid ""
 "Allowed difference in hours between the sign in/out and the timesheet "
 "computation for one sheet. Set this to 0 if you do not want any control."
 msgstr ""
-"Differenza ammessa, espressa in ore, tra ingresso/uscita e calcolo delle ore per singolo foglio.\n"
+"Differenza ammessa, espressa in ore, tra ingresso/uscita e calcolo delle "
+"ore per singolo foglio.\n"
 "Impostare a 0 per disattivare il controllo."
 
 #. module: hr_timesheet_attendance
@@ -84,7 +85,7 @@ msgstr "Nome visualizzato"
 #. module: hr_timesheet_attendance
 #: model:ir.actions.act_window,name:hr_timesheet_attendance.action_hr_timesheet_attendance_report
 msgid "HR Timesheet/Attendance Report"
-msgstr "Resoconto foglio ore/presenza"
+msgstr "Rendiconto presenze/foglio ore RU"
 
 #. module: hr_timesheet_attendance
 #: model:ir.model.fields,field_description:hr_timesheet_attendance.field_hr_timesheet_attendance_report_id
@@ -96,7 +97,7 @@ msgstr "ID"
 #: model:ir.model.fields,field_description:hr_timesheet_attendance.field_hr_timesheet_attendance_report___last_update
 #: model:ir.model.fields,field_description:hr_timesheet_attendance.field_hr_timesheet_sheet_sheet_day___last_update
 msgid "Last Modified on"
-msgstr "Ultima modifica il"
+msgstr "Data ultima modifica"
 
 #. module: hr_timesheet_attendance
 #: model:ir.model.fields,field_description:hr_timesheet_attendance.field_hr_timesheet_sheet_sheet_period_ids
@@ -107,9 +108,9 @@ msgstr "Periodo"
 
 #. module: hr_timesheet_attendance
 #: code:addons/hr_timesheet_attendance/models/hr_timesheet_sheet.py:76
+#: code:addons/hr_timesheet_attendance/models/hr_timesheet_sheet.py:76
 #, python-format
-msgid ""
-"Please verify that the total difference of the sheet is lower than %.2f."
+msgid "Please verify that the total difference of the sheet is lower than %.2f."
 msgstr "Verificare che la differenza totale nel foglio sia inferiore a %.2f."
 
 #. module: hr_timesheet_attendance
@@ -121,10 +122,10 @@ msgstr "Foglio"
 
 #. module: hr_timesheet_attendance
 #: code:addons/hr_timesheet_attendance/models/hr_timesheet_sheet.py:85
-#, python-format
+#: code:addons/hr_timesheet_attendance/models/hr_timesheet_sheet.py:85
 msgid ""
-"The timesheet cannot be validated as it contains an attendance record with "
-"no Check Out)."
+"The timesheet cannot be validated as it contains an attendance record "
+"with no Check Out)."
 msgstr ""
 "Il foglio ore non può essere confermato perché manca un'uscita in una "
 "registrazione presenza."
@@ -147,7 +148,7 @@ msgstr "Foglio ore"
 #. module: hr_timesheet_attendance
 #: model:ir.ui.menu,name:hr_timesheet_attendance.menu_hr_timesheet_attendance_report
 msgid "Timesheet / Attendance"
-msgstr "Foglio ore / Presenza"
+msgstr "Foglio ore / Presenze"
 
 #. module: hr_timesheet_attendance
 #: model:ir.actions.act_window,name:hr_timesheet_attendance.act_hr_timesheet_sheet_sheet_2_hr_analytic_timesheet
@@ -228,41 +229,39 @@ msgstr "ID utente"
 
 #. module: hr_timesheet_attendance
 #: code:addons/hr_timesheet_attendance/models/hr_attendance.py:98
-#, python-format
-msgid ""
-"You can not enter an attendance date outside the current timesheet dates."
+#: code:addons/hr_timesheet_attendance/models/hr_attendance.py:98
+msgid "You can not enter an attendance date outside the current timesheet dates."
 msgstr ""
-"Impossibile inserire una data di presenza al di fuori delle date correnti "
-"nel foglio ore."
+"Impossibile inserire una data di presenza al di fuori delle date correnti"
+" nel foglio ore."
 
 #. module: hr_timesheet_attendance
 #: code:addons/hr_timesheet_attendance/models/hr_attendance.py:96
-#, python-format
+#: code:addons/hr_timesheet_attendance/models/hr_attendance.py:96
 msgid ""
-"You can not enter an attendance in a submitted timesheet. Ask your manager "
-"to reset it before adding attendance."
+"You can not enter an attendance in a submitted timesheet. Ask your "
+"manager to reset it before adding attendance."
 msgstr ""
 "Impossibile inserire una presenza in un foglio ore già inviato. Chiedere "
 "prima al responsabile di ripristinare il foglio ore."
 
 #. module: hr_timesheet_attendance
 #: code:addons/hr_timesheet_attendance/models/hr_timesheet_sheet.py:53
-#, python-format
+#: code:addons/hr_timesheet_attendance/models/hr_timesheet_sheet.py:53
 msgid "You cannot delete a timesheet that has attendance entries."
 msgstr "Impossibile eliminare un foglio ore che contiene presenze registrate."
 
 #. module: hr_timesheet_attendance
 #: code:addons/hr_timesheet_attendance/models/hr_attendance.py:113
-#, python-format
-msgid ""
-"You cannot enter an attendance date outside the current timesheet dates."
+#: code:addons/hr_timesheet_attendance/models/hr_attendance.py:113
+msgid "You cannot enter an attendance date outside the current timesheet dates."
 msgstr ""
-"Impossibile inserire una data di presenza al di fuori delle date correnti "
-"del foglio ore."
+"Impossibile inserire una data di presenza al di fuori delle date correnti"
+" del foglio ore."
 
 #. module: hr_timesheet_attendance
 #: code:addons/hr_timesheet_attendance/models/hr_attendance.py:119
-#, python-format
+#: code:addons/hr_timesheet_attendance/models/hr_attendance.py:119
 msgid "You cannot modify an entry in a confirmed timesheet"
 msgstr "Impossibile modificare una registrazione in un foglio ore confermato."
 
@@ -280,4 +279,6 @@ msgstr "project.config.settings"
 #: model:ir.ui.view,arch_db:hr_timesheet_attendance.view_hr_timesheet_attendance_report_pivot
 #: model:ir.ui.view,arch_db:hr_timesheet_attendance.view_hr_timesheet_attendance_report_search
 msgid "timesheet attendance"
-msgstr "presenza foglio ore"
+msgstr "presenze foglio ore"
+
+
