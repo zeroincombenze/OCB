@@ -58,6 +58,8 @@ msgstr ""
 #: selection:product.template,property_cost_method:0
 #: selection:product.category,property_cost_method
 #: selection:product.template,property_cost_method
+#: selection:product.category,property_cost_method
+#: selection:product.template,property_cost_method
 msgid "Average Price"
 msgstr "Prezzo medio"
 
@@ -70,6 +72,7 @@ msgstr "Annulla"
 #. module: stock_account
 #: code:addons/stock_account/models/stock.py:244
 #: code:addons/stock_account/models/stock.py:244
+#: code:addons/stock_account/models/stock.py:244
 #, python-format
 msgid ""
 "Cannot find a stock input account for the product %s. You must define one"
@@ -78,6 +81,7 @@ msgid ""
 msgstr ""
 
 #. module: stock_account
+#: code:addons/stock_account/models/stock.py:246
 #: code:addons/stock_account/models/stock.py:246
 #: code:addons/stock_account/models/stock.py:246
 #, python-format
@@ -124,6 +128,7 @@ msgid "Company"
 msgstr "Azienda"
 
 #. module: stock_account
+#: code:addons/stock_account/models/stock.py:338
 #: code:addons/stock_account/models/stock.py:338
 #: code:addons/stock_account/models/stock.py:338
 msgid ""
@@ -240,6 +245,7 @@ msgstr ""
 #. module: stock_account
 #: selection:stock.config.settings,module_stock_landed_costs:0
 #: selection:stock.config.settings,module_stock_landed_costs
+#: selection:stock.config.settings,module_stock_landed_costs
 msgid "Include landed costs in product costing computation"
 msgstr "Include costi d'importazione nel calcolo del costo del prodotto"
 
@@ -335,11 +341,13 @@ msgstr "Gestisci la Valutazioni d'Inventario e i Metodi di Costo"
 #. module: stock_account
 #: code:addons/stock_account/models/product.py:109
 #: code:addons/stock_account/models/product.py:109
+#: code:addons/stock_account/models/product.py:109
 msgid "No difference between standard price and new price!"
 msgstr "Nessuna differenza tra il prezzo standard e il nuovo prezzo!"
 
 #. module: stock_account
 #: selection:stock.config.settings,module_stock_landed_costs:0
+#: selection:stock.config.settings,module_stock_landed_costs
 #: selection:stock.config.settings,module_stock_landed_costs
 msgid "No landed costs"
 msgstr "Nessun costo di'importazione"
@@ -354,11 +362,14 @@ msgstr "Data dell'Operazione"
 #: selection:product.template,property_valuation:0
 #: selection:product.category,property_valuation
 #: selection:product.template,property_valuation
+#: selection:product.category,property_valuation
+#: selection:product.template,property_valuation
 msgid "Periodic (manual)"
 msgstr "Periodico (manuale)"
 
 #. module: stock_account
 #: selection:stock.config.settings,group_stock_inventory_valuation:0
+#: selection:stock.config.settings,group_stock_inventory_valuation
 #: selection:stock.config.settings,group_stock_inventory_valuation
 msgid "Periodic inventory valuation (recommended)"
 msgstr ""
@@ -368,11 +379,14 @@ msgstr ""
 #: selection:product.template,property_valuation:0
 #: selection:product.category,property_valuation
 #: selection:product.template,property_valuation
+#: selection:product.category,property_valuation
+#: selection:product.template,property_valuation
 msgid "Perpetual (automated)"
 msgstr "Perpetuo (automatizzato)"
 
 #. module: stock_account
 #: selection:stock.config.settings,group_stock_inventory_valuation:0
+#: selection:stock.config.settings,group_stock_inventory_valuation
 #: selection:stock.config.settings,group_stock_inventory_valuation
 msgid "Perpetual inventory valuation (stock move generates accounting entries)"
 msgstr ""
@@ -418,6 +432,8 @@ msgstr "Quantità"
 #: selection:product.template,property_cost_method:0
 #: selection:product.category,property_cost_method
 #: selection:product.template,property_cost_method
+#: selection:product.category,property_cost_method
+#: selection:product.template,property_cost_method
 msgid "Real Price"
 msgstr ""
 
@@ -440,17 +456,21 @@ msgstr ""
 #. module: stock_account
 #: model:ir.model.fields,field_description:stock_account.field_stock_history_source
 msgid "Source"
-msgstr "Origine"
+msgstr "Sorgente"
 
 #. module: stock_account
 #: selection:product.category,property_cost_method:0
 #: selection:product.template,property_cost_method:0
 #: selection:product.category,property_cost_method
 #: selection:product.template,property_cost_method
+#: selection:product.category,property_cost_method
+#: selection:product.template,property_cost_method
 msgid "Standard Price"
 msgstr "Prezzo Standard"
 
 #. module: stock_account
+#: code:addons/stock_account/models/product.py:126
+#: code:addons/stock_account/models/product.py:131
 #: code:addons/stock_account/models/product.py:126
 #: code:addons/stock_account/models/product.py:131
 #: code:addons/stock_account/models/product.py:126
@@ -510,6 +530,7 @@ msgstr "Contabilità Stock in Ingresso"
 #: code:addons/stock_account/models/account_chart_template.py:15
 #: model:ir.model.fields,field_description:stock_account.field_product_category_property_stock_journal
 #: code:addons/stock_account/models/account_chart_template.py:15
+#: code:addons/stock_account/models/account_chart_template.py:15
 msgid "Stock Journal"
 msgstr "Giornale di magazzino"
 
@@ -549,6 +570,7 @@ msgstr "Conto valorizzazione di magazzino (uscita)"
 #: model:ir.ui.view,arch_db:stock_account.view_stock_history_report_search
 #: model:ir.ui.view,arch_db:stock_account.view_stock_history_report_tree
 #: code:addons/stock_account/wizard/wizard_valuation_history.py:24
+#: code:addons/stock_account/wizard/wizard_valuation_history.py:24
 msgid "Stock Value At Date"
 msgstr ""
 
@@ -558,6 +580,7 @@ msgid "Templates for Account Chart"
 msgstr "Modelli per il piano dei conti"
 
 #. module: stock_account
+#: code:addons/stock_account/models/stock.py:273
 #: code:addons/stock_account/models/stock.py:273
 #: code:addons/stock_account/models/stock.py:273
 #, python-format
@@ -705,12 +728,15 @@ msgstr ""
 #. module: stock_account
 #: code:addons/stock_account/models/stock.py:242
 #: code:addons/stock_account/models/stock.py:242
+#: code:addons/stock_account/models/stock.py:242
 msgid ""
 "You don't have any stock journal defined on your product category, check "
 "if you have installed a chart of accounts"
 msgstr ""
 
 #. module: stock_account
+#: code:addons/stock_account/models/product.py:111
+#: code:addons/stock_account/models/stock.py:248
 #: code:addons/stock_account/models/product.py:111
 #: code:addons/stock_account/models/stock.py:248
 #: code:addons/stock_account/models/product.py:111

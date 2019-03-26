@@ -491,9 +491,18 @@ class Users(models.Model):
                 try:
                     with cls.pool.cursor() as cr:
                         base = user_agent_env['base_location']
-                        ICP = api.Environment(cr, uid, {})['ir.config_parameter']
-                        if not ICP.get_param('web.base.url.freeze'):
-                            ICP.set_param('web.base.url', base)
+                        # [antoniov: 2019-03-25] Avoid wrong url by JSON 
+                        if base.find('localhost') < 0:
+                            ICP = api.Environment(cr, uid, {})[
+                                'ir.config_parameter']
+                            if not ICP.get_param('web.base.url.freeze'):
+                                # [antoniov: 2018-01-26] Force http to https
+                                if ICP.get_param('web.base.url.cvt2https'):
+                                    ICP.set_param('web.base.url',
+                                                  base.replace('http:',
+                                                               'https:'))
+                                else:
+                                    ICP.set_param('web.base.url', base)
                 except Exception:
                     _logger.exception("Failed to update web.base.url configuration parameter")
         return uid

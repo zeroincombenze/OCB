@@ -4,6 +4,8 @@ from odoo.exceptions import Warning
 class TestAccountSupplierInvoice(AccountingTestCase):
 
     def test_supplier_invoice(self):
+        import pdb
+        pdb.set_trace()
         tax = self.env['account.tax'].create({
             'name': 'Tax 10.0',
             'amount': 10.0,
@@ -43,6 +45,8 @@ class TestAccountSupplierInvoice(AccountingTestCase):
             invoice.move_id.button_cancel()
 
     def test_supplier_invoice2(self):
+        import pdb
+        pdb.set_trace()
         tax_fixed = self.env['account.tax'].create({
             'sequence': 10,
             'name': 'Tax 10.0 (Fixed)',
