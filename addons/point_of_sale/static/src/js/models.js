@@ -741,12 +741,20 @@ exports.PosModel = Backbone.Model.extend({
             transfer.pipe(function(order_server_id){    
 
                 // generate the pdf and download it
-                self.chrome.do_action('point_of_sale.pos_invoice_report',{additional_context:{ 
-                    active_ids:order_server_id,
-                }}).done(function () {
-                    invoiced.resolve();
-                    done.resolve();
-                });
+                if (order_server_id.length) {
+                    self.chrome.do_action('point_of_sale.pos_invoice_report',{additional_context:{ 
+                        active_ids:order_server_id,
+                    }}).done(function () {
+                        invoiced.resolve();
+                        done.resolve();
+                    });
+                } else {
+                    // The order has been pushed separately in batch when
+                    // the connection came back.
+                    // The user has to go to the backend to print the invoice
+                    invoiced.reject({code:401, message:'Backend Invoice', data:{order: order}});
+                    done.reject();
+                }
             });
 
             return done;
@@ -1199,16 +1207,28 @@ exports.Orderline = Backbone.Model.extend({
         }
     },
 
+    get_required_number_of_lots: function(){
+        var lots_required = 1;
+
+        if (this.product.tracking == 'serial') {
+            lots_required = this.quantity;
+        }
+
+        return lots_required;
+    },
+
     compute_lot_lines: function(){
         var pack_lot_lines = this.pack_lot_lines;
         var lines = pack_lot_lines.length;
-        if(this.quantity > lines){
-            for(var i=0; i<this.quantity - lines; i++){
+        var lots_required = this.get_required_number_of_lots();
+
+        if(lots_required > lines){
+            for(var i=0; i<lots_required - lines; i++){
                 pack_lot_lines.add(new exports.Packlotline({}, {'order_line': this}));
             }
         }
-        if(this.quantity < lines){
-            var to_remove = lines - this.quantity;
+        if(lots_required < lines){
+            var to_remove = lines - lots_required;
             var lot_lines = pack_lot_lines.sortBy('lot_name').slice(0, to_remove);
             pack_lot_lines.remove(lot_lines);
         }
@@ -1220,7 +1240,7 @@ exports.Orderline = Backbone.Model.extend({
             return true;
         }
         var valid_product_lot = this.pack_lot_lines.get_valid_lots();
-        return this.quantity === valid_product_lot.length;
+        return this.get_required_number_of_lots() === valid_product_lot.length;
     },
 
     // return the unit of measure of the product
@@ -1260,6 +1280,8 @@ exports.Orderline = Backbone.Model.extend({
         }else if(this.get_discount() > 0){             // we don't merge discounted orderlines
             return false;
         }else if(this.price !== orderline.price){
+            return false;
+        }else if(this.product.tracking == 'lot') {
             return false;
         }else{ 
             return true;
@@ -1589,8 +1611,10 @@ var PacklotlineCollection = Backbone.Collection.extend({
     },
 
     set_quantity_by_lot: function() {
-        var valid_lots = this.get_valid_lots();
-        this.order_line.set_quantity(valid_lots.length);
+        if (this.order_line.product.tracking == 'serial') {
+            var valid_lots = this.get_valid_lots();
+            this.order_line.set_quantity(valid_lots.length);
+        }
     }
 });
 
@@ -2082,7 +2106,8 @@ exports.Order = Backbone.Model.extend({
             this.pos.gui.show_popup('packlotline', {
                 'title': _t('Lot/Serial Number(s) Required'),
                 'pack_lot_lines': pack_lot_lines,
-                'order': this
+                'order_line': order_line,
+                'order': this,
             });
         }
     },
@@ -2092,7 +2117,7 @@ exports.Order = Backbone.Model.extend({
         this.assert_editable();
         var newPaymentline = new exports.Paymentline({},{order: this, cashregister:cashregister, pos: this.pos});
         if(cashregister.journal.type !== 'cash' || this.pos.config.iface_precompute_cash){
-            newPaymentline.set_amount( Math.max(this.get_due(),0) );
+            newPaymentline.set_amount( this.get_due() );
         }
         this.paymentlines.add(newPaymentline);
         this.select_paymentline(newPaymentline);
@@ -2256,10 +2281,10 @@ exports.Order = Backbone.Model.extend({
                 }
             }
         }
-        return round_pr(Math.max(0,due), this.pos.currency.rounding);
+        return round_pr(due, this.pos.currency.rounding);
     },
     is_paid: function(){
-        return this.get_due() === 0;
+        return this.get_due() <= 0;
     },
     is_paid_with_cash: function(){
         return !!this.paymentlines.find( function(pl){

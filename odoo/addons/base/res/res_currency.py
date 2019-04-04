@@ -34,17 +34,18 @@ class Currency(models.Model):
     ]
 
     @api.multi
+    @api.depends('rate_ids.rate')
     def _compute_current_rate(self):
         date = self._context.get('date') or fields.Datetime.now()
         company_id = self._context.get('company_id') or self.env['res.users']._get_company().id
         # the subquery selects the last rate before 'date' for the given currency/company
-        # query = """SELECT r.id, (SELECT r.rate FROM res_currency_rate r
+        # query = """SELECT c.id, (SELECT r.rate FROM res_currency_rate r
         #                           WHERE r.currency_id = c.id AND r.name <= %s
         #                             AND (r.company_id IS NULL OR r.company_id = %s)
         #                        ORDER BY r.company_id, r.name DESC
         #                           LIMIT 1) AS rate
         #            FROM res_currency c
-        #            WHERE c.id IN %s"""
+        #           WHERE c.id IN %s"""
         # [antoniov: 2018-09-11] if currency rate does not exist return 1.0
         # [antoniov: 2018-09-11] company is not important in rate evaluation!
         query = """
@@ -212,7 +213,7 @@ class CurrencyRate(models.Model):
 
     name = fields.Datetime(string='Date', required=True, index=True,
                            default=lambda self: fields.Date.today() + ' 00:00:00')
-    rate = fields.Float(digits=(12, 6), help='The rate of the currency to the currency of rate 1')
+    rate = fields.Float(digits=(12, 6), default=1.0, help='The rate of the currency to the currency of rate 1')
     currency_id = fields.Many2one('res.currency', string='Currency', readonly=True)
     company_id = fields.Many2one('res.company', string='Company',
                                  default=lambda self: self.env.user.company_id)
