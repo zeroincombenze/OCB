@@ -492,14 +492,17 @@ class res_users(osv.osv):
                 cr = pooler.get_db(db).cursor()
                 try:
                     base = user_agent_env['base_location']
-                    ICP = self.pool.get('ir.config_parameter')
-                    if not ICP.get_param(cr, uid, 'web.base.url.freeze'):
-                        if ICP.get_param(cr, uid, 'web.base.url.cvt2https'):
-                            ICP.set_param(cr, uid, 'web.base.url',
-                                          base.replace('http:', 'https:'))
-                        else:
-                            ICP.set_param(cr, uid, 'web.base.url', base)
-                    cr.commit()
+                    # [antoniov: 2019-03-25] Avoid wrong url by JSON 
+                    if base.find('localhost') < 0:
+                        ICP = self.pool.get('ir.config_parameter')
+                        if not ICP.get_param(cr, uid, 'web.base.url.freeze'):
+                            # [antoniov: 2018-01-26] Force http to https
+                            if ICP.get_param(cr, uid, 'web.base.url.cvt2https'):
+                                ICP.set_param(cr, uid, 'web.base.url',
+                                              base.replace('http:', 'https:'))
+                            else:
+                                ICP.set_param(cr, uid, 'web.base.url', base)
+                        cr.commit()
                 except Exception:
                     _logger.exception("Failed to update web.base.url configuration parameter")
                 finally:

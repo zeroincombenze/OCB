@@ -310,6 +310,8 @@ Avaiable Addons / Moduli disponibili
 +-----------------------------------+------------+------------+----------------------------------------------------+
 | openerp_wordpress                 | |halt|     | |no_check| | Wordpress site integration                         |
 +-----------------------------------+------------+------------+----------------------------------------------------+
+| openupgrade_records               | 7.0.0.2    | |same|     | OpenUpgrade Records                                |
++-----------------------------------+------------+------------+----------------------------------------------------+
 | pad                               | 7.0.2.0    | |same|     | Collaborative Pads                                 |
 +-----------------------------------+------------+------------+----------------------------------------------------+
 | pad_project                       | 7.0.1.0    | |same|     | Pad on tasks                                       |
@@ -345,6 +347,8 @@ Avaiable Addons / Moduli disponibili
 | portal_sale                       | 7.0.0.1    | |same|     | Portal Sale                                        |
 +-----------------------------------+------------+------------+----------------------------------------------------+
 | portal_stock                      | 7.0.0.1    | |same|     | Portal Stock                                       |
++-----------------------------------+------------+------------+----------------------------------------------------+
+| poweremail                        | 7.0.99.0   | |same|     | Powermail Migration to email template              |
 +-----------------------------------+------------+------------+----------------------------------------------------+
 | process                           | 7.0.1.0    | |same|     | Enterprise Process                                 |
 +-----------------------------------+------------+------------+----------------------------------------------------+
@@ -414,7 +418,7 @@ Avaiable Addons / Moduli disponibili
 +-----------------------------------+------------+------------+----------------------------------------------------+
 | sale_mrp                          | 7.0.1.0    | |same|     | Sales and MRP Management                           |
 +-----------------------------------+------------+------------+----------------------------------------------------+
-| sale_order_dates                  | 7.0.1.1    | |same|     | Dates on Sales Order                               |
+| sale_order_dates                  | 7.0.1.0    | |same|     | Dates on Sales Order                               |
 +-----------------------------------+------------+------------+----------------------------------------------------+
 | sale_stock                        | 7.0.1.0    | |same|     | Quotation, Sale Orders, Delivery & Invoicing Contr |
 +-----------------------------------+------------+------------+----------------------------------------------------+
@@ -426,7 +430,7 @@ Avaiable Addons / Moduli disponibili
 +-----------------------------------+------------+------------+----------------------------------------------------+
 | staff_management                  | |halt|     | |no_check| | Staff Management                                   |
 +-----------------------------------+------------+------------+----------------------------------------------------+
-| stock                             | 7.0.1.1.1  | |same|     | Inventory, Logistic, Storage                       |
+| stock                             | 7.0.1.1    | |same|     | Inventory, Logistic, Storage                       |
 +-----------------------------------+------------+------------+----------------------------------------------------+
 | stock_invoice_directly            | 7.0.1.0    | |same|     | Invoice Picking Directly                           |
 +-----------------------------------+------------+------------+----------------------------------------------------+
@@ -477,7 +481,39 @@ Avaiable Addons / Moduli disponibili
 OCA comparation / Confronto con OCA
 -----------------------------------
 
-|OCA project|
+OCA Differences / Differenze da OCA
+-----------------------------------
+
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Description / Descrizione            | Odoo Italia      | OCA             | Notes / Note                                                                |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Test compatibilità OCA e Odoo        | |no_check|       | |check|         | `Errore import decimal precision <https://github.com/OCA/OCB/issues/629>`__ |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Ricerca per CAP, città e provincia   | |check|          | |no_check|      |                                                                             |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Province italiane e estere           | |check|          | |no_check|      |                                                                             |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Dati comuni/province italiane        | 2014             | 2013            |                                                                             |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Piano dei conti evoluto              | |check|          | |no_check|      |                                                                             |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Codici IVA completi                  | |check|          | |no_check|      |                                                                             |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Dichiaritivi fiscali                 | 2018             | 2017            |                                                                             |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Controllo date                       | Per anno fiscale | No anno fiscale | Versione OCA non permette l'accavallamento numerazioni a inizio anno        |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Controllo date fatture emesse        | |check|          | |no_check|      |                                                                             |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| FatturaPA                            | v1.2             | v1.1            |                                                                             |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Validazione Codice Fiscale           | |check|          | |no_check|      |                                                                             |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Errore in descrizione modulo         | |check|          | |no_check|      | Non è generata un'eccezione di errore in caso di errate descrizioni moduli  |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+| Errore in cambio valuta              | |check|          | |no_check|      | Il cambio non tiene conto dell'azienda                                      |
++--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
+
 
 
 Getting started / Come iniziare
@@ -490,7 +526,7 @@ Prerequisites / Prerequisiti
 ----------------------------
 
 
-* python
+* python2.7+
 * postgresql 9.2+
 
 Installation / Installazione
@@ -549,7 +585,6 @@ Support / Supporto
 
 
 |Zeroincombenze| This module is maintained by the `SHS-AV s.r.l. <https://www.zeroincombenze.it/>`__
-and support is supplied through `Odoo Italia Associazione Forum <https://odoo-italia.org/index.php/kunena/recente>`__
 
 
 
@@ -565,9 +600,11 @@ In case of trouble, please check there if your issue has already been reported.
 Proposals for enhancement
 -------------------------
 
-If you have a proposal to change this module, you may want to send an email to
-<moderatore@odoo-italia.org> for initial feedback.
+
+|en| If you have a proposal to change this module, you may want to send an email to <cc@shs-av.com> for initial feedback.
 An Enhancement Proposal may be submitted if your idea gains ground.
+
+|it| Se hai proposte per migliorare questo modulo, puoi inviare una mail a <cc@shs-av.com> per un iniziale contatto.
 
 Credits / Titoli di coda
 ========================
@@ -580,14 +617,14 @@ Odoo is a trademark of `Odoo S.A. <https://www.odoo.com/>`__ (formerly OpenERP)
 ----------------
 
 
-**zeroincombenze®** is a trademark of `SHS-AV s.r.l. <https://www.shs-av.com/>`__
-which distributes and promotes **Odoo** ready-to-use on own cloud infrastructure.
+|en| **zeroincombenze®** is a trademark of `SHS-AV s.r.l. <https://www.shs-av.com/>`__
+which distributes and promotes ready-to-use **Odoo** on own cloud infrastructure.
 `Zeroincombenze® distribution of Odoo <https://wiki.zeroincombenze.org/en/Odoo>`__
 is mainly designed to cover Italian law and markeplace.
 
-Users can download from `Zeroincombenze® distribution <https://github.com/zeroincombenze/OCB>`__
-and deploy on local server or can download from
-`Odoo Italia Associazine repository <https://github.com/Odoo-Italia-Associazione/OCB>`__
+|it| **zeroincombenze®** è un marchio registrato di `SHS-AV s.r.l. <https://www.shs-av.com/>`__
+che distribuisce e promuove **Odoo** pronto all'uso sullla propria infrastuttura.
+La distribuzione `Zeroincombenze® è progettata per le esigenze del mercato italiano.
 
 
 |chat_with_us|
@@ -595,7 +632,7 @@ and deploy on local server or can download from
 
 |
 
-Last Update / Ultimo aggiornamento: 2018-11-13
+Last Update / Ultimo aggiornamento: 2019-03-16
 
 .. |Maturity| image:: https://img.shields.io/badge/maturity-Alfa-red.png
     :target: https://odoo-community.org/page/development-status
@@ -613,9 +650,9 @@ Last Update / Ultimo aggiornamento: 2018-11-13
     :target: https://coveralls.io/github/zeroincombenze/OCB?branch=7.0
     :alt: Coverage
 .. |Codecov Status| image:: https://codecov.io/gh/zeroincombenze/OCB/branch/7.0/graph/badge.svg
-    :target: https://codecov.io/gh/zeroincombenze/OCB/branch/7.0
+    :target: https://codecov.io/gh/OCA/OCB/branch/7.0
     :alt: Codecov
-.. |OCA project| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-7.svg
+.. |OCA project| image:: Unknown badge-OCA
     :target: https://github.com/OCA/OCB/tree/7.0
     :alt: OCA
 .. |Tech Doc| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-7.svg
@@ -627,8 +664,8 @@ Last Update / Ultimo aggiornamento: 2018-11-13
 .. |Try Me| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-7.svg
     :target: https://erp7.zeroincombenze.it
     :alt: Try Me
-.. |OCA Codecov Status| image:: Unknown badge-oca-codecov
-    :target: Unknown oca-codecov-URL
+.. |OCA Codecov Status| image:: https://codecov.io/gh/OCA/OCB/branch/7.0/graph/badge.svg
+    :target: https://codecov.io/gh/OCA/OCB/branch/7.0
     :alt: Codecov
 .. |Odoo Italia Associazione| image:: https://www.odoo-italia.org/images/Immagini/Odoo%20Italia%20-%20126x56.png
    :target: https://odoo-italia.org
@@ -651,10 +688,10 @@ Last Update / Ultimo aggiornamento: 2018-11-13
 .. |halt| image:: https://raw.githubusercontent.com/zeroincombenze/grymb/master/awesome/halt.png
 .. |info| image:: https://raw.githubusercontent.com/zeroincombenze/grymb/master/awesome/info.png
 .. |xml_schema| image:: https://raw.githubusercontent.com/zeroincombenze/grymb/master/certificates/iso/icons/xml-schema.png
-   :target: https://raw.githubusercontent.com/zeroincombenze/grymbcertificates/iso/scope/xml-schema.md
+   :target: https://github.com/zeroincombenze/grymb/blob/master/certificates/iso/scope/xml-schema.md
 .. |DesktopTelematico| image:: https://raw.githubusercontent.com/zeroincombenze/grymb/master/certificates/ade/icons/DesktopTelematico.png
-   :target: https://raw.githubusercontent.com/zeroincombenze/grymbcertificates/ade/scope/DesktopTelematico.md
+   :target: https://github.com/zeroincombenze/grymb/blob/master/certificates/ade/scope/Desktoptelematico.md
 .. |FatturaPA| image:: https://raw.githubusercontent.com/zeroincombenze/grymb/master/certificates/ade/icons/fatturapa.png
-   :target: https://raw.githubusercontent.com/zeroincombenze/grymbcertificates/ade/scope/fatturapa.md
+   :target: https://github.com/zeroincombenze/grymb/blob/master/certificates/ade/scope/fatturapa.md
 .. |chat_with_us| image:: https://www.shs-av.com/wp-content/chat_with_us.gif
    :target: https://tawk.to/85d4f6e06e68dd4e358797643fe5ee67540e408b

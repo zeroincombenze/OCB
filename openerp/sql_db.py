@@ -40,7 +40,12 @@ import logging
 import psycopg2.extensions
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT, ISOLATION_LEVEL_READ_COMMITTED, ISOLATION_LEVEL_REPEATABLE_READ
 from psycopg2.pool import PoolError
-from psycopg2.psycopg1 import cursor as psycopg1cursor
+# [antoniov: 2019-04-26] psycopg1 is deprecated
+try:
+    from psycopg2.psycopg1 import cursor as psycopg1cursor
+    PSYSOPG = '1'
+except ImportError:
+    PSYSOPG = '2'
 
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
@@ -81,7 +86,11 @@ sql_counter = 0
 class Cursor(object):
     """Represents an open transaction to the PostgreSQL DB backend,
        acting as a lightweight wrapper around psycopg2's
-       ``psycopg1cursor`` objects.
+       # [antoniov: 2019-04-26] psycopg1 is deprecated
+       # ``psycopg1cursor`` objects.
+       # [antoniov: 2019-04-26] use cursor object instead
+       ``cursor`` objects.
+
 
         ``Cursor`` is the object behind the ``cr`` variable used all
         over the OpenERP code.
@@ -180,7 +189,11 @@ class Cursor(object):
         self._serialized = serialized
 
         self._cnx = pool.borrow(dsn(dbname))
-        self._obj = self._cnx.cursor(cursor_factory=psycopg1cursor)
+        # [antoniov: 2019-04-26] psycopg1 is deprecated
+        if PSYSOPG == '1':
+            self._obj = self._cnx.cursor(cursor_factory=psycopg1cursor)
+        else:
+            self._obj = self._cnx.cursor()
         if self.sql_log:
             self.__caller = frame_codeinfo(currentframe(),2)
         else:
@@ -192,6 +205,18 @@ class Cursor(object):
         self._default_log_exceptions = True
 
         self.cache = {}
+
+    # [antoniov: 2019-04-26] psycopg1 is deprecated
+    def __build_dict(self, row):
+        return { d.name: row[i] for i, d in enumerate(self._obj.description) }
+    def dictfetchone(self):
+        row = self._obj.fetchone()
+        return row and self.__build_dict(row)
+    def dictfetchmany(self, size):
+        return map(self.__build_dict, self._obj.fetchmany(size))
+    def dictfetchall(self):
+        return map(self.__build_dict, self._obj.fetchall())
+    # [antoniov: 2019-04-26] end block
 
     def __del__(self):
         if not self.__closed and not self._cnx.closed:
