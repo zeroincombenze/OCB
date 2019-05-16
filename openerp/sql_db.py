@@ -190,6 +190,7 @@ class Cursor(object):
 
         self._cnx = pool.borrow(dsn(dbname))
         # [antoniov: 2019-04-26] psycopg1 is deprecated
+        _logger.info("psycopg protocol %s:", PSYSOPG)
         if PSYSOPG == '1':
             self._obj = self._cnx.cursor(cursor_factory=psycopg1cursor)
         else:
