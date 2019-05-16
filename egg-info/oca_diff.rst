@@ -11,7 +11,7 @@
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 | Currency Rate / Cambio valuta                                                | no company       | with company  |                                                               |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Force https / 'web.base.url.cvt2https' / in 'web.base.url'                   | |check|          | |no_check|    | New parameter / Nuovo parametroo / 'web.base.url.cvt2https'   |
+| Force https / 'web.base.url.cvt2https' / in 'web.base.url'                   | |check|          | |no_check|    | New parameter / Nuovo parametro / 'web.base.url.cvt2https'    |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 .. $if branch not in '6.1' '7.0'
 | No msg openerp.com unreachable                                               | |check|          | |no_check|    | Due to renamed url odoo.com / Causato da nuovo url odoo.com   |

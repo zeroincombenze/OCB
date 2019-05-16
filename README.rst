@@ -489,7 +489,7 @@ OCA comparation / Confronto con OCA
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 | Currency Rate / Cambio valuta                                                | no company       | with company  |                                                               |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Force https / 'web.base.url.cvt2https' / in 'web.base.url'                   | |check|          | |no_check|    | New parameter / Nuovo parametroo / 'web.base.url.cvt2https'   |
+| Force https / 'web.base.url.cvt2https' / in 'web.base.url'                   | |check|          | |no_check|    | New parameter / Nuovo parametro / 'web.base.url.cvt2https'    |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 
 
@@ -651,7 +651,7 @@ Last Update / Ultimo aggiornamento: 2019-05-16
 .. |Try Me| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-7.svg
     :target: https://erp7.zeroincombenze.it
     :alt: Try Me
-.. |OCA Codecov Status| image:: https://codecov.io/gh/OCA/OCB/branch/7.0/graph/badge.svg
+.. |OCA Codecov| image:: https://codecov.io/gh/OCA/OCB/branch/7.0/graph/badge.svg
     :target: https://codecov.io/gh/OCA/OCB/branch/7.0
     :alt: Codecov
 .. |Odoo Italia Associazione| image:: https://www.odoo-italia.org/images/Immagini/Odoo%20Italia%20-%20126x56.png
