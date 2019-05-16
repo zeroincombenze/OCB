@@ -13,13 +13,15 @@ Overview / Panoramica
 
 |en| Odoo is a suite of web based open source business apps.
 
-The main Odoo Apps include an Open Source CRM and Enterprise Resource Planning. The main ERP modules are: Warehouse Management, Project Management, Billing AND Accounting, Point of Sale, Human Resources, Manufacturing, Purchase Management, Sale Management and other modules.
+The main Odoo Apps include an Open Source CRM and Enterprise Resource Planning.
+The main ERP modules are: Warehouse Management, Project Management,
+Billing AND Accounting, Point of Sale, Human Resources, Manufacturing,
+Purchase Management, Sale Management and other modules.
 
 
 |it| Odoo è una suite di prodotti web open-source.
 
 Le principali applicazioni di Odoo includono un Open Source CRM e Enterprise Resource Planning.
-
 I principali moduli ERP sono: gestione Magazzino, gestione Progetti, Contabilità e Fatturazione, Punto vendite, Dipendenti, Produzione, gestione Acquisti, gestione vendite e molto altro ancora.
 
 
@@ -27,25 +29,24 @@ Distributions / Distribuzioni Odoo 7.0:
 =======================================
 
 
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| name / nome | description / descrizione        | Italy / Localizzazione Italiana    | Maintainers                                                  | License / Licenza |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| odoo        | Native Odoo / Odoo nativo        | |no_check|                         | No more supported by `Odoo S.A. <https://www.odoo.com/>`__   | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| oca         | Odoo by OCA                      | |warning| Norme fiscali < 2107 (1) | `Odoo Community Association <http://odoo-community.org/>`__  | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| oia         | Odoo Italia                      | |check| Aggiornato al 2018     (2) | `Associazione Odoo Italia <https://www.odoo-italia.org/>`__  | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| zero        | Zeroincombenze(R)                | |check| Aggiornato al 2018     (2) | `SHS-AV s.r.l. <http://www.shs-av.com/>`__                   | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| Seedoo      | Protocollo PA                    | |no_check|                         |                                                              | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
++-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
+| name / nome | description / descrizione    | Italy / Localizzazione Italiana | Maintainers                                                     | License / Licenza |
++-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
+| odoo        | Native Odoo / Odoo nativo    | |no_check|                  (1) | No more supported by `Odoo S.A. <https://www.odoo.com/>`__      | |license gpl|     |
++-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
+| oca         | Odoo by OCA                  |                                 | `Odoo Community Association <http://odoo-community.org/>`__     | |license gpl|     |
++-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
+| zero        | Zeroincombenze(R)            |                                 | `SHS-AV s.r.l. <http://www.shs-av.com/>`__                      | |license gpl|     |
++-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
+| Seedoo      | Protocollo PA                | |no_check|                      |                                                                 | |license gpl|     |
++-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
+| Omnia       | Integrazione con PLM         |                                 | `Omnia Solution s.n.c. <https://www.omniasolutions.website/>`__ | |license gpl|     |
++-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
 
 Notes / Note:
 -------------
 
-1. Manca software per norme fiscali 2017
-2. Software per Fattura elettronica B2B in sviluppo
+1. Localizzazione con supporto a pagamento tramite partner
 
 
 Avaiable Addons / Moduli disponibili
@@ -477,12 +478,20 @@ Avaiable Addons / Moduli disponibili
 OCA comparation / Confronto con OCA
 -----------------------------------
 
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Description / Descrizione                                                    | Zeroincombenze   | OCA           | Notes / Note                                                  |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Coverage                                                                     | |Codecov Status| | |OCA Codecov| |                                                               |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Ignore rst error in module description / Ignora errore in descrizione modulo | |check|          | |no_check|    | Avoid error due from translation / Evita errori da traduzioni |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Currency Exchange Error / Errore in cambio valuta                            | |check|          | |no_check|    |                                                               |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Currency Rate / Cambio valuta                                                | no company       | with company  |                                                               |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Force https / 'web.base.url.cvt2https' / in 'web.base.url'                   | |check|          | |no_check|    | New parameter / Nuovo parametroo / 'web.base.url.cvt2https'   |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 
-+-----------------------------------------------------------------+-------------------+-----------------------+--------------------------------+
-| Description / Descrizione                                       | Zeroincombenze    | OCA                   | Notes / Note                   |
-+-----------------------------------------------------------------+-------------------+-----------------------+--------------------------------+
-| Coverage / Copertura test                                       |  |Codecov Status| | |OCA Codecov Status|  |                                |
-+-----------------------------------------------------------------+-------------------+-----------------------+--------------------------------+
 
 
 Getting started / Come iniziare
