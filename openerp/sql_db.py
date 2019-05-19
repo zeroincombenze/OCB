@@ -43,10 +43,9 @@ from psycopg2.pool import PoolError
 # [antoniov: 2019-04-26] psycopg1 is deprecated
 try:
     from psycopg2.psycopg1 import cursor as psycopg1cursor
-    PSYSOPG = '1'
+    PSYCOPG = '1'
 except ImportError:
-    PSYSOPG = '2'
-
+    PSYCOPG = '2'
 psycopg2.extensions.register_type(psycopg2.extensions.UNICODE)
 
 _logger = logging.getLogger(__name__)
@@ -190,8 +189,8 @@ class Cursor(object):
 
         self._cnx = pool.borrow(dsn(dbname))
         # [antoniov: 2019-04-26] psycopg1 is deprecated
-        _logger.info("psycopg protocol %s:", PSYSOPG)
-        if PSYSOPG == '1':
+        _logger.info("psycopg protocol %s:", PSYCOPG)
+        if PSYCOPG == '1':
             self._obj = self._cnx.cursor(cursor_factory=psycopg1cursor)
         else:
             self._obj = self._cnx.cursor()
