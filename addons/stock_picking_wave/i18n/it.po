@@ -1,23 +1,24 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # * stock_picking_wave
-# 
+#
 # Translators:
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2015
 # Paolo Valier, 2016-2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo 8.0\n"
+"Project-Id-Version: Odoo (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-21 14:08+0000\n"
 "PO-Revision-Date: 2017-04-09 06:56+0000\n"
-"Last-Translator: Paolo Valier\n"
-"Language-Team: Italian (http://www.transifex.com/odoo/odoo-8/language/it/)\n"
+"Last-Translator: Antonio M. Vigliotti <antoniomaria.vigliotti@gmail.com>\n"
+"Language-Team: Zeroincombenze (https://www.zeroincombenze.it)\n"
+"Language: it_IT\n"
+"(http://www.transifex.com/odoo/odoo-8/language/it/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: \n"
-"Language: it\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
 
 #. module: stock_picking_wave
 #: model:ir.actions.act_window,help:stock_picking_wave.action_picking_wave
@@ -25,10 +26,14 @@ msgid ""
 "<p class=\"oe_view_nocontent_create\">\n"
 "                Click to create a Picking Wave. \n"
 "              </p><p>\n"
-"                The Goal of the picking waves is to group operations that may \n"
-"                (needs to) be done together in order to increase their efficiency.\n"
-"                It may also be useful to assign jobs (one person = one wave) or\n"
-"                help the timing management of operations (tasks to be done at 1pm).\n"
+"                The Goal of the picking waves is to group operations that"
+" may \n"
+"                (needs to) be done together in order to increase their "
+"efficiency.\n"
+"                It may also be useful to assign jobs (one person = one "
+"wave) or\n"
+"                help the timing management of operations (tasks to be "
+"done at 1pm).\n"
 "              </p>\n"
 "            "
 msgstr ""
@@ -67,6 +72,7 @@ msgstr "Annulla picking"
 
 #. module: stock_picking_wave
 #: selection:stock.picking.wave,state:0
+#: selection:stock.picking.wave,state
 msgid "Cancelled"
 msgstr "Annullato"
 
@@ -83,23 +89,27 @@ msgstr "Conferma picking"
 #. module: stock_picking_wave
 #: field:stock.picking.to.wave,create_uid:0
 #: field:stock.picking.wave,create_uid:0
+#: field:stock.picking.to.wave,create_uid field:stock.picking.wave,create_uid
 msgid "Created by"
 msgstr "Creato da"
 
 #. module: stock_picking_wave
 #: field:stock.picking.to.wave,create_date:0
 #: field:stock.picking.wave,create_date:0
+#: field:stock.picking.to.wave,create_date field:stock.picking.wave,create_date
 msgid "Created on"
-msgstr "Creato il"
+msgstr "Data di creazione"
 
 #. module: stock_picking_wave
 #: view:stock.picking.wave:stock_picking_wave.view_picking_wave_form
 #: selection:stock.picking.wave,state:0
+#: selection:stock.picking.wave,state
 msgid "Done"
 msgstr "Completato"
 
 #. module: stock_picking_wave
 #: selection:stock.picking.wave,state:0
+#: selection:stock.picking.wave,state
 msgid "Draft"
 msgstr "Bozza"
 
@@ -110,7 +120,7 @@ msgstr ""
 
 #. module: stock_picking_wave
 #: code:addons/stock_picking_wave/stock_picking_wave.py:40
-#, python-format
+#: code:addons/stock_picking_wave/stock_picking_wave.py:40
 msgid "Error!"
 msgstr "Errore!"
 
@@ -126,6 +136,7 @@ msgstr "Raggruppa per"
 
 #. module: stock_picking_wave
 #: field:stock.picking.to.wave,id:0 field:stock.picking.wave,id:0
+#: field:stock.picking.to.wave,id field:stock.picking.wave,id
 msgid "ID"
 msgstr "ID"
 
@@ -158,33 +169,38 @@ msgstr "In Corso"
 #. module: stock_picking_wave
 #: field:stock.picking.to.wave,write_uid:0
 #: field:stock.picking.wave,write_uid:0
+#: field:stock.picking.to.wave,write_uid field:stock.picking.wave,write_uid
 msgid "Last Updated by"
 msgstr "Ultima modifica di"
 
 #. module: stock_picking_wave
 #: field:stock.picking.to.wave,write_date:0
 #: field:stock.picking.wave,write_date:0
+#: field:stock.picking.to.wave,write_date field:stock.picking.wave,write_date
 msgid "Last Updated on"
-msgstr "Ultima modifica il"
+msgstr "Data ultima modifica"
 
 #. module: stock_picking_wave
 #: help:stock.picking.wave,picking_ids:0
+#: help:stock.picking.wave,picking_ids
 msgid "List of picking associated to this wave"
 msgstr "Lista dei picking associati a questa movimentazione"
 
 #. module: stock_picking_wave
 #: help:stock.picking.wave,name:0
+#: help:stock.picking.wave,name
 msgid "Name of the picking wave"
 msgstr "Nome della movimentazione"
 
 #. module: stock_picking_wave
 #: code:addons/stock_picking_wave/stock_picking_wave.py:40
-#, python-format
+#: code:addons/stock_picking_wave/stock_picking_wave.py:40
 msgid "Nothing to print."
 msgstr "Non c'è niente da stampare."
 
 #. module: stock_picking_wave
 #: help:stock.picking.wave,user_id:0
+#: help:stock.picking.wave,user_id
 msgid "Person responsible for this wave"
 msgstr ""
 
@@ -197,11 +213,13 @@ msgstr "Lista Picking"
 #: model:ir.model,name:stock_picking_wave.model_stock_picking_wave
 #: field:stock.picking,wave_id:0 field:stock.picking.to.wave,wave_id:0
 #: view:stock.picking.wave:stock_picking_wave.view_picking_wave_filter
+#: field:stock.picking,wave_id field:stock.picking.to.wave,wave_id
 msgid "Picking Wave"
 msgstr "Movimentazione"
 
 #. module: stock_picking_wave
 #: field:stock.picking.wave,name:0
+#: field:stock.picking.wave,name
 msgid "Picking Wave Name"
 msgstr "Nome Movimentazione"
 
@@ -218,14 +236,16 @@ msgstr "Movimentazioni non terminate"
 
 #. module: stock_picking_wave
 #: help:stock.picking,wave_id:0
+#: help:stock.picking,wave_id
 msgid "Picking wave associated to this picking"
 msgstr "Movimentazioni associate a questo picking"
 
 #. module: stock_picking_wave
 #: view:stock.picking.wave:stock_picking_wave.view_picking_wave_form
 #: field:stock.picking.wave,picking_ids:0
+#: field:stock.picking.wave,picking_ids
 msgid "Pickings"
-msgstr "Picking"
+msgstr "Prelievi"
 
 #. module: stock_picking_wave
 #: view:stock.picking.wave:stock_picking_wave.view_picking_wave_form
@@ -234,11 +254,13 @@ msgstr "Stampa tutti i picking"
 
 #. module: stock_picking_wave
 #: field:stock.picking.wave,user_id:0
+#: field:stock.picking.wave,user_id
 msgid "Responsible"
 msgstr "Responsabile"
 
 #. module: stock_picking_wave
 #: selection:stock.picking.wave,state:0
+#: selection:stock.picking.wave,state
 msgid "Running"
 msgstr "In Esecuzione"
 
@@ -254,11 +276,14 @@ msgstr ""
 
 #. module: stock_picking_wave
 #: code:addons/stock_picking_wave/stock_picking_wave.py:57
-#, python-format
+#: code:addons/stock_picking_wave/stock_picking_wave.py:57
 msgid ""
 "Some pickings are still waiting for goods. Please check or force their "
 "availability before setting this wave to done."
-msgstr "Alcuni prelievi sono ancora in attesa dei beni. Prego verificare o forzare la disponibilità prima di impostare la movimentazione come completata."
+msgstr ""
+"Alcuni prelievi sono ancora in attesa dei beni. Prego verificare o "
+"forzare la disponibilità prima di impostare la movimentazione come "
+"completata."
 
 #. module: stock_picking_wave
 #: model:product.template,name:stock_picking_wave.product_product_dry_specu_product_template
@@ -273,6 +298,7 @@ msgstr ""
 #. module: stock_picking_wave
 #: view:stock.picking.wave:stock_picking_wave.view_picking_wave_filter
 #: field:stock.picking.wave,state:0
+#: field:stock.picking.wave,state
 msgid "State"
 msgstr "Stato"
 
@@ -289,9 +315,9 @@ msgstr "Utente"
 
 #. module: stock_picking_wave
 #: code:addons/stock_picking_wave/stock_picking_wave.py:57
-#, python-format
+#: code:addons/stock_picking_wave/stock_picking_wave.py:57
 msgid "Warning"
-msgstr "Avviso"
+msgstr "Attenzione"
 
 #. module: stock_picking_wave
 #: view:stock.picking:stock_picking_wave.view_stock_picking_wave_search_inherit
@@ -302,3 +328,5 @@ msgstr ""
 #: view:stock.picking.to.wave:stock_picking_wave.picking_to_wave_form
 msgid "or"
 msgstr "o"
+
+

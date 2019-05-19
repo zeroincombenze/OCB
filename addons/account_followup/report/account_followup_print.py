@@ -1,23 +1,4 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as
-#    published by the Free Software Foundation, either version 3 of the
-#    License, or (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
-#
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
 
 import time
 from collections import defaultdict
@@ -91,7 +72,15 @@ class report_rappel(report_sxw.rml_parse):
         li_delay.sort(reverse=True)
         a = {}
         #look into the lines of the partner that already have a followup level, and take the description of the higher level for which it is available
-        partner_line_ids = self.pool['account.move.line'].search(self.cr, self.uid, [('partner_id','=',stat_line.partner_id.id),('reconcile_id','=',False),('company_id','=',stat_line.company_id.id),('blocked','=',False),('state','!=','draft'),('debit','!=',False),('account_id.type','=','receivable'),('followup_line_id','!=',False)])
+        partner_line_ids = self.pool['account.move.line'].search(self.cr, self.uid,
+            [('partner_id','=',stat_line.partner_id.id),
+             ('reconcile_id','=',False),
+             ('company_id','=',stat_line.company_id.id),
+             ('blocked','=',False),
+             ('state','!=','draft'),
+             ('debit','!=',False),
+             ('account_id.type','=','receivable'),
+             ('followup_line_id','!=',False)])
         partner_max_delay = 0
         partner_max_text = ''
         for i in self.pool['account.move.line'].browse(self.cr, self.uid, partner_line_ids, context=context):

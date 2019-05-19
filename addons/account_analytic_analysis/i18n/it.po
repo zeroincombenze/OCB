@@ -1,27 +1,29 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
 # * account_analytic_analysis
-# 
+#
 # Translators:
 # cri cca <cri@mapage.ch>, 2016
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2014
 # Paolo Valier, 2016-2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo 8.0\n"
+"Project-Id-Version: Odoo (8.0)\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2015-01-21 14:07+0000\n"
 "PO-Revision-Date: 2017-08-25 09:52+0000\n"
-"Last-Translator: Paolo Valier\n"
-"Language-Team: Italian (http://www.transifex.com/odoo/odoo-8/language/it/)\n"
+"Last-Translator: Antonio M. Vigliotti <antoniomaria.vigliotti@gmail.com>\n"
+"Language-Team: Zeroincombenze (https://www.zeroincombenze.it)\n"
+"Language: it_IT\n"
+"(http://www.transifex.com/odoo/odoo-8/language/it/)\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: \n"
-"Language: it\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.3.4\n"
 
 #. module: account_analytic_analysis
 #: model:email.template,body_html:account_analytic_analysis.account_analytic_cron_email_template
+#, python-format
 msgid ""
 "\n"
 "Hello ${object.name},\n"
@@ -39,14 +41,18 @@ msgid ""
 "        % for account in accounts:\n"
 "        <tr>\n"
 "            <td>${partner.name}</td>\n"
-"            <td><a href=\"${ctx[\"base_url\"]}/#action=${ctx[\"action_id\"]}&id=${account.id}&view_type=form\">${account.name}</a></td>\n"
-"            <td>${account.date_start} to ${account.date and account.date or '???'}</td>\n"
+"            <td><a "
+"href=\"${ctx[\"base_url\"]}/#action=${ctx[\"action_id\"]}&id=${account.id}&view_type=form\">${account.name}</a></td>"
+"\n"
+"            <td>${account.date_start} to ${account.date and account.date "
+"or '???'}</td>\n"
 "            <td>\n"
 "            % if account.quantity_max != 0.0:\n"
 "                ${account.remaining_hours}/${account.quantity_max} units\n"
 "            % endif\n"
 "            </td>\n"
-"            <td>${account.partner_id.phone or ''}, ${account.partner_id.email or ''}</td>\n"
+"            <td>${account.partner_id.phone or ''}, "
+"${account.partner_id.email or ''}</td>\n"
 "        </tr>\n"
 "        % endfor\n"
 "    % endfor\n"
@@ -64,7 +70,8 @@ msgid ""
 "% endif\n"
 "\n"
 "% if \"future\" in ctx[\"data\"]:\n"
-"    <h2>The following contracts will expire in less than one month: </h2>\n"
+"    <h2>The following contracts will expire in less than one month: </h2>"
+"\n"
 "    ${account_table(ctx[\"data\"][\"future\"].iteritems())}\n"
 "% endif\n"
 "\n"
@@ -88,6 +95,7 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,toinvoice_total:0
+#: help:account.analytic.account,toinvoice_total
 msgid " Sum of everything that could be invoiced for this contract."
 msgstr " Somma di tutto quello che può essere fatturato per questo contratto."
 
@@ -97,8 +105,10 @@ msgid ""
 "<p class=\"oe_view_nocontent_create\">\n"
 "                    Click here to create a template of contract.\n"
 "                </p><p>\n"
-"                    Templates are used to prefigure contract/project that \n"
-"                    can be selected by the salespeople to quickly configure the\n"
+"                    Templates are used to prefigure contract/project that"
+" \n"
+"                    can be selected by the salespeople to quickly "
+"configure the\n"
 "                    terms and conditions of the contract.\n"
 "                </p>\n"
 "            "
@@ -110,9 +120,12 @@ msgid ""
 "<p class=\"oe_view_nocontent_create\">\n"
 "                    Click to create a new contract.\n"
 "                </p><p>\n"
-"                    Use contracts to follow tasks, issues, timesheets or invoicing based on\n"
-"                    work done, expenses and/or sales orders. Odoo will automatically manage\n"
-"                    the alerts for the renewal of the contracts to the right salesperson.\n"
+"                    Use contracts to follow tasks, issues, timesheets or "
+"invoicing based on\n"
+"                    work done, expenses and/or sales orders. Odoo will "
+"automatically manage\n"
+"                    the alerts for the renewal of the contracts to the "
+"right salesperson.\n"
 "                </p>\n"
 "            "
 msgstr ""
@@ -121,10 +134,12 @@ msgstr ""
 #: model:ir.actions.act_window,help:account_analytic_analysis.action_sales_order
 msgid ""
 "<p class=\"oe_view_nocontent_create\">\n"
-"                Click to create a quotation that can be converted into a sales\n"
+"                Click to create a quotation that can be converted into a "
+"sales\n"
 "                order.\n"
 "              </p><p>\n"
-"                Use sale orders to track everything that should be invoiced\n"
+"                Use sale orders to track everything that should be "
+"invoiced\n"
 "                at a fix price on a contract.\n"
 "              </p>\n"
 "            "
@@ -136,12 +151,16 @@ msgid ""
 "<p class=\"oe_view_nocontent_create\">\n"
 "                Click to define a new contract.\n"
 "              </p><p>\n"
-"                You will find here the contracts to be renewed because the\n"
-"                end date is passed or the working effort is higher than the\n"
+"                You will find here the contracts to be renewed because "
+"the\n"
+"                end date is passed or the working effort is higher than "
+"the\n"
 "                maximum authorized one.\n"
 "              </p><p>\n"
-"                Odoo automatically sets contracts to be renewed in a pending\n"
-"                state. After the negociation, the salesman should close or renew\n"
+"                Odoo automatically sets contracts to be renewed in a "
+"pending\n"
+"                state. After the negociation, the salesman should close "
+"or renew\n"
 "                pending contracts.\n"
 "              </p>\n"
 "            "
@@ -152,8 +171,10 @@ msgstr ""
 msgid ""
 "<p>\n"
 "                You will find here timesheets and purchases you did for\n"
-"                contracts that can be reinvoiced to the customer.  If you want\n"
-"                to record new activities to invoice, you should use the timesheet\n"
+"                contracts that can be reinvoiced to the customer.  If you"
+" want\n"
+"                to record new activities to invoice, you should use the "
+"timesheet\n"
 "                menu instead.\n"
 "              </p>\n"
 "            "
@@ -171,9 +192,10 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: help:sale.config.settings,group_template_required:0
+#: help:sale.config.settings,group_template_required
 msgid ""
-"Allows you to set the template field as required when creating an analytic "
-"account or a contract."
+"Allows you to set the template field as required when creating an "
+"analytic account or a contract."
 msgstr ""
 
 #. module: account_analytic_analysis
@@ -181,15 +203,19 @@ msgstr ""
 #: field:account_analytic_analysis.summary.month,account_id:0
 #: field:account_analytic_analysis.summary.user,account_id:0
 #: model:ir.model,name:account_analytic_analysis.model_account_analytic_account
+#: field:account.analytic.invoice.line,analytic_account_id
+#: field:account_analytic_analysis.summary.month,account_id
+#: field:account_analytic_analysis.summary.user,account_id
 msgid "Analytic Account"
 msgstr "Contabilità Analitica"
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,ca_theorical:0
+#: help:account.analytic.account,ca_theorical
 msgid ""
-"Based on the costs you had on the project, what would have been the revenue "
-"if all these costs have been invoiced at the normal sale price provided by "
-"the pricelist."
+"Based on the costs you had on the project, what would have been the "
+"revenue if all these costs have been invoiced at the normal sale price "
+"provided by the pricelist."
 msgstr ""
 
 #. module: account_analytic_analysis
@@ -214,6 +240,7 @@ msgstr "Abbonamenti chiusi"
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,remaining_hours_to_invoice:0
+#: help:account.analytic.account,remaining_hours_to_invoice
 msgid ""
 "Computed using the formula: Expected on timesheets - Total invoiced on "
 "timesheets"
@@ -221,38 +248,44 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,real_margin:0
+#: help:account.analytic.account,real_margin
 msgid "Computed using the formula: Invoiced Amount - Total Costs."
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,revenue_per_hour:0
+#: help:account.analytic.account,revenue_per_hour
 msgid "Computed using the formula: Invoiced Amount / Total Time"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,remaining_ca:0
+#: help:account.analytic.account,remaining_ca
 msgid "Computed using the formula: Max Invoice Price - Invoiced Amount."
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,remaining_hours:0
+#: help:account.analytic.account,remaining_hours
 msgid "Computed using the formula: Maximum Time - Total Worked Time"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,theorical_margin:0
+#: help:account.analytic.account,theorical_margin
 msgid "Computed using the formula: Theoretical Revenue - Total Costs"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,real_margin_rate:0
+#: help:account.analytic.account,real_margin_rate
 msgid "Computes using the formula: (Real Margin / Total Costs) * 100."
 msgstr ""
 
 #. module: account_analytic_analysis
 #: view:account.analytic.account:account_analytic_analysis.view_account_analytic_account_overdue_search
 msgid "Contract"
-msgstr "Abbonamento"
+msgstr "Contratto"
 
 #. module: account_analytic_analysis
 #: model:ir.actions.act_window,name:account_analytic_analysis.template_of_contract_action
@@ -300,13 +333,15 @@ msgstr "Contratti da Rinnovare"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.invoice.line,create_uid:0
+#: field:account.analytic.invoice.line,create_uid
 msgid "Created by"
 msgstr "Creato da"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.invoice.line,create_date:0
+#: field:account.analytic.invoice.line,create_date
 msgid "Created on"
-msgstr "Creato il"
+msgstr "Data di creazione"
 
 #. module: account_analytic_analysis
 #: view:account.analytic.account:account_analytic_analysis.view_account_analytic_account_overdue_search
@@ -315,33 +350,39 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,last_worked_date:0
+#: field:account.analytic.account,last_worked_date
 msgid "Date of Last Cost/Work"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,last_worked_invoiced_date:0
+#: field:account.analytic.account,last_worked_invoiced_date
 msgid "Date of Last Invoiced Cost"
 msgstr "Data dell'ultimo Costo Fatturato"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,recurring_next_date:0
+#: field:account.analytic.account,recurring_next_date
 msgid "Date of Next Invoice"
 msgstr "Data della Prossima Fattura"
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,last_worked_date:0
+#: help:account.analytic.account,last_worked_date
 msgid "Date of the latest work done on this account."
 msgstr ""
 
 #. module: account_analytic_analysis
 #: selection:account.analytic.account,recurring_rule_type:0
+#: selection:account.analytic.account,recurring_rule_type
 msgid "Day(s)"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.invoice.line,name:0
+#: field:account.analytic.invoice.line,name
 msgid "Description"
-msgstr ""
+msgstr "Descrizione"
 
 #. module: account_analytic_analysis
 #: view:account.analytic.account:account_analytic_analysis.view_account_analytic_account_overdue_search
@@ -360,20 +401,22 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: code:addons/account_analytic_analysis/account_analytic_analysis.py:681
-#, python-format
+#: code:addons/account_analytic_analysis/account_analytic_analysis.py:681
 msgid "Error!"
 msgstr "Errore!"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,hours_qtt_est:0
+#: field:account.analytic.account,hours_qtt_est
 msgid "Estimation of Hours to Invoice"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,remaining_total:0
+#: help:account.analytic.account,remaining_total
 msgid ""
-"Expectation of remaining income for this contract. Computed as the sum of "
-"remaining subtotals which, in turn, are computed as the maximum between "
+"Expectation of remaining income for this contract. Computed as the sum of"
+" remaining subtotals which, in turn, are computed as the maximum between "
 "'(Estimation - Invoiced)' and 'To Invoice' amounts"
 msgstr ""
 
@@ -394,11 +437,13 @@ msgstr "Scadenza a breve"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,fix_price_invoices:0
+#: field:account.analytic.account,fix_price_invoices
 msgid "Fixed Price"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,recurring_invoices:0
+#: field:account.analytic.account,recurring_invoices
 msgid "Generate recurring invoices automatically"
 msgstr "Genera automaticamente le fatture ricorrenti"
 
@@ -421,26 +466,32 @@ msgstr "Riepilogo ore per mese"
 #: field:account.analytic.invoice.line,id:0
 #: field:account_analytic_analysis.summary.month,id:0
 #: field:account_analytic_analysis.summary.user,id:0
+#: field:account.analytic.invoice.line,id
+#: field:account_analytic_analysis.summary.month,id
+#: field:account_analytic_analysis.summary.user,id
 msgid "ID"
 msgstr "ID"
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,ca_to_invoice:0
+#: help:account.analytic.account,ca_to_invoice
 msgid ""
-"If invoice from analytic account, the remaining amount you can invoice to "
-"the customer based on the total costs."
+"If invoice from analytic account, the remaining amount you can invoice to"
+" the customer based on the total costs."
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,last_invoice_date:0
+#: help:account.analytic.account,last_invoice_date
 msgid "If invoice from the costs, this is the date of the latest invoiced."
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,last_worked_invoiced_date:0
+#: help:account.analytic.account,last_worked_invoiced_date
 msgid ""
-"If invoice from the costs, this is the date of the latest work or cost that "
-"have been invoiced."
+"If invoice from the costs, this is the date of the latest work or cost "
+"that have been invoiced."
 msgstr ""
 
 #. module: account_analytic_analysis
@@ -450,11 +501,13 @@ msgstr "In Corso"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,recurring_invoice_line_ids:0
+#: field:account.analytic.account,recurring_invoice_line_ids
 msgid "Invoice Lines"
 msgstr "Righe Fattura"
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,recurring_rule_type:0
+#: help:account.analytic.account,recurring_rule_type
 msgid "Invoice automatically repeat at specified interval"
 msgstr ""
 
@@ -465,33 +518,38 @@ msgstr "Fatturato"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,ca_invoiced:0
+#: field:account.analytic.account,ca_invoiced
 msgid "Invoiced Amount"
 msgstr "Importo Fatturato"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,hours_qtt_invoiced:0
+#: field:account.analytic.account,hours_qtt_invoiced
 msgid "Invoiced Time"
 msgstr "Tempo Fatturato"
 
 #. module: account_analytic_analysis
 #: view:account.analytic.account:account_analytic_analysis.account_analytic_account_form_form
 msgid "Invoicing"
-msgstr "Fatturazione"
+msgstr "Contabilità"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,last_invoice_date:0
+#: field:account.analytic.account,last_invoice_date
 msgid "Last Invoice Date"
 msgstr "Data ultima fattura"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.invoice.line,write_uid:0
+#: field:account.analytic.invoice.line,write_uid
 msgid "Last Updated by"
 msgstr "Ultima modifica di"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.invoice.line,write_date:0
+#: field:account.analytic.invoice.line,write_date
 msgid "Last Updated on"
-msgstr "Ultima modifica il"
+msgstr "Data ultima modifica"
 
 #. module: account_analytic_analysis
 #: model:res.groups,name:account_analytic_analysis.group_template_required
@@ -500,23 +558,27 @@ msgstr "Uso dei template obbligatorio per i contratti."
 
 #. module: account_analytic_analysis
 #: field:sale.config.settings,group_template_required:0
+#: field:sale.config.settings,group_template_required
 msgid "Mandatory use of templates."
 msgstr "Uso dei template obbligatorio."
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,month_ids:0
 #: field:account_analytic_analysis.summary.month,month:0
+#: field:account.analytic.account,month_ids
+#: field:account_analytic_analysis.summary.month,month
 msgid "Month"
 msgstr "Mese"
 
 #. module: account_analytic_analysis
 #: selection:account.analytic.account,recurring_rule_type:0
+#: selection:account.analytic.account,recurring_rule_type
 msgid "Month(s)"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: code:addons/account_analytic_analysis/account_analytic_analysis.py:676
-#, python-format
+#: code:addons/account_analytic_analysis/account_analytic_analysis.py:676
 msgid "No Customer Defined!"
 msgstr ""
 
@@ -532,6 +594,7 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,hours_qtt_non_invoiced:0
+#: help:account.analytic.account,hours_qtt_non_invoiced
 msgid ""
 "Number of time (hours/days) (from journal of type 'general') that can be "
 "invoiced if you invoice based on analytic account."
@@ -539,6 +602,7 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,hours_qtt_invoiced:0
+#: help:account.analytic.account,hours_qtt_invoiced
 msgid ""
 "Number of time (hours/days) that can be invoiced plus those that already "
 "have been invoiced."
@@ -546,6 +610,7 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,hours_quantity:0
+#: help:account.analytic.account,hours_quantity
 msgid ""
 "Number of time you spent on the analytic account (from timesheet). It "
 "computes quantities on all journal of type 'general'."
@@ -553,11 +618,13 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,invoice_on_timesheets:0
+#: field:account.analytic.account,invoice_on_timesheets
 msgid "On Timesheets"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,is_overdue_quantity:0
+#: field:account.analytic.account,is_overdue_quantity
 msgid "Overdue Quantity"
 msgstr ""
 
@@ -569,7 +636,7 @@ msgstr "Padre"
 #. module: account_analytic_analysis
 #: view:account.analytic.account:account_analytic_analysis.view_account_analytic_account_overdue_search
 msgid "Partner"
-msgstr "Partner"
+msgstr "Soggetto"
 
 #. module: account_analytic_analysis
 #: view:account.analytic.account:account_analytic_analysis.view_account_analytic_account_overdue_search
@@ -577,6 +644,7 @@ msgid "Pending contracts"
 msgstr "Abbonamenti in attesa"
 
 #. module: account_analytic_analysis
+#: code:addons/account_analytic_analysis/account_analytic_analysis.py:682
 #: code:addons/account_analytic_analysis/account_analytic_analysis.py:682
 #, python-format
 msgid "Please define a sale journal for the company \"%s\"."
@@ -589,26 +657,31 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.invoice.line,product_id:0
+#: field:account.analytic.invoice.line,product_id
 msgid "Product"
 msgstr "Prodotto"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.invoice.line,quantity:0
+#: field:account.analytic.invoice.line,quantity
 msgid "Quantity"
 msgstr "Quantità"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,real_margin:0
+#: field:account.analytic.account,real_margin
 msgid "Real Margin"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,real_margin_rate:0
+#: field:account.analytic.account,real_margin_rate
 msgid "Real Margin Rate (%)"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,recurring_rule_type:0
+#: field:account.analytic.account,recurring_rule_type
 msgid "Recurrency"
 msgstr ""
 
@@ -624,6 +697,7 @@ msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,remaining_ca:0
+#: field:account.analytic.account,remaining_ca
 msgid "Remaining Revenue"
 msgstr ""
 
@@ -632,25 +706,33 @@ msgstr ""
 #: field:account.analytic.account,remaining_hours:0
 #: field:account.analytic.account,remaining_hours_to_invoice:0
 #: field:account.analytic.account,timesheet_ca_invoiced:0
+#: field:account.analytic.account,fix_price_to_invoice
+#: field:account.analytic.account,remaining_hours
+#: field:account.analytic.account,remaining_hours_to_invoice
+#: field:account.analytic.account,timesheet_ca_invoiced
 msgid "Remaining Time"
 msgstr "Tempo Rimanente"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,recurring_interval:0
+#: field:account.analytic.account,recurring_interval
 msgid "Repeat Every"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,recurring_interval:0
+#: help:account.analytic.account,recurring_interval
 msgid "Repeat every (Days/Week/Month/Year)"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,revenue_per_hour:0
+#: field:account.analytic.account,revenue_per_hour
 msgid "Revenue per Time (real)"
 msgstr ""
 
 #. module: account_analytic_analysis
+#: code:addons/account_analytic_analysis/account_analytic_analysis.py:550
 #: code:addons/account_analytic_analysis/account_analytic_analysis.py:550
 #, python-format
 msgid "Sales Order Lines to Invoice of %s"
@@ -674,16 +756,19 @@ msgstr "Stato"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.invoice.line,price_subtotal:0
+#: field:account.analytic.invoice.line,price_subtotal
 msgid "Sub Total"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,fix_price_to_invoice:0
+#: help:account.analytic.account,fix_price_to_invoice
 msgid "Sum of quotations for this contract."
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,timesheet_ca_invoiced:0
+#: help:account.analytic.account,timesheet_ca_invoiced
 msgid "Sum of timesheet lines invoiced for this contract."
 msgstr "Somma delle righe del timesheet fatturate per questo contratto."
 
@@ -694,11 +779,13 @@ msgstr "Modello"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,theorical_margin:0
+#: field:account.analytic.account,theorical_margin
 msgid "Theoretical Margin"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,ca_theorical:0
+#: field:account.analytic.account,ca_theorical
 msgid "Theoretical Revenue"
 msgstr ""
 
@@ -714,6 +801,7 @@ msgid "Timesheets"
 msgstr "Timesheet"
 
 #. module: account_analytic_analysis
+#: code:addons/account_analytic_analysis/account_analytic_analysis.py:659
 #: code:addons/account_analytic_analysis/account_analytic_analysis.py:659
 #, python-format
 msgid "Timesheets to Invoice of %s"
@@ -736,69 +824,83 @@ msgstr "Totale"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,total_cost:0
+#: field:account.analytic.account,total_cost
 msgid "Total Costs"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,est_total:0
+#: field:account.analytic.account,est_total
 msgid "Total Estimation"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,invoiced_total:0
+#: field:account.analytic.account,invoiced_total
 msgid "Total Invoiced"
 msgstr "Total fatturato"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,remaining_total:0
+#: field:account.analytic.account,remaining_total
 msgid "Total Remaining"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account_analytic_analysis.summary.month,unit_amount:0
 #: field:account_analytic_analysis.summary.user,unit_amount:0
+#: field:account_analytic_analysis.summary.month,unit_amount
+#: field:account_analytic_analysis.summary.user,unit_amount
 msgid "Total Time"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,hours_quantity:0
+#: field:account.analytic.account,hours_quantity
 msgid "Total Worked Time"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,ca_invoiced:0
+#: help:account.analytic.account,ca_invoiced
 msgid "Total customer invoiced amount for this account."
 msgstr "Importo totale fatturato al cliente per questo account."
 
 #. module: account_analytic_analysis
 #: help:account.analytic.account,total_cost:0
+#: help:account.analytic.account,total_cost
 msgid ""
-"Total of costs for this account. It includes real costs (from invoices) and "
-"indirect costs, like time spent on timesheets."
+"Total of costs for this account. It includes real costs (from invoices) "
+"and indirect costs, like time spent on timesheets."
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,toinvoice_total:0
+#: field:account.analytic.account,toinvoice_total
 msgid "Total to Invoice"
 msgstr "Totale da Fatturare"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,ca_to_invoice:0
+#: field:account.analytic.account,ca_to_invoice
 msgid "Uninvoiced Amount"
 msgstr "Importo non fatturato"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.account,hours_qtt_non_invoiced:0
+#: field:account.analytic.account,hours_qtt_non_invoiced
 msgid "Uninvoiced Time"
 msgstr ""
 
 #. module: account_analytic_analysis
 #: field:account.analytic.invoice.line,price_unit:0
+#: field:account.analytic.invoice.line,price_unit
 msgid "Unit Price"
 msgstr "Prezzo Unitario"
 
 #. module: account_analytic_analysis
 #: field:account.analytic.invoice.line,uom_id:0
+#: field:account.analytic.invoice.line,uom_id
 msgid "Unit of Measure"
 msgstr "Unità di Misura"
 
@@ -815,11 +917,14 @@ msgstr ""
 #. module: account_analytic_analysis
 #: field:account.analytic.account,user_ids:0
 #: field:account_analytic_analysis.summary.user,user:0
+#: field:account.analytic.account,user_ids
+#: field:account_analytic_analysis.summary.user,user
 msgid "User"
 msgstr "Utente"
 
 #. module: account_analytic_analysis
 #: selection:account.analytic.account,recurring_rule_type:0
+#: selection:account.analytic.account,recurring_rule_type
 msgid "Week(s)"
 msgstr ""
 
@@ -827,17 +932,21 @@ msgstr ""
 #: view:account.analytic.account:account_analytic_analysis.account_analytic_account_form_form
 msgid ""
 "When reinvoicing costs, Odoo uses the\n"
-"                            pricelist of the contract which uses the price\n"
-"                            defined on the product related (e.g timesheet \n"
+"                            pricelist of the contract which uses the "
+"price\n"
+"                            defined on the product related (e.g timesheet"
+" \n"
 "                            products are defined on each employee)."
 msgstr ""
 
 #. module: account_analytic_analysis
 #: selection:account.analytic.account,recurring_rule_type:0
+#: selection:account.analytic.account,recurring_rule_type
 msgid "Year(s)"
 msgstr ""
 
 #. module: account_analytic_analysis
+#: code:addons/account_analytic_analysis/account_analytic_analysis.py:676
 #: code:addons/account_analytic_analysis/account_analytic_analysis.py:676
 #, python-format
 msgid "You must first select a Customer for Contract %s!"
@@ -851,7 +960,8 @@ msgstr ""
 #. module: account_analytic_analysis
 #: model:res.groups,comment:account_analytic_analysis.group_template_required
 msgid ""
-"the field template of the analytic accounts and contracts will be required."
+"the field template of the analytic accounts and contracts will be "
+"required."
 msgstr ""
 
 #. module: account_analytic_analysis
@@ -865,8 +975,8 @@ msgstr ""
 #. module: account_analytic_analysis
 #: view:account.analytic.account:account_analytic_analysis.view_account_analytic_account_template_required
 msgid ""
-"{'required': [('type','=','contract')], 'invisible': [('type','in',['view', "
-"'normal','template'])]}"
+"{'required': [('type','=','contract')], 'invisible': "
+"[('type','in',['view', 'normal','template'])]}"
 msgstr ""
 
 #. module: account_analytic_analysis
@@ -878,3 +988,5 @@ msgstr "⇒ Fattura"
 #: view:account.analytic.account:account_analytic_analysis.account_analytic_account_form_form
 msgid "⇒ create invoices"
 msgstr "⇒ crea fatture"
+
+

@@ -9,7 +9,7 @@ class TestAccountFollowup(TransactionCase):
         """ setUp ***"""
         super(TestAccountFollowup, self).setUp()
         cr, uid = self.cr, self.uid
-        
+
         self.user = self.registry('res.users')
         self.user_id = self.user.browse(cr, uid, uid)
         self.partner = self.registry('res.partner')
@@ -17,7 +17,7 @@ class TestAccountFollowup(TransactionCase):
         self.invoice_line = self.registry('account.invoice.line')
         self.wizard = self.registry('account_followup.print')
         self.followup_id = self.registry('account_followup.followup')
-        
+
         self.partner_id = self.partner.create(cr, uid, {'name':'Test Company', 
                                                     'email':'test@localhost',
                                                     'is_company': True,

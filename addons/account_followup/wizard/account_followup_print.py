@@ -1,23 +1,4 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as
-#    published by the Free Software Foundation, either version 3 of the
-#    License, or (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
-#
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
 
 import datetime
 import time
@@ -39,15 +20,26 @@ class account_followup_stat_by_partner(osv.osv):
         return result
 
     _columns = {
-        'partner_id': fields.many2one('res.partner', 'Partner', readonly=True),
-        'date_move':fields.date('First move', readonly=True),
-        'date_move_last':fields.date('Last move', readonly=True),
-        'date_followup':fields.date('Latest follow-up', readonly=True),
-        'max_followup_id': fields.many2one('account_followup.followup.line',
-                                    'Max Follow Up Level', readonly=True, ondelete="cascade"),
-        'balance':fields.float('Balance', readonly=True),
-        'company_id': fields.many2one('res.company', 'Company', readonly=True),
-        'invoice_partner_id': fields.function(_get_invoice_partner_id, type='many2one', relation='res.partner', string='Invoice Address')
+        'partner_id': fields.many2one(
+            'res.partner', 'Partner', readonly=True),
+        'date_move':fields.date(
+            'First move', readonly=True),
+        'date_move_last':fields.date(
+            'Last move', readonly=True),
+        'date_followup':fields.date(
+            'Latest follow-up', readonly=True),
+        'max_followup_id': fields.many2one(
+            'account_followup.followup.line',
+            'Max Follow Up Level', readonly=True,
+            ondelete="cascade"),
+        'balance':fields.float(
+            'Balance', readonly=True),
+        'company_id': fields.many2one(
+            'res.company', 'Company', readonly=True),
+        'invoice_partner_id': fields.function(_get_invoice_partner_id,
+            type='many2one',
+            relation='res.partner',
+            string='Invoice Address')
     }
 
     _depends = {
@@ -90,62 +82,66 @@ class account_followup_stat_by_partner(osv.osv):
 
 
 class account_followup_sending_results(osv.osv_memory):
-    
+    _name = 'account_followup.sending.results'
+    _description = 'Results from the sending of the different letters and emails'
+
     def do_report(self, cr, uid, ids, context=None):
-        if context is None:
-            context = {}
+        context = context or {}
         return context.get('report_data')
 
     def do_done(self, cr, uid, ids, context=None):
         return {}
 
     def _get_description(self, cr, uid, context=None):
-        if context is None:
-            context = {}
+        context = context or {}
         return context.get('description')
 
     def _get_need_printing(self, cr, uid, context=None):
-        if context is None:
-            context = {}
+        context = context or {}
         return context.get('needprinting')
-
-    _name = 'account_followup.sending.results'
-    _description = 'Results from the sending of the different letters and emails'
     _columns  = {
-        'description': fields.text("Description", readonly=True),
+        'description': fields.text(
+            "Description", readonly=True),
         'needprinting': fields.boolean("Needs Printing")
     }
     _defaults = {
         'needprinting':_get_need_printing,
         'description':_get_description,
     }
- 
+
 
 
 class account_followup_print(osv.osv_memory):
     _name = 'account_followup.print'
     _description = 'Print Follow-up & Send Mail to Customers'
     _columns = {
-        'date': fields.date('Follow-up Sending Date', required=True, 
-                            help="This field allow you to select a forecast date to plan your follow-ups"),
-        'followup_id': fields.many2one('account_followup.followup', 'Follow-Up', required=True, readonly = True),
-        'partner_ids': fields.many2many('account_followup.stat.by.partner', 'partner_stat_rel', 
-                                        'osv_memory_id', 'partner_id', 'Partners', required=True),
-        'company_id':fields.related('followup_id', 'company_id', type='many2one',
-                                    relation='res.company', store=True, readonly=True),
+        'date': fields.date(
+            'Follow-up Sending Date', required=True, 
+            help="This field allow you to select a forecast date to plan your follow-ups"),
+        'followup_id': fields.many2one(
+            'account_followup.followup', 'Follow-Up',
+            required=True, readonly = True),
+        'partner_ids': fields.many2many(
+            'account_followup.stat.by.partner', 'partner_stat_rel', 
+            'osv_memory_id', 'partner_id', 'Partners', required=True),
+        'company_id':fields.related(
+            'followup_id', 'company_id', type='many2one',
+            relation='res.company', store=True, readonly=True),
         'email_conf': fields.boolean('Send Email Confirmation'),
-        'email_subject': fields.char('Email Subject', size=64),
-        'partner_lang': fields.boolean('Send Email in Partner Language',
-                                    help='Do not change message text, if you want to send email in partner language, or configure from company'),
+        'email_subject': fields.char(
+            'Email Subject', size=64),
+        'partner_lang': fields.boolean(
+            'Send Email in Partner Language',
+            help='Do not change message text, if you want to send email in partner language, or configure from company'),
         'email_body': fields.text('Email Body'),
         'summary': fields.text('Summary', readonly=True),
-        'test_print': fields.boolean('Test Print', 
-                                     help='Check if you want to print follow-ups without changing follow-up level.'),
+        'test_print': fields.boolean(
+            'Test Print', 
+            help='Check if you want to print follow-ups without changing follow-up level.'),
     }
 
     def _get_followup(self, cr, uid, context=None):
-        if context is None:
-            context = {}
+        context = context or {}
         if context.get('active_model', 'ir.ui.menu') == 'account_followup.followup':
             return context.get('active_id', False)
         company_id = self.pool.get('res.users').browse(cr, uid, uid, context=context).company_id.id
