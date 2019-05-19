@@ -3,7 +3,7 @@
 Odoo 10.0 (formerly OpenERP)
 ============================
 
-|Maturity| |Build Status| |Coverage Status| |Codecov Status| |license gpl| |Tech Doc| |Help| |Try Me|
+|Build Status| |Coverage Status| |Codecov Status| |license gpl| |Tech Doc| |Help| |Try Me|
 
 .. contents::
 
@@ -13,13 +13,15 @@ Overview / Panoramica
 
 |en| Odoo is a suite of web based open source business apps.
 
-The main Odoo Apps include an Open Source CRM and Enterprise Resource Planning. The main ERP modules are: Warehouse Management, Project Management, Billing AND Accounting, Point of Sale, Human Resources, Manufacturing, Purchase Management, Sale Management and other modules.
+The main Odoo Apps include an Open Source CRM and Enterprise Resource Planning.
+The main ERP modules are: Warehouse Management, Project Management,
+Billing AND Accounting, Point of Sale, Human Resources, Manufacturing,
+Purchase Management, Sale Management and other modules.
 
 
 |it| Odoo è una suite di prodotti web open-source.
 
 Le principali applicazioni di Odoo includono un Open Source CRM e Enterprise Resource Planning.
-
 I principali moduli ERP sono: gestione Magazzino, gestione Progetti, Contabilità e Fatturazione, Punto vendite, Dipendenti, Produzione, gestione Acquisti, gestione vendite e molto altro ancora.
 
 
@@ -27,26 +29,22 @@ Distributions / Distribuzioni Odoo 10.0:
 ========================================
 
 
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| name / nome | description / descrizione        | Italy / Localizzazione Italiana    | Maintainers                                                  | License / Licenza |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-|             | Odoo EE - Enterprise Edition     | |check| Tramite partner        (1) | `Odoo S.A. <https://www.odoo.com/>`__                        | |license opl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| odoo        | Odoo CE - Community Edition      | |no_check|                         | `Odoo S.A. <https://www.odoo.com/>`__                        | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| oca         | Odoo CE by OCA                   | |warning| Norme fiscali < 2107 (2) | `Odoo Community Association <http://odoo-community.org/>`__  | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| oia         | Odoo CE by OIA                   | |warning| Norme fiscali < 2107 (3) | `Associazione Odoo Italia <https://www.odoo-italia.org/>`__  | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
-| zero        | Zeroincombenze(R)                | |warning| Norme fiscali < 2107 (3) | `SHS-AV s.r.l. <http://www.shs-av.com/>`__                   | |license gpl|     |
-+-------------+----------------------------------+------------------------------------+--------------------------------------------------------------+-------------------+
++-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
+| name / nome | description / descrizione     | Italy / Localizzazione Italiana | Maintainers                                                  | License / Licenza |
++-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
+|             | Odoo EE - Enterprise Edition  | |check| Tramite partner     (1) | `Odoo S.A. <https://www.odoo.com/>`__                        | |license opl|     |
++-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
+| odoo        | Odoo CE - Community Edition   | |no_check|                      | `Odoo S.A. <https://www.odoo.com/>`__                        | |license gpl|     |
++-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
+| oca         | Odoo CE by OCA                |                                 | `Odoo Community Association <http://odoo-community.org/>`__  | |license gpl|     |
++-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
+| zero        | Zeroincombenze(R)             |                                 | `SHS-AV s.r.l. <http://www.shs-av.com/>`__                   | |license gpl|     |
++-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
 
 Notes / Note:
 -------------
 
 1. Localizzazione con supporto a pagamento tramite partner
-2. Manca software per norme fiscali 2017; OCA sta sviluppando il supporto per la Fattura Elettronica B2B
-3. Software per Fattura elettronica B2B in sviluppo
 
 
 Avaiable Addons / Moduli disponibili
@@ -510,26 +508,25 @@ Avaiable Addons / Moduli disponibili
 OCA comparation / Confronto con OCA
 -----------------------------------
 
-OCA Differences / Differenze da OCA
------------------------------------
-
-+--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
-| Description / Descrizione            | Odoo Italia      | OCA             | Notes / Note                                                                |
-+--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
-| Ricerca per CAP, città e provincia   | |check|          | |no_check|      |                                                                             |
-+--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
-| Dati comuni/province italiane        | 2014             | 2013            |                                                                             |
-+--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
-| Piano dei conti evoluto              | |check|          | |no_check|      |                                                                             |
-+--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
-| Codici IVA completi                  | |check|          | |no_check|      |                                                                             |
-+--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
-| Validazione Codice Fiscale           | |check|          | |no_check|      |                                                                             |
-+--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
-| Errore in descrizione modulo         | |check|          | |no_check|      | Non è generata un'eccezione di errore in caso di errate descrizioni moduli  |
-+--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
-| Errore in cambio valuta              | |check|          | |no_check|      | Il cambio non tiene conto dell'azienda                                      |
-+--------------------------------------+------------------+-----------------+-----------------------------------------------------------------------------+
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Description / Descrizione                                                    | Zeroincombenze   | OCA           | Notes / Note                                                  |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Coverage                                                                     | |Codecov Status| | |OCA Codecov| |                                                               |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Ignore rst error in module description / Ignora errore in descrizione modulo | |check|          | |no_check|    | Avoid error due from translation / Evita errori da traduzioni |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Currency Exchange Error / Errore in cambio valuta                            | |check|          | |no_check|    |                                                               |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Currency Rate / Cambio valuta                                                | no company       | with company  |                                                               |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Force https / 'web.base.url.cvt2https' / in 'web.base.url'                   | |check|          | |no_check|    | New parameter / Nuovo parametro / 'web.base.url.cvt2https'    |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| No msg openerp.com unreachable                                               | |check|          | |no_check|    | Due to renamed url odoo.com / Causato da nuovo url odoo.com   |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Reference to author / Riferimento all'autore                                 | odoo.com         | openerp.com   |                                                               |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Psycopg protocol                                                             | 1 and 2          | only 1        | psycopg1 is deprecated                                        |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 
 
 
@@ -543,8 +540,87 @@ Prerequisites / Prerequisiti
 ----------------------------
 
 
-* python2.7+
-* postgresql 9.2+
+* python 2.7+ (best 2.7.5+)
+* postgresql 9.2+ (best 9.5)
+* Babel==2.3.4
+* decorator==4.0.10
+* docutils==0.12
+* ebaysdk==2.1.4
+* feedparser==5.2.1
+* gevent==1.1.2
+* greenlet==0.4.10
+* jcconv==0.2.3
+* Jinja2==2.8
+* lxml==3.5.0
+* Mako==1.0.4
+* MarkupSafe==0.23
+* mock==2.0.0
+* ofxparse==0.16
+* passlib==1.6.5
+* Pillow==3.4.1
+* psutil==4.3.1
+* psycogreen==1.0
+* psycopg2-binary
+* pydot==1.2.3
+* pyparsing==2.1.10
+* pyPdf==1.13
+* pyserial==3.1.1
+* Python-Chart==1.39
+* python-dateutil==2.5.3
+* python-ldap==2.4.27
+* python-openid==2.2.5
+* pytz==2016.7
+* pyusb==1.0.0
+* PyYAML==3.12
+* qrcode==5.3
+* reportlab==3.3.0
+* requests==2.11.1
+* six==1.10.0
+* suds-jurko==0.6
+* vatnumber==1.2
+* vobject==0.9.3
+* Werkzeug==0.11.11
+* wsgiref==0.1.2
+* XlsxWriter==0.9.3
+* xlwt==1.1.2
+* xlrd==1.0.0
+* pycryptodome
+* pkcs7
+* fdb
+* sqlalchemy
+* raven
+* checksumdir
+* viivakoodi
+* py3o.template
+* py3o.formats
+* crypto
+* os0
+* num2words
+* pypdf2
+* evdev
+* bokeh
+* barcode
+* python-levenshtein
+* 'MarkupSafe>=0.23'
+* 'psycopg2-binary>=2.0.0'
+* python-ldap==2.4.25
+* sphinx==1.2.3
+* mercurial==3.2.2
+* sphinx-patchqueue==0.4.0
+* 'python-stdnum>=1.8.1'
+* suds==0.4
+* 'unicodecsv>=0.14.1'
+* codicefiscale==0.9
+* unidecode==0.4.17
+* pyxb==1.2.4
+* 'acme_tiny>=4.0.3'
+* 'ipy>=0.83'
+* 'validate_email>=1.3'
+* 'pysftp>=0.2.9'
+* zpl2==1.0
+* beautifulsoup==3.2.1
+* cryptography2.2.2
+
 
 Installation / Installazione
 ----------------------------
@@ -650,7 +726,7 @@ La distribuzione `Zeroincombenze® <https://wiki.zeroincombenze.org/en/Odoo>`__ 
 |
 
 
-Last Update / Ultimo aggiornamento: 2019-05-07
+Last Update / Ultimo aggiornamento: 2019-05-19
 
 .. |Maturity| image:: https://img.shields.io/badge/maturity-Alfa-red.png
     :target: https://odoo-community.org/page/development-status
@@ -668,7 +744,7 @@ Last Update / Ultimo aggiornamento: 2019-05-07
     :target: https://coveralls.io/github/zeroincombenze/OCB?branch=10.0
     :alt: Coverage
 .. |Codecov Status| image:: https://codecov.io/gh/zeroincombenze/OCB/branch/10.0/graph/badge.svg
-    :target: https://codecov.io/gh/OCA/OCB/branch/10.0
+    :target: https://codecov.io/gh/zeroincombenze/OCB/branch/10.0
     :alt: Codecov
 .. |Tech Doc| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-10.svg
     :target: https://wiki.zeroincombenze.org/en/Odoo/10.0/dev
@@ -679,7 +755,7 @@ Last Update / Ultimo aggiornamento: 2019-05-07
 .. |Try Me| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-10.svg
     :target: https://erp10.zeroincombenze.it
     :alt: Try Me
-.. |OCA Codecov Status| image:: https://codecov.io/gh/OCA/OCB/branch/10.0/graph/badge.svg
+.. |OCA Codecov| image:: https://codecov.io/gh/OCA/OCB/branch/10.0/graph/badge.svg
     :target: https://codecov.io/gh/OCA/OCB/branch/10.0
     :alt: Codecov
 .. |Odoo Italia Associazione| image:: https://www.odoo-italia.org/images/Immagini/Odoo%20Italia%20-%20126x56.png
@@ -689,9 +765,9 @@ Last Update / Ultimo aggiornamento: 2019-05-07
    :target: https://www.zeroincombenze.it/
    :alt: Zeroincombenze
 .. |en| image:: https://raw.githubusercontent.com/zeroincombenze/grymb/master/flags/en_US.png
-   :target: https://www.facebook.com/groups/openerp.italia/
+   :target: https://www.facebook.com/Zeroincombenze-Software-gestionale-online-249494305219415/
 .. |it| image:: https://raw.githubusercontent.com/zeroincombenze/grymb/master/flags/it_IT.png
-   :target: https://www.facebook.com/groups/openerp.italia/
+   :target: https://www.facebook.com/Zeroincombenze-Software-gestionale-online-249494305219415/
 .. |check| image:: https://raw.githubusercontent.com/zeroincombenze/grymb/master/awesome/check.png
 .. |no_check| image:: https://raw.githubusercontent.com/zeroincombenze/grymb/master/awesome/no_check.png
 .. |menu| image:: https://raw.githubusercontent.com/zeroincombenze/grymb/master/awesome/menu.png
