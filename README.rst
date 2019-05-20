@@ -3,7 +3,7 @@
 Odoo 7.0 (formerly OpenERP)
 ===========================
 
-|Build Status| |Coverage Status| |Codecov Status| |license gpl| |Tech Doc| |Help| |Try Me|
+|Build Status| |Coverage Status| |Codecov Status| |license gpl| |Try Me|
 
 .. contents::
 
@@ -38,7 +38,7 @@ Distributions / Distribuzioni Odoo 7.0:
 +-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
 | zero        | Zeroincombenze(R)            |                                 | `SHS-AV s.r.l. <http://www.shs-av.com/>`__                      | |license gpl|     |
 +-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
-| Seedoo      | Protocollo PA                | |no_check|                      |                                                                 | |license gpl|     |
+| Seedoo      | Protocollo PA                | |no_check|                      | `Sedoo <https://github.com/seedoo/seedoo-core>`__               | |license gpl|     |
 +-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
 | Omnia       | Integrazione con PLM         |                                 | `Omnia Solution s.n.c. <https://www.omniasolutions.website/>`__ | |license gpl|     |
 +-------------+------------------------------+---------------------------------+-----------------------------------------------------------------+-------------------+
