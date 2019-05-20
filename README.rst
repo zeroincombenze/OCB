@@ -3,7 +3,7 @@
 Odoo 7.0 (formerly OpenERP)
 ===========================
 
-|Maturity| |Build Status| |Coverage Status| |Codecov Status| |license gpl| |Tech Doc| |Help| |Try Me|
+|Build Status| |Coverage Status| |Codecov Status| |license gpl| |Tech Doc| |Help| |Try Me|
 
 .. contents::
 
@@ -622,7 +622,7 @@ La distribuzione `Zeroincombenze® <https://wiki.zeroincombenze.org/en/Odoo>`__ 
 |
 
 
-Last Update / Ultimo aggiornamento: 2019-05-19
+Last Update / Ultimo aggiornamento: 2019-05-20
 
 .. |Maturity| image:: https://img.shields.io/badge/maturity-Alfa-red.png
     :target: https://odoo-community.org/page/development-status
@@ -640,7 +640,7 @@ Last Update / Ultimo aggiornamento: 2019-05-19
     :target: https://coveralls.io/github/zeroincombenze/OCB?branch=7.0
     :alt: Coverage
 .. |Codecov Status| image:: https://codecov.io/gh/zeroincombenze/OCB/branch/7.0/graph/badge.svg
-    :target: https://codecov.io/gh/OCA/OCB/branch/7.0
+    :target: https://codecov.io/gh/zeroincombenze/OCB/branch/7.0
     :alt: Codecov
 .. |Tech Doc| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-7.svg
     :target: https://wiki.zeroincombenze.org/en/Odoo/7.0/dev
@@ -651,7 +651,7 @@ Last Update / Ultimo aggiornamento: 2019-05-19
 .. |Try Me| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-7.svg
     :target: https://erp7.zeroincombenze.it
     :alt: Try Me
-.. |OCA Codecov Status| image:: https://codecov.io/gh/OCA/OCB/branch/7.0/graph/badge.svg
+.. |OCA Codecov| image:: https://codecov.io/gh/OCA/OCB/branch/7.0/graph/badge.svg
     :target: https://codecov.io/gh/OCA/OCB/branch/7.0
     :alt: Codecov
 .. |Odoo Italia Associazione| image:: https://www.odoo-italia.org/images/Immagini/Odoo%20Italia%20-%20126x56.png
