@@ -70,7 +70,7 @@ class AccountInvoice(models.Model):
             ('type', 'in', filter(None, map(TYPE2JOURNAL.get, inv_types))),
             ('company_id', '=', company_id),
         ]
-        return self.env['account.journal'].search(domain, limit=1)
+        return self.env['account.journal'].search(domain, order='sequence', limit=1)
 
     @api.model
     def _default_currency(self):

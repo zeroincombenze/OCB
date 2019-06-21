@@ -521,11 +521,7 @@ OCA comparation / Confronto con OCA
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 | Force https / 'web.base.url.cvt2https' / in 'web.base.url'                   | |check|          | |no_check|    | New parameter / Nuovo parametro / 'web.base.url.cvt2https'    |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| No msg openerp.com unreachable                                               | |check|          | |no_check|    | Due to renamed url odoo.com / Causato da nuovo url odoo.com   |
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Reference to author / Riferimento all'autore                                 | odoo.com         | openerp.com   |                                                               |
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Psycopg protocol                                                             | 1 and 2          | only 1        | psycopg1 is deprecated                                        |
+| Journal default selection                                                    | |check|          | |no_check|    | Journal default selection based on sequence                   |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 
 
@@ -550,15 +546,17 @@ Prerequisites / Prerequisiti
 * gevent==1.1.2
 * greenlet==0.4.10
 * jcconv==0.2.3
-* Jinja2==2.8
+* Jinja2==2.10.1
 * lxml==3.5.0
 * Mako==1.0.4
+* MarkupSafe==0.23
 * mock==2.0.0
 * ofxparse==0.16
 * passlib==1.6.5
 * Pillow==3.4.1
 * psutil==4.3.1
 * psycogreen==1.0
+* psycopg2==2.7.3.1
 * pydot==1.2.3
 * pyparsing==2.1.10
 * pyPdf==1.13
@@ -572,7 +570,7 @@ Prerequisites / Prerequisiti
 * PyYAML==3.12
 * qrcode==5.3
 * reportlab==3.3.0
-* requests==2.11.1
+* requests==2.20.0
 * six==1.10.0
 * suds-jurko==0.6
 * vatnumber==1.2
@@ -582,41 +580,6 @@ Prerequisites / Prerequisiti
 * XlsxWriter==0.9.3
 * xlwt==1.1.2
 * xlrd==1.0.0
-* pycryptodome
-* pkcs7
-* fdb
-* sqlalchemy
-* raven
-* checksumdir
-* viivakoodi
-* py3o.template
-* py3o.formats
-* crypto
-* os0
-* num2words
-* pypdf2
-* evdev
-* bokeh
-* barcode
-* python-levenshtein
-* MarkupSafe>=0.23g
-* psycopg2-binary>=2.0.0g
-* sphinx==1.2.3
-* mercurial==3.2.2
-* sphinx-patchqueue==0.4.0
-* python-stdnum>=1.8.1g
-* suds==0.4
-* unicodecsv>=0.14.1g
-* codicefiscale==0.9
-* unidecode==0.4.17
-* pyxb==1.2.4
-* acme_tiny>=4.0.3g
-* ipy>=0.83g
-* validate_email>=1.3g
-* pysftp>=0.2.9g
-* zpl2==1.0
-* beautifulsoup==3.2.1
-* cryptography2.2.2
 
 
 Installation / Installazione
@@ -723,7 +686,7 @@ La distribuzione `Zeroincombenze® <https://wiki.zeroincombenze.org/en/Odoo>`__ 
 |
 
 
-Last Update / Ultimo aggiornamento: 2019-05-21
+Last Update / Ultimo aggiornamento: 2019-06-20
 
 .. |Maturity| image:: https://img.shields.io/badge/maturity-Alfa-red.png
     :target: https://odoo-community.org/page/development-status
