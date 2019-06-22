@@ -491,6 +491,12 @@ OCA comparation / Confronto con OCA
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 | Force https / 'web.base.url.cvt2https' / in 'web.base.url'                   | |check|          | |no_check|    | New parameter / Nuovo parametro / 'web.base.url.cvt2https'    |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| No msg openerp.com unreachable                                               | |check|          | |no_check|    | Due to renamed url odoo.com / Causato da nuovo url odoo.com   |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Reference to author / Riferimento all'autore                                 | odoo.com         | openerp.com   |                                                               |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Psycopg protocol                                                             | 1 and 2          | only 1        | psycopg1 is deprecated                                        |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 
 
 
@@ -622,7 +628,7 @@ La distribuzione `Zeroincombenze® <https://wiki.zeroincombenze.org/en/Odoo>`__ 
 |
 
 
-Last Update / Ultimo aggiornamento: 2019-05-22
+Last Update / Ultimo aggiornamento: 2019-06-22
 
 .. |Maturity| image:: https://img.shields.io/badge/maturity-Alfa-red.png
     :target: https://odoo-community.org/page/development-status
