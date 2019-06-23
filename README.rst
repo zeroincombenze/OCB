@@ -3,7 +3,7 @@
 Odoo 7.0 (formerly OpenERP)
 ===========================
 
-|Build Status| |Coverage Status| |Codecov Status| |license gpl| |Try Me|
+|Build Status| |Codecov Status| |license gpl| |Try Me|
 
 .. contents::
 
