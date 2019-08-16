@@ -50,7 +50,7 @@ def keep_query(*keep_params, **additional_params):
     if not keep_params and not additional_params:
         keep_params = ('*',)
     params = additional_params.copy()
-    qs_keys = request.httprequest.args.keys()
+    qs_keys = request.httprequest.args.keys() if request else []
     for keep_param in keep_params:
         for param in fnmatch.filter(qs_keys, keep_param):
             if param not in additional_params and param in qs_keys:
@@ -1169,7 +1169,7 @@ class view(osv.osv):
         cr.execute("""SELECT max(v.id)
                         FROM ir_ui_view v
                    LEFT JOIN ir_model_data md ON (md.model = 'ir.ui.view' AND md.res_id = v.id)
-                       WHERE md.module NOT IN (SELECT name FROM ir_module_module)
+                       WHERE md.module IN (SELECT name FROM ir_module_module) IS NOT TRUE
                          AND v.model = %s
                          AND v.active = true
                     GROUP BY coalesce(v.inherit_id, v.id)

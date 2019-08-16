@@ -358,6 +358,10 @@ class PurchaseOrder(models.Model):
                 moves = order.order_line.filtered(lambda r: r.product_id.type in ['product', 'consu'])._create_stock_moves(picking)
                 move_ids = moves.action_confirm()
                 moves = self.env['stock.move'].browse(move_ids)
+                seq = 0
+                for move in sorted(moves, key=lambda move: move.date_expected):
+                    seq += 5
+                    move.sequence = seq
                 moves.force_assign()
         return True
 
@@ -1043,7 +1047,8 @@ class MailComposeMessage(models.Model):
     @api.multi
     def send_mail(self, auto_commit=False):
         if self._context.get('default_model') == 'purchase.order' and self._context.get('default_res_id'):
+            self = self.with_context(mail_post_autofollow=True)
             order = self.env['purchase.order'].browse([self._context['default_res_id']])
             if order.state == 'draft':
                 order.state = 'sent'
-        return super(MailComposeMessage, self.with_context(mail_post_autofollow=True)).send_mail(auto_commit=auto_commit)
+        return super(MailComposeMessage, self).send_mail(auto_commit=auto_commit)
