@@ -168,7 +168,11 @@ class module(osv.osv):
                     'xml_declaration': False,
                     'file_insertion_enabled': False,
                 }
-                output = publish_string(source=module.description or '', settings_overrides=overrides, writer=MyWriter())
+                # [antoniov 2018-09-04] Avoid translation error
+                try:
+                    output = publish_string(source=module.description or '', settings_overrides=overrides, writer=MyWriter())
+                except:
+                    output = 'Error in Description'
                 res[module.id] = html_sanitize(output)
         return res
 
