@@ -4237,10 +4237,10 @@ class BaseModel(object):
         """
         order_by_clause = ''
         # [antoniov: 2019-03-18] Impronta Digitale reverse order bug
-        if self._name == 'account.invoice.line' and not order_spec:
-            order_spec = 'id'
-        else:
-            order_spec = order_spec or self._order
+        # if self._name == 'account.invoice.line' and not order_spec:
+        #     order_spec = 'id'
+        # else:
+        order_spec = order_spec or self._order
         if order_spec:
             order_by_elements = self._generate_order_by_inner(self._table, order_spec, query)
             if order_by_elements:
