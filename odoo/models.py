@@ -4238,7 +4238,7 @@ class BaseModel(object):
         order_by_clause = ''
         # [antoniov: 2019-03-18] Impronta Digitale reverse order bug
         # if self._name == 'account.invoice.line' and not order_spec:
-        #     order_spec = 'id'
+        #     order_spec = 'invoice_id,sequence,id'
         # else:
         order_spec = order_spec or self._order
         if order_spec:

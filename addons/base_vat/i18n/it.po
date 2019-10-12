@@ -1,23 +1,19 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# * base_vat
-# 
-# Translators:
-# Marius Marolla <mariusmarolla@entersys.it>, 2016
-# Sergio Zanchetta <primes2h@gmail.com>, 2016
-# 
+#	* base_vat
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0c\n"
+"Project-Id-Version: Odoo (VENV-10.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-07 08:56+0000\n"
-"PO-Revision-Date: 2016-09-07 09:17+0000\n"
-"Last-Translator: Sergio Zanchetta <primes2h@gmail.com>, 2016\n"
-"Language-Team: Italian (https://www.transifex.com/odoo/teams/41243/it/)\n"
+"POT-Creation-Date: 2019-09-24 06:50+0000\n"
+"PO-Revision-Date: 2019-09-24 06:50+0000\n"
+"Last-Translator: Antonio M. Vigliotti <antoniomaria.vigliotti@gmail.com>\n"
+"Language-Team: Zeroincombenze (https://www.zeroincombenze.it)\n"
+"Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
-"Language: it\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: base_vat
@@ -27,44 +23,36 @@ msgstr "Aziende"
 
 #. module: base_vat
 #: model:ir.model.fields,help:base_vat.field_res_company_vat_check_vies
-msgid ""
-"If checked, Partners VAT numbers will be fully validated against EU's VIES "
-"service rather than via a simple format validation (checksum)."
-msgstr ""
-"Se selezionata, verrà usato il servizio UE VIES per verificare le partite "
-"IVA dei partner al posto del semplice controllo di formato (checksum)."
+msgid "If checked, Partners VAT numbers will be fully validated against EU's VIES service rather than via a simple format validation (checksum)."
+msgstr "Se selezionato, le partite IVA dei Patner verranno validate interamente con il service VIES UE invece che con una semplice validazione del formato (cifra di controllo)."
 
 #. module: base_vat
 #: model:ir.model,name:base_vat.model_res_partner
 msgid "Partner"
-msgstr "Partner"
+msgstr "Soggetto"
 
 #. module: base_vat
-#: code:addons/base_vat/models/res_partner.py:131
+#: code:addons/base_vat/models/res_partner.py:159
 #, python-format
-msgid ""
-"The VAT number [%s] for partner [%s] does not seem to be valid. \n"
+msgid "The VAT number [%s] for partner [%s] does not seem to be valid. \n"
 "Note: the expected format is %s"
-msgstr ""
-"La partita IVA [%s] del partner [%s] non sembra essere valida. \n"
+msgstr "La Partita IVA [%s] del Partner [%s] sembrerebbe non essere valida. \n"
 "Nota: il formato atteso è %s"
 
 #. module: base_vat
-#: code:addons/base_vat/models/res_partner.py:130
+#: code:addons/base_vat/models/res_partner.py:158
 #, python-format
-msgid ""
-"The VAT number [%s] for partner [%s] either failed the VIES VAT validation "
-"check or did not respect the expected format %s."
-msgstr ""
-"La partita IVA [%s] del partner [%s] non ha superato la verifica di validità"
-" VIES oppure non rispetta il formato %s atteso."
+msgid "The VAT number [%s] for partner [%s] either failed the VIES VAT validation check or did not respect the expected format %s."
+msgstr "La Partita IVA [%s] del Partner [%s] non ha superato la validazione VIES (il sistema elettronico di scambio dei dati IVA) oppure non è nel formato %s."
 
 #. module: base_vat
 #: model:ir.model.fields,field_description:base_vat.field_res_company_vat_check_vies
 msgid "VIES VAT Check"
-msgstr "Verificare partita IVA con VIES"
+msgstr "Verifica IVA con VIES"
 
 #. module: base_vat
 #: model:ir.ui.view,arch_db:base_vat.view_partner_form
 msgid "e.g. BE0477472701"
-msgstr "es.: IT0533192309"
+msgstr "Es: IT0533192309"
+
+
