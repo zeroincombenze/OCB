@@ -489,13 +489,13 @@ OCA comparation / Confronto con OCA
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 | Currency Rate / Cambio valuta                                                | no company       | with company  |                                                               |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Force https / 'web.base.url.cvt2https' / in 'web.base.url'                   | |check|          | |no_check|    | New parameter / Nuovo parametro / 'web.base.url.cvt2https'    |
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 | No msg openerp.com unreachable                                               | |check|          | |no_check|    | Due to renamed url odoo.com / Causato da nuovo url odoo.com   |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 | Reference to author / Riferimento all'autore                                 | odoo.com         | openerp.com   |                                                               |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 | Psycopg protocol                                                             | 1 and 2          | only 1        | psycopg1 is deprecated                                        |
++------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
+| Journal default selection                                                    | |check|          | |no_check|    | Journal default selection based on sequence                   |
 +------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 
 
@@ -517,10 +517,11 @@ Prerequisites / Prerequisiti
 * mygengo
 * psycopg2-binary
 * python-dateutil
-* python-docutils
+* docutils
 * python-openid
 * pytz
 * reportlab
+* xlwt
 * Werkzeug
 
 
@@ -549,11 +550,8 @@ Installation / Installazione
     git clone https://github.com/zeroincombenze/tools.git
     cd ./tools
     ./install_tools.sh -p
-    export PATH=$HOME/dev:$PATH
+    source /opt/odoo/dev/activate_tools
     odoo_install_repository OCB -b 7.0 -O zero
-    for pkg in os0 z0lib; do
-        pip install $pkg -U
-    done
     sudo manage_odoo requirements -b 7.0 -vsy -o /opt/odoo/7.0
 
 
@@ -628,7 +626,7 @@ La distribuzione `Zeroincombenze® <https://wiki.zeroincombenze.org/en/Odoo>`__ 
 |
 
 
-Last Update / Ultimo aggiornamento: 2019-06-22
+Last Update / Ultimo aggiornamento: 2019-11-11
 
 .. |Maturity| image:: https://img.shields.io/badge/maturity-Alfa-red.png
     :target: https://odoo-community.org/page/development-status

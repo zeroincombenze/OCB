@@ -1061,7 +1061,8 @@ class account_period(osv.osv):
             result = self.search(cr, uid, args + [('special', '=', False)], context=context)
         if not result:
             result = self.search(cr, uid, args, context=context)
-        if not result:
+        # [antoniov: 2019-07-24] Avoid login error!
+        if not result and not context.get('login'):
             raise osv.except_osv(_('Error!'), _('There is no period defined for this date: %s.\nPlease create one.')%dt)
         return result
 
