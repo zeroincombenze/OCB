@@ -55,8 +55,8 @@ before_install:
   # - sleep 3 # give xvfb some time to start
   # Use Zeroincombenze(R) tools
   - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --single-branch --depth=1
-  - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
-  - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
+  # - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
+  - export PATH=${HOME}/tools/maintainer-quality-tools/travis:${PATH}
 
 install:
   - travis_install_env

@@ -771,6 +771,7 @@ class Field(object):
 
     def get_description(self, env):
         """ Return a dictionary that describes the field ``self``. """
+
         desc = {'type': self.type}
         for attr, prop in self.description_attrs:
             value = getattr(self, prop)

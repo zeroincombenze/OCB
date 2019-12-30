@@ -1,9 +1,9 @@
 
-============================
-Odoo 10.0 (formerly OpenERP)
-============================
+==========================
+|Zeroincombenze| 10.0 10.0
+==========================
+|Build Status| |Codecov Status| |license gpl| |Try Me|
 
-|Build Status| |Coverage Status| |Codecov Status| |license gpl| |Try Me|
 
 .. contents::
 
@@ -11,249 +11,1140 @@ Odoo 10.0 (formerly OpenERP)
 Overview / Panoramica
 =====================
 
-|en| Odoo is a suite of web based open source business apps.
+|en| N/A
 
-The main Odoo Apps include an Open Source CRM and Enterprise Resource Planning.
-The main ERP modules are: Warehouse Management, Project Management,
-Billing AND Accounting, Point of Sale, Human Resources, Manufacturing,
-Purchase Management, Sale Management and other modules.
-
-
-|it| Odoo è una suite di prodotti web open-source.
-
-Le principali applicazioni di Odoo includono un Open Source CRM e Enterprise Resource Planning.
-I principali moduli ERP sono: gestione Magazzino, gestione Progetti, Contabilità e Fatturazione, Punto vendite, Dipendenti, Produzione, gestione Acquisti, gestione vendite e molto altro ancora.
-
-
-Distributions / Distribuzioni Odoo 10.0:
-========================================
-
-
-+-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
-| name / nome | description / descrizione     | Italy / Localizzazione Italiana | Maintainers                                                  | License / Licenza |
-+-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
-|             | Odoo EE - Enterprise Edition  | |check| Tramite partner     (1) | `Odoo S.A. <https://www.odoo.com/>`__                        | |license opl|     |
-+-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
-| odoo        | Odoo CE - Community Edition   | |no_check|                      | `Odoo S.A. <https://www.odoo.com/>`__                        | |license gpl|     |
-+-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
-| oca         | Odoo CE by OCA                |                                 | `Odoo Community Association <http://odoo-community.org/>`__  | |license gpl|     |
-+-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
-| zero        | Zeroincombenze(R)             |                                 | `SHS-AV s.r.l. <http://www.shs-av.com/>`__                   | |license gpl|     |
-+-------------+-------------------------------+---------------------------------+--------------------------------------------------------------+-------------------+
-
-Notes / Note:
--------------
-
-1. Localizzazione con supporto a pagamento tramite partner
-
-
+|it| N/D
 Avaiable Addons / Moduli disponibili
 ------------------------------------
 
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | Name / Nome                          | Version    | OCA Ver.   | Description / Descrizione                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account                              | 10.0.1.1   | |same|     | Send Invoices and Track Payments                                                 |
+| account                              | 10.0.1.1   | |no_check| | Send Invoices and Track Payments                                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_accountant                   | 10.0.1.1   | |same|     | Financial and Analytic Accounting                                                |
+| account_accountant                   | 10.0.1.1   | |no_check| | Financial and Analytic Accounting                                                |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_analytic_default             | 10.0.1.0   | |same|     | Account Analytic Defaults                                                        |
+| account_analytic_default             | 10.0.1.0   | |no_check| | Account Analytic Defaults                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_asset                        | 10.0.0.0   | |same|     | Assets Management                                                                |
+| account_asset                        | 10.0.0.0   | |no_check| | Assets Management                                                                |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_bank_statement_import        | 10.0.1.0   | |same|     | Account Bank Statement Import                                                    |
+| account_asset_depr_line_cancel       | 10.0.1.0.0 | |no_check| | Assets Management - Cancel button                                                |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_budget                       | 10.0.0.0   | |same|     | Budgets Management                                                               |
+| account_asset_disposal               | 10.0.2.0.0 | |no_check| | Makes asset close account move automatically                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_cancel                       | 10.0.1.1   | |same|     | Cancel Journal Entries                                                           |
+| account_asset_management             | |halt|     | |no_check| | Assets Management                                                                |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_check_printing               | 10.0.1.0   | |same|     | Check printing commons                                                           |
+| account_asset_management_xls         | |halt|     | |no_check| | Assets Management Excel reporting                                                |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_lock                         | 10.0.1.0   | |same|     | Irreversible Lock Date                                                           |
+| account_balance_line                 | 10.0.1.0.0 | |no_check| | Display balance totals in move line view                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_tax_cash_basis               | 10.0.1.1   | |same|     | Allow to have cash basis on tax                                                  |
+| account_bank_statement_import        | 10.0.1.0   | |no_check| | Account Bank Statement Import                                                    |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_tax_python                   | 10.0.1.0   | |same|     |  Allows to use python code to define taxes                                       |
+| account_bank_statement_line_reconcil | 10.0.1.0.0 | |no_check| | OCA Financial Reports                                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_test                         | 10.0.1.0   | |same|     | Accounting Consistency Tests                                                     |
+| account_banking_mandate              | 10.0.1.1.0 | |no_check| | Banking mandates                                                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| account_voucher                      | 10.0.1.0   | |same|     | Manage your debts and credits thanks to simple sale/purchase receipts            |
+| account_banking_mandate_sale         | 10.0.1.0.0 | |no_check| | Adds mandates on sale orders                                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| analytic                             | 10.0.1.1   | |same|     | Analytic Accounting                                                              |
+| account_banking_pain_base            | 10.0.1.0.1 | |no_check| | Base module for PAIN file generation                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| anonymization                        | 10.0.1.0   | |same|     | Database Anonymization                                                           |
+| account_banking_sepa_credit_transfer | 10.0.1.0.0 | |no_check| | Create SEPA XML files for Credit Transfers                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| association                          | 10.0.0.1   | |same|     | Associations Management                                                          |
+| account_banking_sepa_direct_debit    | 10.0.1.0.0 | |no_check| | Create SEPA files for Direct Debit                                               |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| auth_crypt                           | 10.0.2.0   | |same|     | Password Encryption                                                              |
+| account_banking_tests                | |halt|     | |no_check| | Banking Addons - Tests                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| auth_ldap                            | 10.0.0.0   | |same|     | Authentication via LDAP                                                          |
+| account_budget                       | 10.0.0.0   | |no_check| | Budgets Management                                                               |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| auth_oauth                           | 10.0.0.0   | |same|     | OAuth2 Authentication                                                            |
+| account_cancel                       | 10.0.1.1   | |no_check| | Cancel Journal Entries                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| auth_signup                          | 10.0.1.0   | |same|     | Signup                                                                           |
+| account_cancel_invoice_check_payment | |halt|     | |no_check| | Cancel invoice, check on payment order                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| barcodes                             | 10.0.2.0   | |same|     | Barcodes Scanning and Parsing                                                    |
+| account_cancel_invoice_check_voucher | |halt|     | |no_check| | Cancel invoice, check on bank statement                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| base                                 | 10.0.1.3   | |same|     | Base                                                                             |
+| account_chart_report                 | |halt|     | |no_check| | Print chart of accounts                                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| base_action_rule                     | 10.0.1.0   | |same|     | Automated Action Rules                                                           |
+| account_chart_update                 | 10.0.1.0.1 | |no_check| | Wizard to update a company's account chart from a template                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| base_gengo                           | 10.0.0.0   | |same|     | Automated Translations through Gengo API                                         |
+| account_check_deposit                | 10.0.1.0.0 | |no_check| | Manage deposit of checks to the bank                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| base_geolocalize                     | 10.0.2.0   | |same|     | Partners Geolocation                                                             |
+| account_check_printing               | 10.0.1.0   | |no_check| | Check printing commons                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| base_iban                            | 10.0.0.0   | |same|     | IBAN Bank Accounts                                                               |
+| account_constraints                  | |halt|     | |no_check| | Account Constraints                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| base_import                          | 10.0.0.0   | |same|     | Base import                                                                      |
+| account_credit_control               | 10.0.1.3.4 | |no_check| | Account Credit Control                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| base_import_module                   | 10.0.0.0   | |same|     | Base import module                                                               |
+| account_credit_control_dunning_fees  | 10.0.1.0.0 | |no_check| | Credit control dunning fees                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_cutoff_accrual_base          | 10.0.0.1.0 | |no_check| | Base module for accrued expenses and revenues                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_cutoff_accrual_picking       | |halt|     | |no_check| | Accrued Expense & Accrued Revenue from Pickings                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_cutoff_base                  | 10.0.1.0.0 | |no_check| | Base module for Account Cut-offs                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_cutoff_prepaid               | 10.0.1.0.0 | |no_check| | Prepaid Expense, Prepaid Revenue                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_default_draft_move           | |halt|     | |no_check| | Move in draft state by default                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_due_list                     | 10.0.1.0.0 | |no_check| | Payments Due list                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_due_list_aging_comments      | 10.0.1.0.0 | |no_check| | Payments Due list aging comments                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_due_list_payment_mode        | 10.0.1.0.0 | |no_check| | Payment due list with payment mode                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_export                       | 10.0.0.1.0 | |no_check| | Export account moves                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_export_csv                   | |halt|     | |no_check| | Account Export CSV                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_financial_report             | |halt|     | |no_check| | Common financial reports                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_financial_report_date_range  | 10.0.1.0.0 | |no_check| |  Add Date Range field to the Odoo OE standard addons financial reports wizard.   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_financial_report_horizontal  | 10.0.1.0.0 | |no_check| | Accounting Financial Report Horizontal                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_financial_report_qweb        | 10.0.3.0.1 | |no_check| | OCA Financial Reports                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_fiscal_month                 | 10.0.1.0.0 | |no_check| |  Provide a fiscal month date range type                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_fiscal_position_vat_check    | 10.0.1.0.0 | |no_check| | Check VAT on invoice validation                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_fiscal_year                  | 10.0.1.0.0 | |no_check| | Account Fiscal Year                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_fiscal_year_closing          | |halt|     | |no_check| | Fiscal Year Closing                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_followup                     | 10.0.1.0.1 | |no_check| | Module to do followup on customer unpaid invoices.                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_group                        | 10.0.1.0.0 | |no_check| | Use v11 account groups feature                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_group_invoice_line           | 10.0.1.1.0 | |no_check| | Add option to group invoice lines per account                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_import_line_multicurrency_ex | |halt|     | |no_check| | Add an improved view for move line import in bank statement                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_add_sale_order       | 10.0.0.1.1 | |no_check| | Add sale order to sale account invoice                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_analytic_search      | 10.0.1.0.0 | |no_check| | Search invoices by analytic account or by project manager                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_blocking             | 10.0.1.0.1 | |no_check| |  This module allows the user to set a blocking (No Follow-up) flag on invoices.  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_change_currency      | 10.0.1.0.0 | |no_check| | Allows to change currency of Invoice by wizard                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_check_total          | 10.0.1.0.0 | |no_check| |  Check if the verification total is equal to the bill's total                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_constraint_chronolog | 10.0.1.0.0 | |no_check| | Account Invoice Constraint Chronology                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_currency             | 10.0.1.1.1 | |no_check| | Company currency in invoices                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_customer_ref_unique  | |halt|     | |no_check| | Unique Customer Reference in Invoice                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_entry_date           | 10.0.0.1.1 | |no_check| | Account Invoice Entry Dates                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_fiscal_position_upda | 10.0.1.0.1 | |no_check| | Changing the fiscal position of an invoice will auto-update invoice lines        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_fixed_discount       | 10.0.1.0.0 | |no_check| | Allows to apply fixed amount discounts in invoices.                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_force_number         | 10.0.1.0.1 | |no_check| | Allows to force invoice numbering on specific invoices                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_kanban               | 10.0.1.1.0 | |no_check| | Add Kanban view in Invoice to follow administrative tasks                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_line_description     | 10.0.1.0.1 | |no_check| | Account invoice line description                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_line_sequence        | 10.0.1.0.0 | |no_check| | Adds sequence field on invoice lines to manage its order.                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_line_sort            | |halt|     | |no_check| |  Manage sort of customer invoice lines by customers                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_line_view            | 10.0.1.0.3 | |no_check| | Adds Customer/Supplier Invoice Line menu items                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_merge                | 10.0.1.0.1 | |no_check| | Merge invoices in draft                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_merge_attachment     | 10.0.1.0.0 | |no_check| |  Consider attachment during invoice merge process                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_merge_payment        | 10.0.1.0.0 | |no_check| |  Use invoice merge regarding fields on Account Payment Partner                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_merge_purchase       | 10.0.1.0.0 | |no_check| | Compatibility between purchase and account invoice merge                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_partner              | 10.0.1.0.0 | |no_check| | Replace the partner by an invoice contact if found                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_period_usability     | |halt|     | |no_check| |  Display in the supplier invoice form the fiscal period next to the invoice date |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_pricelist            | 10.0.1.0.0 | |no_check| | Add partner pricelist on invoices                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_pricelist_sale       | 10.0.1.0.0 | |no_check| | Module to fill pricelist from sales order in invoice.                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_pro_forma_sequence   | 10.0.1.0.0 | |no_check| | Bind a sequence to pro-forma invoices                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_refund_link          | 10.0.1.0.3 | |no_check| | Link refund invoice with its original invoice                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_reorder_lines        | |halt|     | |no_check| | Invoice lines with sequence number                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_report_ddt_group     | 10.0.0.3.1 | |no_check| | Account invoice report grouped by DDT                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_rounding             | 10.0.1.0.2 | |no_check| | Unit rounded invoice                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_search_by_reference  | 10.0.1.0.0 | |no_check| | Account invoice search by reference                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_sequential_dates     | |halt|     | |no_check| | Check invoice date consistency                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_start_end_dates      | 10.0.1.0.0 | |no_check| | Adds start/end dates on invoice lines and move lines                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_supplier_ref_unique  | 10.0.1.0.0 | |no_check| | Checks that supplier invoices are not entered twice                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_supplierinfo_update  | 10.0.1.0.1 | |no_check| | In the supplier invoice, automatically updates all products whose unit price on  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_tax_required         | 10.0.1.0.1 | |no_check| | Tax required in invoice                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_template             | |halt|     | |no_check| | Account Invoice Template                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_transmit_method      | 10.0.1.0.0 | |no_check| | Configure invoice transmit method (email, post, portal, ...)                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_triple_discount      | 10.0.1.0.1 | |no_check| | Manage triple discount on invoice lines                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_uom                  | |halt|     | |no_check| | Unit of measure for invoices                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_validation_workflow  | |halt|     | |no_check| | Add "To Send" and "To Validate" states in Invoices                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_view_payment         | 10.0.1.0.0 | |no_check| | Access to the payment from an invoice                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_invoice_zero_autopay         | |halt|     | |no_check| | Account Invoice Zero Autopay                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_journal_always_check_date    | |halt|     | |no_check| | Option Check Date in Period always active on journals                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_journal_lock_date            | 10.0.1.0.0 | |no_check| |  Lock each journal independently                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_journal_report_xls           | |halt|     | |no_check| | Financial Journal reports                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_lock                         | 10.0.1.0   | |no_check| | Irreversible Lock Date                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_lock_date_update             | 10.0.1.0.0 | |no_check| |  Allow an Account adviser to update locking date without having access to all te |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_batch_validate          | |halt|     | |no_check| | Account Move Batch Validate                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_fiscal_month            | 10.0.1.0.0 | |no_check| |  Display the fiscal month on journal entries/item                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_fiscal_year             | 10.0.1.0.0 | |no_check| |  Display the fiscal year on journal entries/item                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_line_no_default_search  | |halt|     | |no_check| | Move line search view - disable defaults for period and journal                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_line_payable_receivable | 10.0.1.0.0 | |no_check| |  Filter your Journal Items per payable and receivable account                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_line_product            | 10.0.1.0.0 | |no_check| | Displays the product in the journal entries and items                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_line_purchase_info      | 10.0.1.0.0 | |no_check| | Introduces the purchase order line to the journal items                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_line_report_xls         | 10.0.1.0.0 | |no_check| | Journal Items Excel export                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_line_search_extension   | |halt|     | |no_check| | Journal Items Search Extension                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_line_stock_info         | 10.0.1.0.0 | |no_check| | Account Move Line Stock Move                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_line_tax_editable       | 10.0.1.0.1 | |no_check| |  Allows to edit taxes on non-posted account move lines                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_locking                 | 10.0.1.0.0 | |no_check| | Move locked to prevent modification                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_move_template                | 10.0.2.0.0 | |no_check| | Templates for recurring Journal Entries                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_multicurrency_revaluation    | |halt|     | |no_check| | Manage revaluation for multicurrency environment                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_multicurrency_revaluation_re | |halt|     | |no_check| | Module for printing reports that completes the module Multicurrency Revaluation  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_netting                      | 10.0.1.0.0 | |no_check| | Compensate AR/AP accounts from the same partner                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_partner_merge                | |halt|     | |no_check| | Account Partner Merge                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_partner_required             | 10.0.1.0.0 | |no_check| | Adds an option 'partner policy' on account types                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_batch_process        | 10.0.1.0.0 | |no_check| | Process Payments in Batch                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_blocking             | |halt|     | |no_check| |  Prevent invoices under litigation to be proposed in payment orders.             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_credit_card          | 10.0.1.0.0 | |no_check| | Add support for credit card payments                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_mode                 | 10.0.1.0.0 | |no_check| | Account Payment Mode                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_mode_term            | |halt|     | |no_check| | Account Banking - Payments Term Filter                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_order                | 10.0.1.3.0 | |no_check| | Account Payment Order                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_partner              | 10.0.1.1.0 | |no_check| | Adds payment mode on partners and invoices                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_return               | 10.0.1.1.0 | |no_check| | Manage the return of your payments                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_return_import        | 10.0.1.0.0 | |no_check| | This module adds a generic wizard to import payment returnfile formats. Is only  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_return_import_sepa_p | 10.0.1.0.0 | |no_check| | Module to import SEPA Direct Debit Unpaid Report File Format PAIN.002.001.03     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_sale                 | 10.0.1.0.0 | |no_check| | Adds payment mode on sale orders                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_payment_term_extension       | 10.0.1.0.0 | |no_check| | Adds rounding, months, weeks and multiple payment days properties on payment ter |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_period                       | 10.0.1.0   | |no_check| | Account Period                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_permanent_lock_move          | 10.0.1.0.0 | |no_check| | Permanent Lock Move                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_permanent_lock_move_update   | 10.0.1.0.0 | |no_check| |  Allow an Account adviser to update permanent lock date without having access to |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_renumber                     | 10.0.1.0.1 | |no_check| | Account Renumber Wizard                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_reset_chart                  | |halt|     | |no_check| | Delete the accounting setup from an otherwise reusable database                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_reversal                     | 10.0.1.0.0 | |no_check| | Wizard for creating a reversal account move                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_tag_category                 | 10.0.1.0.0 | |no_check| | Group account tags by categories                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_tax_analysis                 | 10.0.1.0.0 | |no_check| | Tax analysis                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_tax_balance                  | 10.0.1.1.1 | |no_check| | Compute tax balances based on date range                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_tax_cash_basis               | 10.0.1.1   | |no_check| | Allow to have cash basis on tax                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_tax_python                   | 10.0.1.0   | |no_check| |  Allows to use python code to define taxes                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_tax_update                   | |halt|     | |no_check| | Update tax wizard                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_test                         | 10.0.1.0   | |no_check| | Accounting Consistency Tests                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_type_inactive                | 10.0.1.0.0 | |no_check| | Allows to set account type to inactive                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_type_menu                    | 10.0.1.0.0 | |no_check| | Adds a menu entry for Account Types                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_vat_on_payment               | |halt|     | |no_check| | VAT on payment                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_vat_period_end_statement     | 10.0.1.4.2 | |no_check| | Period End VAT Statement                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_voucher                      | 10.0.1.0   | |no_check| | Manage your debts and credits thanks to simple sale/purchase receipts            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| account_voucher_killer               | |halt|     | |no_check| | Accounting voucher killer                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| admin_technical_features             | |halt|     | |no_check| | Checks the technical features box for admin user.                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| agreement_account                    | 10.0.1.0.0 | |no_check| | Adds an agreement object linked to an invoice                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| agreement_sale                       | 10.0.1.0.1 | |no_check| | Link an agreement to a sale order and copy to invoice                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| analytic                             | 10.0.1.1   | |no_check| | Analytic Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| analytic_hours_block                 | |halt|     | |no_check| | Project Hours Blocks Management                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| anonymization                        | 10.0.1.0   | |no_check| | Database Anonymization                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| area_agent_account                   | |halt|     | |no_check| | Let agents see only their own invoices in customer invoices view.                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| area_agent_base                      | |halt|     | |no_check| | Area Agent Base                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| area_agent_restriction               | |halt|     | |no_check| |  Area Agent Restriction                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| area_agent_sale                      | |halt|     | |no_check| |  Area Agent Sale                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| association                          | 10.0.0.1   | |no_check| | Associations Management                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| async_move_line_importer             | |halt|     | |no_check| | Asynchronous move/move line CSV importer                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| attachment_base_synchronize          | 10.0.1.0.0 | |no_check| | Attachment Base Synchronize                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| attachments_to_filesystem            | |halt|     | |no_check| | Move existing attachments to filesystem                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auditlog                             | 10.0.1.0.0 | |no_check| | Audit Log                                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_admin_passkey                   | |halt|     | |no_check| | Authentification - Admin Passkey                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_brute_force                     | 10.0.2.2.0 | |no_check| | Track Authentication Attempts and Prevent Brute-force Attacks                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_crypt                           | 10.0.2.0   | |no_check| | Password Encryption                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_dynamic_groups                  | |halt|     | |no_check| | Have membership conditions for certain groups                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_from_http_basic                 | |halt|     | |no_check| | Authenticate via HTTP basic authentication                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_from_http_basic_logout          | |halt|     | |no_check| | Authenticate via HTTP basic authentication (logout helper)                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_from_http_remote_user           | |halt|     | |no_check| | Authenticate via HTTP Remote User                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_ldap                            | 10.0.0.0   | |no_check| | Authentication via LDAP                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_oauth                           | 10.0.0.0   | |no_check| | OAuth2 Authentication                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_oauth_multi_token               | 10.0.1.0.0 | |no_check| | Allow multiple connection with the same OAuth account                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_session_timeout                 | 10.0.1.0.2 | |no_check| |  This module disable all inactive sessions since a given delay                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_signup                          | 10.0.1.0   | |no_check| | Signup                                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_signup_verify_email             | 10.0.2.0.0 | |no_check| | Force uninvited users to use a good email for signup                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_supplier                        | 10.0.1.0.0 | |no_check| | Auth Supplier                                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_totp                            | 10.0.2.0.0 | |no_check| | Allows users to enable MFA and add optional trusted devices                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_totp_password_security          | 10.0.1.0.0 | |no_check| | auth_totp and password_security compatibility                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auth_user_case_insensitive           | |halt|     | |no_check| | Makes the user login field case insensitive                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| auto_backup                          | 10.0.1.0.2 | |no_check| | Backups database                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| backend_theme_v10                    | 10.0.1.0.2 | |no_check| | Odoo 10.0 community backend theme                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| bank_statement_instant_voucher       | |halt|     | |no_check| | Bank statement instant voucher                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| barcode_link                         | |halt|     | |no_check| | Barcode link Module                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| barcodes                             | 10.0.2.0   | |no_check| | Barcodes Scanning and Parsing                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| barcodes_ean14                       | 10.0.1.0.0 | |no_check| | It provides an EAN14 barcode nomenclature.                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| barcodes_generator_abstract          | 10.0.1.0.0 | |no_check| | Generate Barcodes for Any Models                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| barcodes_generator_location          | 10.0.1.0.0 | |no_check| | Generate Barcodes for Stock Locations                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| barcodes_generator_lot               | 10.0.1.0.0 | |no_check| | Generate Barcodes for Stock Production Lots                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| barcodes_generator_package           | 10.0.1.0.0 | |no_check| | Generate Barcodes for Product Packaging                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| barcodes_generator_partner           | 10.0.1.0.0 | |no_check| | Generate Barcodes for Partners                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| barcodes_generator_picking           | 10.0.1.0.0 | |no_check| | Generate Barcodes for Stock Pickings                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| barcodes_generator_product           | 10.0.1.0.0 | |no_check| | Generate Barcodes for Products (Templates and Variants)                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base                                 | 10.0.1.3   | |no_check| | Base                                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_action_rule                     | 10.0.1.0   | |no_check| | Automated Action Rules                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_continent                       | |halt|     | |no_check| | Continent management                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_cron_exclusion                  | 10.0.1.0.0 | |no_check| | Allow you to select scheduled actions that should not run simultaneously.        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_custom_attributes               | |halt|     | |no_check| | base_custom_attributes                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_custom_info                     | 10.0.1.0.0 | |no_check| | Add custom field in models                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_debug4all                       | |halt|     | |no_check| | Shows full debug options for all users                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_exception                       | 10.0.2.0.1 | |no_check| | This module provide an abstract model to manage customizable exceptions to be ap |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_export_manager                  | 10.0.1.0.0 | |no_check| | Manage model export profiles                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_export_security                 | 10.0.1.0.0 | |no_check| | Security features for Odoo exports                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_external_dbsource               | 10.0.2.0.0 | |no_check| | External Database Sources                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_external_dbsource_firebird      | 10.0.1.0.0 | |no_check| | External Database Source - Firebird                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_external_dbsource_mssql         | 10.0.1.0.0 | |no_check| | External Database Source - MSSQL                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_external_dbsource_mysql         | 10.0.1.0.0 | |no_check| | External Database Source - MySQL                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_external_dbsource_odbc          | 10.0.1.0.0 | |no_check| | External Database Source - ODBC                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_external_dbsource_oracle        | |halt|     | |no_check| | External Database Source - Oracle                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_external_dbsource_sqlite        | 10.0.1.0.0 | |no_check| | External Database Source - SQLite                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_external_system                 | 10.0.1.0.0 | |no_check| | Data models allowing for connection to external systems.                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_fontawesome                     | 10.0.4.7.0 | |no_check| | Up to date Fontawesome resources.                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_gengo                           | 10.0.0.0   | |no_check| | Automated Translations through Gengo API                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_geolocalize                     | 10.0.2.0   | |no_check| | Partners Geolocation                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_gs1_barcode                     | |halt|     | |no_check| | Decoding API for GS1-128 (aka UCC/EAN-128) and GS1-Datamatrix                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_headers_webkit                  | |halt|     | |no_check| | Common Webkit Headers and CSS for standard reports (sale, purchase, invoices, .. |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_iban                            | 10.0.0.0   | |no_check| | IBAN Bank Accounts                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_import                          | 10.0.0.0   | |no_check| | Base import                                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_import_default_enable_tracking  | 10.0.1.0.0 | |no_check| |  This modules simply enables history tracking when doing an import.              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_import_match                    | 10.0.1.0.0 | |no_check| | Try to avoid duplicates before importing                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_import_module                   | 10.0.0.0   | |no_check| | Base import module                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_import_security_group           | 10.0.1.0.0 | |no_check| | Group-based permissions for importing CSV files                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_jsonify                         | |halt|     | |no_check| | Base module that provide the jsonify method on all models                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_kanban_stage                    | 10.0.1.2.1 | |no_check| | Provides stage model and abstract logic for inheritance                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_kanban_stage_state              | 10.0.1.0.0 | |no_check| | Maps stages from base_kanban_stage to states                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_locale_uom_default              | 10.0.1.0.0 | |no_check| | This provides settings to select default UoMs at the language level.             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | base_location                        | 10.0.1.0.1 | |no_check| | Enhanced zip/npa management system                                               |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | base_location_geonames_import        | 10.0.1.0.1 | |no_check| | Import better zip entries from Geonames                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_location_nuts                   | 10.0.1.0.0 | |no_check| | NUTS Regions                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_manifest_extension              | 10.0.1.0.0 | |no_check| | Adds useful keys to manifest files                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_multi_image                     | |halt|     | |no_check| | Allow multiple images for database objects                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_multireport                     | 10.0.0.2.1 | |no_check| | Manage document multiple reports                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_optional_quick_create           | 10.0.1.0.1 | |no_check| | Avoid 'quick create' on m2o fields, on a 'by model' basis                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_partner_merge                   | 10.0.1.0.0 | |no_check| | Partner merge wizard without dependency on CRM                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | base_partner_sequence                | 10.0.1.0.0 | |no_check| | Sets customer's code from a sequence                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| base_setup                           | 10.0.1.0   | |same|     | Initial Setup Tools                                                              |
+| base_product_merge                   | |halt|     | |no_check| | Base Products Merge                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| base_vat                             | 10.0.1.0   | |same|     | VAT Number Validation                                                            |
+| base_report_assembler                | |halt|     | |no_check| | Base Report Assembler                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_report_auto_create_qweb         | 10.0.1.0.0 | |no_check| | Report qweb auto generation                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_report_to_printer               | 10.0.1.0.0 | |no_check| | Report to printer                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_search_fuzzy                    | 10.0.1.1.0 | |no_check| | Fuzzy search with the PostgreSQL trigram extension                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_setup                           | 10.0.1.0   | |no_check| | Initial Setup Tools                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_suspend_security                | 10.0.1.0.0 | |no_check| | Suspend security checks for a call                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_technical_features              | 10.0.1.0.1 | |no_check| | Access to technical features without activating debug mode                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_technical_user                  | 10.0.1.0.0 | |no_check| |  Add a technical user parameter on the company                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_tier_validation                 | 10.0.1.0.1 | |no_check| | Implement a validation process based on tiers.                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_user_gravatar                   | 10.0.1.0.1 | |no_check| | Synchronize Gravatar Image                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_user_role                       | 10.0.1.0.3 | |no_check| | User roles                                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_vat                             | 10.0.1.0   | |no_check| | VAT Number Validation                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| base_vat_optional_vies               | 10.0.1.0.0 | |no_check| | Optional validation of VAT via VIES                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | base_vat_sanitized                   | 10.0.1.0.0 | |no_check| | Adds field sanitized_vat on partners                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| board                                | 10.0.1.0   | |same|     | Create your custom dashboard                                                     |
+| base_view_inheritance_extension      | 10.0.1.0.1 | |no_check| | Adds more operators for view inheritance                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| bus                                  | 10.0.1.0   | |same|     | IM Bus                                                                           |
+| bi_sql_editor                        | |halt|     | |no_check| | BI Views builder, based on Materialized or Normal SQL Views                      |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| calendar                             | 10.0.1.0   | |same|     | Personal & Shared Calendar                                                       |
+| bi_view_editor                       | 10.0.1.0.2 | |no_check| | Graphical BI views builder for Odoo                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| board                                | 10.0.1.0   | |no_check| | Create your custom dashboard                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| bridge_skeleton                      | 10.0.2.0.0 | |no_check| | Core of Webkul Bridge Modules                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| bus                                  | 10.0.1.0   | |no_check| | IM Bus                                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| calendar                             | 10.0.1.0   | |no_check| | Personal & Shared Calendar                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| calendar_resource                    | 10.0.1.0.0 | |no_check| | New features to facilitate resource management with meetings.                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| configurable_stock_level             | |halt|     | |no_check| | name                                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| configuration_helper                 | 10.0.1.0.0 | |no_check| | Configuration Helper                                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | connector                            | 10.0.1.0.0 | |no_check| | Connector                                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| contacts                             | 10.0.0.0   | |same|     | Customers, Vendors, Partners,...                                                 |
+| connector_base_product               | |halt|     | |no_check| | Connector Base Product                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| crm                                  | 10.0.1.0   | |same|     | Leads, Opportunities, Activities                                                 |
+| connector_vg7                        | 10.0.0.1.1 | |no_check| | Bidirectional connector to/from VG7 software                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| crm_project_issue                    | 10.0.0.0   | |same|     | Create Issues from Leads                                                         |
+| connector_vg7_conai                  | 10.0.0.1.1 | |no_check| | Bidirectional connector to/from VG7 software (CONAI plug-in)                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| decimal_precision                    | 10.0.0.1   | |same|     | Decimal Precision Configuration                                                  |
+| contacts                             | 10.0.0.0   | |no_check| | Customers, Vendors, Partners,...                                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| delivery                             | 10.0.1.0   | |same|     | Delivery Costs                                                                   |
+| contract                             | 10.0.4.3.0 | |no_check| | Contracts Management - Recurring                                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| document                             | 10.0.2.1   | |same|     | Attachments List and Document Indexation                                         |
+| contract_digitized_signature         | 10.0.1.0.0 | |no_check| | Contract Digitized Signature                                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| event                                | 10.0.1.0   | |same|     | Trainings, Conferences, Meetings, Exhibitions, Registrations                     |
+| contract_payment_auto                | 10.0.1.0.1 | |no_check| | Adds automatic payments to contracts.                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| event_sale                           | 10.0.1.1   | |same|     | Events Sales                                                                     |
+| contract_payment_mode                | 10.0.1.0.1 | |no_check| | Payment mode in contracts and their invoices                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| fetchmail                            | 10.0.1.0   | |same|     | Email Gateway                                                                    |
+| contract_recurring_analytic_distribu | |halt|     | |no_check| | Analytic plans on contracts recurring invoices                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| fleet                                | 10.0.0.1   | |same|     | Vehicle, leasing, insurances, costs                                              |
+| contract_recurring_invoice_analytic  | 10.0.1.0.1 | |no_check| | This module will allow you to create customer contract from sales order and recu |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| gamification                         | 10.0.1.0   | |same|     | Gamification                                                                     |
+| contract_sale                        | 10.0.1.0.0 | |no_check| | Contract from Sale                                                               |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| gamification_sale_crm                | 10.0.1.0   | |same|     | CRM Gamification                                                                 |
+| contract_sale_generation             | 10.0.3.0.0 | |no_check| | Contracts Management - Recurring Sales                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| google_account                       | 10.0.0.0   | |same|     | Google Users                                                                     |
+| contract_show_invoice                | 10.0.1.0.1 | |no_check| | Button in contracts to show their invoices                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| google_calendar                      | 10.0.1.0   | |same|     | Google Calendar                                                                  |
+| contract_variable_quantity           | 10.0.1.2.0 | |no_check| | Variable quantity in contract recurrent invoicing                                |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| google_drive                         | 10.0.0.2   | |same|     | Google Drive™ integration                                                        |
+| crm                                  | 10.0.1.0   | |no_check| | Leads, Opportunities, Activities                                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| google_spreadsheet                   | 10.0.1.0   | |same|     | Google Spreadsheet                                                               |
+| crm_action                           | |halt|     | |no_check| | CRM Action                                                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr                                   | 10.0.1.1   | |same|     | Jobs, Departments, Employees Details                                             |
+| crm_claim_code                       | |halt|     | |no_check| | Sequential Code for Claims                                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_attendance                        | 10.0.2.0   | |same|     | Manage employee attendances                                                      |
+| crm_claim_type                       | |halt|     | |no_check| | Claim types for CRM                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_contract                          | 10.0.1.0   | |same|     | Employee Contracts                                                               |
+| crm_deduplicate_acl                  | 10.0.1.0.0 | |no_check| | Contact deduplication with fine-grained permission control                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_expense                           | 10.0.2.0   | |same|     | Expenses Validation, Invoicing                                                   |
+| crm_deduplicate_filter               | 10.0.1.0.0 | |no_check| | Exclude records from the deduplication                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_expense_check                     | 10.0.1.0   | |same|     | Print amount in words on checks issued for expenses                              |
+| crm_lead_address_street3             | |halt|     | |no_check| | Street3 in lead addresses                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_gamification                      | 10.0.1.0   | |same|     | HR Gamification                                                                  |
+| crm_lead_code                        | |halt|     | |no_check| | Sequential Code for Leads / Opportunities                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_holidays                          | 10.0.1.5   | |same|     | Holidays, Allocation and Leave Requests                                          |
+| crm_lead_sale_link                   | |halt|     | |no_check| | CRM Lead Sale Link                                                               |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_maintenance                       | 10.0.1.0   | |same|     | Equipments, Assets, Internal Hardware, Allocation Tracking                       |
+| crm_lead_stage_monitoring            | |halt|     | |no_check| | CRM - Add last activity on stage field                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_payroll                           | 10.0.0.0   | |same|     | Payroll                                                                          |
+| crm_lead_website                     | 10.0.1.0.0 | |no_check| | Add Website field to leads                                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_payroll_account                   | 10.0.0.0   | |same|     | Payroll Accounting                                                               |
+| crm_location                         | 10.0.1.0.0 | |no_check| | CRM location                                                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_recruitment                       | 10.0.1.0   | |same|     | Jobs, Recruitment, Applications, Job Interviews                                  |
+| crm_phonecall                        | 10.0.1.0.0 | |no_check| | CRM Phone Calls                                                                  |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_recruitment_survey                | 10.0.1.0   | |same|     | Surveys                                                                          |
+| crm_phonecall_summary_predefined     | 10.0.1.0.0 | |no_check| | Allows to choose from a defined summary list                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_timesheet                         | 10.0.1.0   | |same|     | Timesheets                                                                       |
+| crm_project_issue                    | 10.0.0.0   | |no_check| | Create Issues from Leads                                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_timesheet_attendance              | 10.0.1.0   | |same|     | Timesheets/attendances reporting                                                 |
+| crm_sale_marketing                   | 10.0.1.0.0 | |no_check| | Marketing Details of Sales                                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hr_timesheet_sheet                   | 10.0.1.1   | |same|     | Timesheets, Activities                                                           |
+| crm_sector                           | 10.0.1.0.0 | |no_check| | Link leads/opportunities to sectors                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hw_blackbox_be                       | 10.0.0.0   | |same|     | Hardware Driver for Belgian Fiscal Data Modules                                  |
+| crm_track_next_action                | |halt|     | |no_check| | CRM Track Next Action                                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hw_escpos                            | 10.0.0.0   | |same|     | Hardware Driver for ESC/POS Printers and Cashdrawers                             |
+| currency_rate_date_check             | |halt|     | |no_check| | Make sure currency rates used are always up-to-update                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hw_posbox_homepage                   | |halt|     | |halt|     | A homepage for the PosBox                                                        |
+| currency_rate_update                 | |halt|     | |no_check| | Currency Rate Update                                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hw_posbox_upgrade                    | |halt|     | |halt|     | Allows to remotely upgrade the PosBox software                                   |
+| customer_account_followup            | 10.0.1.0   | |no_check| | This module allow you to do followup on your customer unpaid invoices.           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hw_proxy                             | 10.0.0.0   | |same|     | Connect the Web Client to Hardware Peripherals                                   |
+| customer_activity_statement          | 10.0.1.1.0 | |no_check| | OCA Financial Reports                                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hw_scale                             | 10.0.0.0   | |same|     | Hardware Driver for Weighing Scales                                              |
+| customer_outstanding_statement       | 10.0.1.1.0 | |no_check| | OCA Financial Reports                                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hw_scanner                           | 10.0.0.0   | |same|     | Hardware Driver for Barcode Scanners                                             |
+| customer_pricing_in_product_view     | 10.0.1.0.0 | |no_check| | Display Customer Price in Product View                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| hw_screen                            | |halt|     | |halt|     | Provides support for customer facing displays                                    |
+| database_cleanup                     | |halt|     | |no_check| | Database cleanup                                                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| im_livechat                          | 10.0.1.0   | |same|     | Website Live Chat with Visitors/Customers                                        |
+| date_range                           | 10.0.3.0.0 | |no_check| | Manage all kind of date range                                                    |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| link_tracker                         | 10.0.1.0   | |same|     | Link Tracker                                                                     |
+| datetime_formatter                   | 10.0.1.0.0 | |no_check| | Helper functions to give correct format to date[time] fields                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| lunch                                | 10.0.1.0   | |same|     | Lunch Order, Meal, Food                                                          |
+| dbfilter_from_header                 | 10.0.1.0.0 | |no_check| | Filter databases with HTTP headers                                               |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| mail                                 | 10.0.1.0   | |same|     | Discussions, Mailing Lists, News                                                 |
+| ddt_to_magento_order                 | |halt|     | |no_check| | Set Magento Order to close when DdT is created                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| maintenance                          | 10.0.1.0   | |same|     | Equipments, Assets, Internal Hardware, Allocation Tracking                       |
+| dead_mans_switch_client              | 10.0.1.0.0 | |no_check| | Be notified when customers' Odoo instances go down                               |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| marketing_campaign                   | 10.0.1.1   | |same|     | Marketing Campaigns                                                              |
+| decimal_precision                    | 10.0.0.1   | |no_check| | Decimal Precision Configuration                                                  |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| marketing_campaign_crm_demo          | 10.0.1.0   | |same|     | Marketing Campaign - Demo                                                        |
+| delivery                             | 10.0.1.0   | |no_check| | Delivery Costs                                                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| mass_mailing                         | 10.0.2.0   | |same|     | Design, send and track emails                                                    |
+| disable_odoo_online                  | 10.0.1.0.0 | |no_check| | Remove odoo.com Bindings                                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| membership                           | 10.0.1.0   | |same|     | Membership Management                                                            |
+| document                             | 10.0.2.1   | |no_check| | Attachments List and Document Indexation                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| mrp                                  | 10.0.2.0   | |same|     | Manufacturing Orders, Bill of Materials, Routings                                |
+| document_choose_directory            | |halt|     | |no_check| | Choose a document's directory during upload                                      |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| mrp_byproduct                        | 10.0.1.0   | |same|     | MRP Byproducts                                                                   |
+| document_multiple_records            | |halt|     | |no_check| | Document Management System for Multiple Records                                  |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| mrp_repair                           | 10.0.1.0   | |same|     | Repair broken or damaged products                                                |
+| document_no_unique_filenames         | |halt|     | |no_check| | Drop the uniquness constraint on filenames for directories                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| note                                 | 10.0.1.0   | |same|     | Sticky notes, Collaborative, Memos                                               |
+| document_page                        | 10.0.1.0.0 | |no_check| | Document Page                                                                    |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| note_pad                             | 10.0.0.1   | |same|     | Sticky memos, Collaborative                                                      |
+| document_page_approval               | 10.0.1.0.0 | |no_check| | Document Page Approval                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| pad                                  | 10.0.2.0   | |same|     | Collaborative Pads                                                               |
+| document_page_environment_manual     | |halt|     | |no_check| | Document Management - Wiki - Environment Manual                                  |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| pad_project                          | 10.0.0.0   | |same|     | Pad on tasks                                                                     |
+| document_page_environmental_aspect   | |halt|     | |no_check| | Environmental Aspects                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| document_page_health_safety_manual   | |halt|     | |no_check| | Health and Safety Manual                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| document_page_multi_company          | |halt|     | |no_check| | Document Page Multi-Company                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| document_page_procedure              | 10.0.1.0.0 | |no_check| | Document Management - Wiki - Procedures                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| document_page_quality_manual         | 10.0.1.0.0 | |no_check| | Quality Manual                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| document_page_work_instruction       | 10.0.1.0.0 | |no_check| | Document Management - Wiki - Work Instructions                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| document_reindex                     | |halt|     | |no_check| | Reindex your already uploaded documents                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| document_url                         | |halt|     | |no_check| | URL attachment                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| email_template_template              | |halt|     | |no_check| | Templates for email templates                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| event                                | 10.0.1.0   | |no_check| | Trainings, Conferences, Meetings, Exhibitions, Registrations                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| event_sale                           | 10.0.1.1   | |no_check| | Events Sales                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| fetchmail                            | 10.0.1.0   | |no_check| | Email Gateway                                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| fetchmail_attach_from_folder         | |halt|     | |no_check| | Attach mails in an IMAP folder to existing objects                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| fetchmail_notify_error_to_sender     | |halt|     | |no_check| | If fetching mails gives error, send an email to sender                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| firstname_display_name_trigger       | |halt|     | |no_check| | Link module if partner_lastname and account_report_company are installed         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| fleet                                | 10.0.0.1   | |no_check| | Vehicle, leasing, insurances, costs                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| framework_agreement                  | |halt|     | |no_check| | Long Term Agreement (or Framework Agreement) for purchases                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| gamification                         | 10.0.1.0   | |no_check| | Gamification                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| gamification_sale_crm                | 10.0.1.0   | |no_check| | CRM Gamification                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| google_account                       | 10.0.0.0   | |no_check| | Google Users                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| google_calendar                      | 10.0.1.0   | |no_check| | Google Calendar                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| google_drive                         | 10.0.0.2   | |no_check| | Google Drive™ integration                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| google_spreadsheet                   | 10.0.1.0   | |no_check| | Google Spreadsheet                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| help_online                          | 10.0.1.0.0 | |no_check| | Help Online                                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| help_popup                           | |halt|     | |no_check| | Help Popup                                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr                                   | 10.0.1.1   | |no_check| | Jobs, Departments, Employees Details                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_attendance                        | 10.0.2.0   | |no_check| | Manage employee attendances                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_commission                        | |halt|     | |no_check| | HR commissions                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_contract                          | 10.0.1.0   | |no_check| | Employee Contracts                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_expense                           | 10.0.2.0   | |no_check| | Expenses Validation, Invoicing                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_expense_check                     | 10.0.1.0   | |no_check| | Print amount in words on checks issued for expenses                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_gamification                      | 10.0.1.0   | |no_check| | HR Gamification                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_holidays                          | 10.0.1.5   | |no_check| | Holidays, Allocation and Leave Requests                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_maintenance                       | 10.0.1.0   | |no_check| | Equipments, Assets, Internal Hardware, Allocation Tracking                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_payroll                           | 10.0.0.0   | |no_check| | Payroll                                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_payroll_account                   | 10.0.0.0   | |no_check| | Payroll Accounting                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_recruitment                       | 10.0.1.0   | |no_check| | Jobs, Recruitment, Applications, Job Interviews                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_recruitment_survey                | 10.0.1.0   | |no_check| | Surveys                                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_timesheet                         | 10.0.1.0   | |no_check| | Timesheets                                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_timesheet_attendance              | 10.0.1.0   | |no_check| | Timesheets/attendances reporting                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hr_timesheet_sheet                   | 10.0.1.1   | |no_check| | Timesheets, Activities                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| html_image_url_extractor             | 10.0.1.0.0 | |no_check| | Extract images found in any HTML field                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| html_text                            | 10.0.1.0.0 | |no_check| | Generate excerpts from any HTML field                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hw_blackbox_be                       | 10.0.0.0   | |no_check| | Hardware Driver for Belgian Fiscal Data Modules                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hw_escpos                            | 10.0.0.0   | |no_check| | Hardware Driver for ESC/POS Printers and Cashdrawers                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hw_posbox_homepage                   | |halt|     | |no_check| | A homepage for the PosBox                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hw_posbox_upgrade                    | |halt|     | |no_check| | Allows to remotely upgrade the PosBox software                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hw_proxy                             | 10.0.0.0   | |no_check| | Connect the Web Client to Hardware Peripherals                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hw_scale                             | 10.0.0.0   | |no_check| | Hardware Driver for Weighing Scales                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hw_scanner                           | 10.0.0.0   | |no_check| | Hardware Driver for Barcode Scanners                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| hw_screen                            | |halt|     | |no_check| | Provides support for customer facing displays                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| im_livechat                          | 10.0.1.0   | |no_check| | Website Live Chat with Visitors/Customers                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| import_odbc                          | |halt|     | |no_check| | Import data from SQL and ODBC data sources.                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| ir_config_parameter_viewer           | |halt|     | |no_check| | Ir.config_parameter view                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| keychain                             | 10.0.2.0.1 | |no_check| | Store accounts and credentials                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| knowledge                            | 10.0.1.0.0 | |no_check| | Knowledge Management System                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_ae                              | 10.0.0.0   | |no_check| | U.A.E. - Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_ar                              | 10.0.2.0   | |no_check| | Argentina - Accounting                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_at                              | 10.0.2.0   | |no_check| | Austria - Accounting                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_au                              | 10.0.1.1   | |no_check| | Australian - Accounting                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_be                              | 10.0.2.0   | |no_check| | Belgium - Accounting                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_be_hr_payroll                   | 10.0.0.0   | |no_check| | Belgium - Payroll                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_be_hr_payroll_account           | 10.0.0.0   | |no_check| | Belgium - Payroll with Accounting                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_be_intrastat                    | 10.0.0.0   | |no_check| | Belgian Intrastat Declaration                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_be_invoice_bba                  | 10.0.1.2   | |no_check| | Belgium - Structured Communication                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_bo                              | 10.0.2.0   | |no_check| | Bolivia - Accounting                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_br                              | 10.0.0.0   | |no_check| | Brazilian - Accounting                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_ca                              | 10.0.0.0   | |no_check| | Canada - Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_ch                              | 10.0.9.0   | |no_check| | Switzerland - Accounting                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_cl                              | 10.0.2.0   | |no_check| | Chile - Accounting                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_cn                              | 10.0.1.8   | |no_check| | 中国会计科目表                                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_cn_small_business               | 10.0.1.8   | |no_check| | 中国小企业会计科目表                                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_cn_standard                     | 10.0.2.0   | |no_check| | 会计科目表 - 中国企业会计准则                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_co                              | 10.0.0.8   | |no_check| | Colombian - Accounting                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_cr                              | 10.0.0.0   | |no_check| | Costa Rica - Accounting                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_de                              | 10.0.0.0   | |no_check| | Deutschland - Accounting                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_de_skr03                        | 10.0.2.0   | |no_check| | Deutschland SKR03 - Accounting                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_de_skr04                        | 10.0.2.0   | |no_check| | Deutschland SKR04 - Accounting                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_do                              | 10.0.2.0   | |no_check| | Dominican Republic - Accounting                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_ec                              | 10.0.1.1   | |no_check| | Ecuador - Accounting                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_es                              | 10.0.4.0   | |no_check| | Spain - Accounting (PGCE 2008)                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_et                              | 10.0.2.0   | |no_check| | Ethiopia - Accounting                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_eu_account                      | 10.0.0.1.0 | |no_check| | EU invoicing & accounting base                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_eu_service                      | 10.0.0.0   | |no_check| | EU Mini One Stop Shop (MOSS)                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_eu_trial_balance                | |halt|     | |no_check| | 2013/34/EU - Trial Balance + Financial Statements                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_fr                              | 10.0.1.2   | |no_check| | France - Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_fr_certification                | 10.0.1.0   | |no_check| | France - VAT Anti-Fraud Certification (CGI 286 I-3 bis)                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_fr_fec                          | 10.0.0.0   | |no_check| | Fichier d'Échange Informatisé (FEC) for France                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_fr_hr_payroll                   | 10.0.0.0   | |no_check| | French Payroll                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_generic_coa                     | 10.0.1.1   | |no_check| | Generic - Accounting                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_gr                              | 10.0.0.0   | |no_check| | Greece - Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_gt                              | 10.0.3.0   | |no_check| | Guatemala - Accounting                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_hn                              | 10.0.0.2   | |no_check| | Honduras - Accounting                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_hr                              | 10.0.13.0  | |no_check| | Croatia - Accounting (RRIF 2012)                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_hu                              | 10.0.2.0   | |no_check| | Hungarian - Accounting                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_in                              | 10.0.2.0   | |no_check| | Indian - Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_in_hr_payroll                   | 10.0.0.0   | |no_check| | Indian Payroll                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_in_schedule6                    | 10.0.2.0   | |no_check| | Indian - Schedule VI Accounting                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it                              | 10.0.0.2   | |no_check| | Italy - Accounting                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_CEE_balance_generic          | |halt|     | |no_check| | Italy - 4th EU Directive - Consolidation Chart of Accounts                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_abicab                       | 10.0.1.0.0 | |no_check| | Base Bank ABI/CAB codes                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_account                      | 10.0.1.2.5 | |no_check| | Italian Localization - Account                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_ade                          | 10.0.0.1.1 | |no_check| | Codice e definizioni come da Agenzia delle Entrate                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_ateco                        | 10.0.1.0.0 | |no_check| | Ateco codes                                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_base                         | 10.0.0.2.1 | |no_check| | Italian Localisation - Base                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_base_crm                     | |halt|     | |no_check| | Italian Localisation - CRM                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_base_location_geonames_impor | 10.0.1.0.0 | |no_check| | Import base_location entries (provinces) from Geonames                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_bill_of_entry                | |halt|     | |no_check| | Italian Localisation - Bill of Entry                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_causali_pagamento            | 10.0.1.0.0 | |no_check| | Aggiunge la tabella delle causali di pagamento da usare ad esempio nelle ritenut |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_central_journal              | 10.0.0.0.2 | |no_check| | Italian Localization - Account central journal                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_conai                        | 10.0.0.1.0 | |no_check| | Dati CONAI in fattura e calcolo importi                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_corrispettivi                | 10.0.1.1.0 | |no_check| | Italian Localization - Corrispettivi                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_ddt                          | 10.0.1.5.1 | |no_check| | Delivery Document to Transfer                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_einvoice_base                | 10.0.2.1.1 | |no_check| | Infrastructure for Italian Electronic Invoice + FatturaPA                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_einvoice_export_zip          | 10.0.1.0.0 | |no_check| | Esportazione di file XML di fatture elettroniche in uno ZIP da esportare.        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_einvoice_in                  | 10.0.1.3.9 | |no_check| | Ricezione fatture elettroniche                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_einvoice_out                 | 10.0.1.0.1 | |no_check| | Electronic invoices emission                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_einvoice_out_ddt             | 10.0.1.0.2 | |no_check| | Modulo ponte tra emissione fatture elettroniche e DDT                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_einvoice_send2sdi            | 10.0.1.0.6 | |no_check| | Send E-Invoice to customer by SdI                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_einvoice_stamp               | 10.0.1.0.1 | |no_check| | Tax stamp automatic management                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_fiscal                       | 10.0.0.2.0 | |no_check| | Italy - Fiscal localization by zeroincombenze(R)                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_fiscal_ipa                   | 10.0.1.1.1 | |no_check| | IPA Code and Destination Code in Partner Record                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_fiscal_payment_term          | 10.0.1.0.0 | |no_check| | Electronic & Fiscal invoices payment                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_fiscalcode                   | 10.0.1.0.3 | |no_check| | Italian Localisation - Fiscal Code                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_fiscalcode_invoice           | 10.0.1.0.0 | |no_check| | Italian Fiscal Code in invoice PDF                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_partially_deductible_vat     | |halt|     | |no_check| | Italy - Partially Deductible VAT                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_pec                          | 10.0.1.0.0 | |no_check| | Pec Mail                                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_prima_nota_cassa             | |halt|     | |no_check| | Italian Localisation - Prima Nota Cassa                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_rea                          | 10.0.1.0.1 | |no_check| | Manage fields for  Economic Administrative catalogue                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_reverse_charge               | 10.0.1.2.0 | |no_check| | Reverse Charge for Italy                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_riba_commission              | |halt|     | |no_check| | Ricevute bancarie & commissioni                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_ricevute_bancarie            | 10.0.1.3.1 | |no_check| | Ricevute Bancarie                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_split_payment                | 10.0.1.0.4 | |no_check| | Split Payment                                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_vat_communication            | 10.0.0.1.1 | |no_check| | Comunicazione periodica IVA                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_vat_registries               | 10.0.1.3.0 | |no_check| | Italian Localization - VAT Registries                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_vat_registries_cash_basis    | |halt|     | |no_check| | Italian Localization - VAT Registries - Cash Basis                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_website_sale_corrispettivi   | |halt|     | |no_check| | Italian localization - Website Sale Corrispettivi                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_website_sale_fiscalcode      | 10.0.1.0.1 | |no_check| | Website Sale FiscalCode                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_withholding_tax              | 10.0.1.2.5 | |no_check| | Italian Withholding Tax                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_it_withholding_tax_payment      | 10.0.1.1.0 | |no_check| | Italian Withholding Tax Payment                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_jp                              | 10.0.2.1   | |no_check| | Japan - Accounting                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_lu                              | 10.0.2.0   | |no_check| | Luxembourg - Accounting                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_ma                              | 10.0.0.0   | |no_check| | Maroc - Accounting                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_multilang                       | 10.0.1.1   | |no_check| | Multi Language Chart of Accounts                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_mx                              | 10.0.2.0   | |no_check| | Mexico - Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_nl                              | 10.0.3.0   | |no_check| | Netherlands - Accounting                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_no                              | 10.0.2.0   | |no_check| | Norway - Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_nz                              | 10.0.1.1   | |no_check| | New Zealand - Accounting                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_pa                              | 10.0.0.0   | |no_check| | Panama - Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_pe                              | 10.0.0.0   | |no_check| | Peru - Accounting                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_pl                              | 10.0.2.0   | |no_check| | Poland - Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_pt                              | 10.0.0.011 | |no_check| | Portugal - Accounting                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_ro                              | 10.0.0.0   | |no_check| | Romania - Accounting                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_sa                              | 10.0.1.1   | |no_check| | Saudi Arabia - Accounting                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_sg                              | 10.0.2.0   | |no_check| | Singapore - Accounting                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_si                              | 10.0.0.0   | |no_check| | Slovenian - Accounting                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_syscohada                       | 10.0.0.0   | |no_check| | OHADA - Accounting                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_th                              | 10.0.2.0   | |no_check| | Thailand - Accounting                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_tr                              | 10.0.1.0   | |no_check| | Turkey - Accounting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_uk                              | 10.0.1.0   | |no_check| | UK - Accounting                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_us                              | 10.0.1.1   | |no_check| | United States - Accounting                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_uy                              | 10.0.0.1   | |no_check| | Uruguay - Chart of Accounts                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_ve                              | 10.0.0.0   | |no_check| | Venezuela - Accounting                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| l10n_vn                              | 10.0.2.0   | |no_check| | Vietnam - Accounting                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| language_path_mixin                  | |halt|     | |no_check| | Setting the partner's language in RML reports                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| letsencrypt                          | 10.0.1.0.0 | |no_check| | Request SSL certificates from letsencrypt.org                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| lettermgmt                           | |halt|     | |no_check| | Track letters, parcels, registered documents                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| lettermgmt_hr                        | |halt|     | |no_check| | Human Resources bindings for Letter Management                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| link_tracker                         | 10.0.1.0   | |no_check| | Link Tracker                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| lunch                                | 10.0.1.0   | |no_check| | Lunch Order, Meal, Food                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| magento_bridge                       | 10.0.2.0.0 | |no_check| | Basic MOB                                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| magento_openerp_stock                | 10.0.1.0.2 | |no_check| | MOB Stock Extension                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mail                                 | 10.0.1.0   | |no_check| | Discussions, Mailing Lists, News                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mail_environment                     | |halt|     | |no_check| | Configure mail servers with server_environment_files                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mail_log_message_to_process          | 10.0.1.0.0 | |no_check| | Log all messages received, before they start to be processed.                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mail_quotation                       | |halt|     | |no_check| | Mail quotation                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| maintenance                          | 10.0.1.0   | |no_check| | Equipments, Assets, Internal Hardware, Allocation Tracking                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| marketing_campaign                   | 10.0.1.1   | |no_check| | Marketing Campaigns                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| marketing_campaign_crm_demo          | 10.0.1.0   | |no_check| | Marketing Campaign - Demo                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mass_editing                         | 10.0.1.1.0 | |no_check| | Mass Editing                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mass_mailing                         | 10.0.2.0   | |no_check| | Design, send and track emails                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mass_sorting                         | 10.0.1.0.0 | |no_check| | Sort any models by any fields list                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| membership                           | 10.0.1.0   | |no_check| | Membership Management                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| menu_technical_info                  | |halt|     | |no_check| | Fast way to look up technical info about menu item.                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem                           | 10.0.1.0.0 | |no_check| | Management System                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_action                    | 10.0.1.0.0 | |no_check| | Management System - Action                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_action_audittrail         | |halt|     | |no_check| | Management System - Actions Audit Trail tracking                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_audit                     | 10.0.1.0.0 | |no_check| | Management System - Audit                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_audit_audittrail          | |halt|     | |no_check| | Management System - Audits Audit Trail tracking                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_claim                     | |halt|     | |no_check| | Management System - Claim                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_claim_audittrail          | |halt|     | |no_check| | Management System - Claims Audit Trail tracking                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_environment               | |halt|     | |no_check| | Environment Management System                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_hazard                    | |halt|     | |no_check| | Management System - Hazard                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_hazard_audittrail         | |halt|     | |no_check| | Management System - Hazards Audit Trail tracking                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_health_safety             | |halt|     | |no_check| | Health and Safety Management System                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_info_security_manual      | |halt|     | |no_check| | Information Security Management System Manual                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_kpi                       | |halt|     | |no_check| | Key Performance Indicator                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_manual                    | 10.0.1.0.0 | |no_check| | Management System - Manual                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_nonconformity             | 10.0.1.0.0 | |no_check| | Management System - Nonconformity                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_nonconformity_analytic    | |halt|     | |no_check| | Management System Nonconformity - Analytic Account                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_nonconformity_claim       | |halt|     | |no_check| | Management System - Claims and Nonconformities                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_nonconformity_deptm       | |halt|     | |no_check| | Management System Nonconformity - Department                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_nonconformity_project     | |halt|     | |no_check| | Management System - Project                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_quality                   | |halt|     | |no_check| | Quality Management System                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_review                    | |halt|     | |no_check| | Management System - Review                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_review_audittrail         | |halt|     | |no_check| | Management System - Reviews Audit Trail tracking                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mgmtsystem_survey                    | 10.0.1.0.0 | |no_check| | Management System - Survey                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| midea                                | 10.0.0.1.1 | |no_check| | z0bug_odoo test suite                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mis_builder                          | 10.0.3.5.0 | |no_check| |  Build 'Management Information System' Reports and Dashboards                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mis_builder_budget                   | 10.0.3.4.0 | |no_check| |  Create budgets for MIS reports                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mis_builder_demo                     | 10.0.3.1.0 | |no_check| |  Demo addon for MIS Builder                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| module_auto_update                   | |halt|     | |no_check| | Automatically update Odoo modules                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| module_prototyper                    | 10.0.1.0.0 | |no_check| | Prototype your module.                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mrp                                  | 10.0.2.0   | |no_check| | Manufacturing Orders, Bill of Materials, Routings                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mrp_byproduct                        | 10.0.1.0   | |no_check| | MRP Byproducts                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mrp_repair                           | 10.0.1.0   | |no_check| | Repair broken or damaged products                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| mrp_smart_purchase                   | |halt|     | |no_check| | Smart MRP Purchase based on supplier price                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| muk_web_preview                      | 10.0.1.0.5 | |no_check| | File Preview Dialog                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| muk_web_preview_attachment           | 10.0.1.0.5 | |no_check| | Attachment Preview Dialog                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| muk_web_preview_image                | 10.0.1.0.2 | |no_check| | Image Preview                                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| multibase_plus                       | 10.0.0.1.3 | |no_check| | Enhanced Odoo Features                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| newsletter                           | |halt|     | |no_check| | Send newsletters to customers, employees or other entities                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| note                                 | 10.0.1.0   | |no_check| | Sticky notes, Collaborative, Memos                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| note_pad                             | 10.0.0.1   | |no_check| | Sticky memos, Collaborative                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| onchange_helper                      | 10.0.1.0.0 | |no_check| | Technical module that ease execution of onchange in Python code                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| packaging_uom                        | 10.0.1.0.1 | |no_check| | Use uom in package                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| packaging_uom_view                   | 10.0.1.0.0 | |no_check| |  If purchase is installed along with packaging_uom, there is a duplicate view    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| pad                                  | 10.0.2.0   | |no_check| | Collaborative Pads                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| pad_project                          | 10.0.0.0   | |no_check| | Pad on tasks                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_academic_title               | 10.0.1.0.0 | |no_check| |  Add possibility to define some academic title                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_address_street3              | 10.0.1.0.0 | |no_check| | Add a third address line on partners                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_alias                        | 10.0.1.0.0 | |no_check| | Adds aliases to partner names.                                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_auto_salesman                | |halt|     | |no_check| | Partner auto salesman                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_bank                         | 10.0.0.1   | |no_check| |  Add bank account sheet in partner view                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_capital                      | 10.0.1.0.0 | |no_check| | Partners Capital                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_coc                          | 10.0.1.0.0 | |no_check| | Adds a field 'Chamber Of Commerce Registration Number' to partner                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_contact_address_detailed     | |halt|     | |no_check| | All address data in summarized contact form                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_contact_birthdate            | 10.0.1.0.0 | |no_check| | Contact's birthdate                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_contact_configuration        | 10.0.1.0.0 | |no_check| |  Adds menu configuration access through the 'contacts' module main menu          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_contact_department           | 10.0.1.0.0 | |no_check| | Assign contacts to departments                                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_contact_gender               | 10.0.1.1.0 | |no_check| | Add gender field to contacts                                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_contact_in_several_companies | 10.0.1.0.0 | |no_check| | Allow to have one contact in several partners                                    |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_contact_job_position         | 10.0.1.0.0 | |no_check| | Categorize job positions for contacts                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_contact_nationality          | 10.0.1.0.0 | |no_check| | Add nationality field to contacts                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_contact_personal_information | 10.0.1.0.0 | |no_check| | Add a page to contacts form to put personal information                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_contact_weight               | 10.0.1.0.0 | |no_check| | Provide contact weight                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_create_by_vat                | 10.0.1.0.0 | |no_check| | Using VIES webservice, name and address information will be fetched and added to |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_custom_attributes            | |halt|     | |no_check| | Partner Custom Attributes                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_employee_quantity            | 10.0.1.0.0 | |no_check| | Know how many employees a partner has                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_external_map                 | 10.0.1.0.0 | |no_check| | Add Map and Map Routing buttons on partner form to open GMaps, OSM, Bing and oth |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
@@ -263,266 +1154,1215 @@ Avaiable Addons / Moduli disponibili
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_identification               | 10.0.1.0.1 | |no_check| | Partner Identification Numbers                                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_location_auto_create         | |halt|     | |no_check| | Partner Location Auto Create                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_multi_relation               | 10.0.1.0.0 | |no_check| | Partner relations                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_password_reset               | 10.0.1.0.0 | |no_check| | Add Wizard to allow resetting of a Partner's associated user password from withi |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_prepayment                   | |halt|     | |no_check| | Option on partner to set prepayment policy                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_prospect                     | |halt|     | |no_check| | Partner Prospect                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_second_lastname              | 10.0.1.0.0 | |no_check| | Have split first and second lastnames                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| partner_sector                       | 10.0.1.0.0 | |no_check| | Add partner sectors                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | partner_street_number                | 10.0.1.0.0 | |no_check| | Introduces separate fields for street name and street number.                    |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| payment                              | 10.0.1.0   | |same|     | Payment Acquirer Base Module                                                     |
+| partner_withdrawal                   | |halt|     | |no_check| | Partner membership withdrawal                                                    |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| payment_adyen                        | 10.0.1.0   | |same|     | Payment Acquirer: Adyen Implementation                                           |
+| password_security                    | 10.0.1.1.4 | |no_check| | Allow admin to set password security requirements.                               |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| payment_authorize                    | 10.0.1.0   | |same|     | Payment Acquirer: Authorize.net Implementation                                   |
+| payment                              | 10.0.1.0   | |no_check| | Payment Acquirer Base Module                                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| payment_buckaroo                     | 10.0.1.0   | |same|     | Payment Acquirer: Buckaroo Implementation                                        |
+| payment_adyen                        | 10.0.1.0   | |no_check| | Payment Acquirer: Adyen Implementation                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| payment_ogone                        | 10.0.1.0   | |same|     | Payment Acquirer: Ogone Implementation                                           |
+| payment_authorize                    | 10.0.1.0   | |no_check| | Payment Acquirer: Authorize.net Implementation                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| payment_paypal                       | 10.0.1.0   | |same|     | Payment Acquirer: Paypal Implementation                                          |
+| payment_buckaroo                     | 10.0.1.0   | |no_check| | Payment Acquirer: Buckaroo Implementation                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| payment_payumoney                    | 10.0.0.0   | |same|     | Payment Acquirer: PayuMoney Implementation                                       |
+| payment_ogone                        | 10.0.1.0   | |no_check| | Payment Acquirer: Ogone Implementation                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| payment_sips                         | 10.0.1.0   | |same|     | Worldline SIPS                                                                   |
+| payment_paypal                       | 10.0.1.0   | |no_check| | Payment Acquirer: Paypal Implementation                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| payment_stripe                       | 10.0.1.0   | |same|     | Payment Acquirer: Stripe Implementation                                          |
+| payment_payumoney                    | 10.0.0.0   | |no_check| | Payment Acquirer: PayuMoney Implementation                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| payment_transfer                     | 10.0.1.0   | |same|     | Payment Acquirer: Transfer Implementation                                        |
+| payment_sips                         | 10.0.1.0   | |no_check| | Worldline SIPS                                                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| point_of_sale                        | 10.0.1.0.1 | |same|     | Touchscreen Interface for Shops                                                  |
+| payment_stripe                       | 10.0.1.0   | |no_check| | Payment Acquirer: Stripe Implementation                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| portal                               | 10.0.1.0   | |same|     | Portal                                                                           |
+| payment_transfer                     | 10.0.1.0   | |no_check| | Payment Acquirer: Transfer Implementation                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| portal_gamification                  | 10.0.1     | |same|     | Portal Gamification                                                              |
+| picking_dispatch_wave                | |halt|     | |no_check| | Picking Dispatch Wave                                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| portal_sale                          | 10.0.0.1   | |same|     | Portal Sale                                                                      |
+| pingen                               | |halt|     | |no_check| | pingen.com integration                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| portal_stock                         | 10.0.0.1   | |same|     | Portal Stock                                                                     |
+| pingen_document                      | |halt|     | |no_check| | pingen.com integration (document)                                                |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| pos_cache                            | 10.0.1.0   | |same|     |  Enable a cache on products for a lower POS loading time.                        |
+| po_so_field                          | 10.0.0.2.1 | |no_check| | Sale order field in Purchase Order/RFQ form                                      |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| pos_data_drinks                      | 10.0.1.0   | |same|     | Common Drinks data for points of sale                                            |
+| point_of_sale                        | 10.0.1.0.1 | |no_check| | Touchscreen Interface for Shops                                                  |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| pos_discount                         | 10.0.1.0   | |same|     | Simple Discounts in the Point of Sale                                            |
+| portal                               | 10.0.1.0   | |no_check| | Portal                                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| pos_mercury                          | 10.0.1.0   | |same|     | Credit card support for Point Of Sale                                            |
+| portal_gamification                  | 10.0.1     | |no_check| | Portal Gamification                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| pos_reprint                          | 10.0.1.0   | |same|     | Allow cashier to reprint receipts                                                |
+| portal_partner_merge                 | |halt|     | |no_check| | Portal Partner Merge                                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| pos_restaurant                       | 10.0.1.0   | |same|     | Restaurant extensions for the Point of Sale                                      |
+| portal_payment_mode                  | |halt|     | |no_check| | Adds payment mode ACL's for portal users                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| procurement                          | 10.0.1.0   | |same|     | Procurements                                                                     |
+| portal_sale                          | 10.0.0.1   | |no_check| | Portal Sale                                                                      |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| procurement_jit                      | 10.0.1.0   | |same|     | Just In Time Scheduling                                                          |
+| portal_stock                         | 10.0.0.1   | |no_check| | Portal Stock                                                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| product                              | 10.0.1.2   | |same|     | Products & Pricelists                                                            |
+| pos_cache                            | 10.0.1.0   | |no_check| |  Enable a cache on products for a lower POS loading time.                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| product_email_template               | 10.0.0.0   | |same|     | Product Email Template                                                           |
+| pos_data_drinks                      | 10.0.1.0   | |no_check| | Common Drinks data for points of sale                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| product_expiry                       | 10.0.0.0   | |same|     | Products Expiration Date                                                         |
+| pos_discount                         | 10.0.1.0   | |no_check| | Simple Discounts in the Point of Sale                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| pos_mercury                          | 10.0.1.0   | |no_check| | Credit card support for Point Of Sale                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| pos_reprint                          | 10.0.1.0   | |no_check| | Allow cashier to reprint receipts                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| pos_restaurant                       | 10.0.1.0   | |no_check| | Restaurant extensions for the Point of Sale                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| pricelist_share_companies            | |halt|     | |no_check| | Share pricelist between compagnies, not product                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| printer_tray                         | 10.0.1.0.0 | |no_check| | Report to printer - Paper tray selection                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| printer_zpl2                         | 10.0.1.0.0 | |no_check| | Printer ZPL II                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| procurement                          | 10.0.1.0   | |no_check| | Procurements                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| procurement_auto_create_group        | 10.0.1.0.0 | |no_check| | Allows to configure the system to propose automatically new procurement groups i |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| procurement_batch_generator          | |halt|     | |no_check| | Wizard to create procurements from product variants                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| procurement_jit                      | 10.0.1.0   | |no_check| | Just In Time Scheduling                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| procurement_purchase_no_grouping     | 10.0.1.0.0 | |no_check| | Procurement Purchase No Grouping                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product                              | 10.0.1.2   | |no_check| | Products & Pricelists                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_attribute_multi_type         | |halt|     | |no_check| | Product attribute types                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_brand                        | 10.0.1.0.0 | |no_check| | Product Brand Manager                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_by_supplier                  | 10.0.1.0.0 | |no_check| | Show products grouped by suppliers                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_catalog_report               | |halt|     | |no_check| | Product Catalog - Print Report of product catalog with product image             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_categ_attributes             | |halt|     | |no_check| | product_categ_attributes                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_contract                     | 10.0.1.1.0 | |no_check| | Product Contract                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_custom_attributes            | |halt|     | |no_check| | product_custom_attributes                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_customer_code                | |halt|     | |no_check| | Add many Customers' Codes in product                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_customer_code_picking        | |halt|     | |no_check| | Product Customer code for stock picking                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_default_image                | 10.0.1.0.0 | |no_check| | Apply default images to new and existing products.                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_dimension                    | |halt|     | |no_check| | Product Dimension                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_electronic                   | |halt|     | |no_check| | Products Attributes & Manufacturers                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_email_template               | 10.0.0.0   | |no_check| | Product Email Template                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_expiry                       | 10.0.0.0   | |no_check| | Products Expiration Date                                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | product_expiry_simple                | 10.0.1.0.0 | |no_check| | Simpler and better alternative to the official product_expiry module             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| product_extended                     | 10.0.1.0   | |same|     | Product extension to track sales and purchases                                   |
+| product_extended                     | 10.0.1.0   | |no_check| | Product extension to track sales and purchases                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| product_margin                       | 10.0.0.0   | |same|     | Margins by Products                                                              |
+| product_gift                         | |halt|     | |no_check| | product_gift                                                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| project                              | 10.0.1.1   | |same|     | Projects, Tasks                                                                  |
+| product_gtin                         | |halt|     | |no_check| | Product GTIN EAN8 EAN13 UPC JPC Support                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| project_issue                        | 10.0.1.0   | |same|     | Support, Bug Tracker, Helpdesk                                                   |
+| product_icecat                       | |halt|     | |no_check| | Product Information Import from icecat                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| project_issue_sheet                  | 10.0.1.0   | |same|     | Timesheet on Issues                                                              |
+| product_index                        | |halt|     | |no_check| | Manage indexes on products prices                                                |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| purchase                             | 10.0.1.2   | |same|     | Purchase Orders, Receipts, Vendor Bills                                          |
+| product_listprice_upgrade            | |halt|     | |no_check| | Product listprice upgrade                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| purchase_mrp                         | 10.0.1.0   | |same|     | Purchase and MRP Management                                                      |
+| product_lot_foundry                  | |halt|     | |no_check| | Products Lot Foundry                                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| purchase_requisition                 | 10.0.0.1   | |same|     | Purchase Requisitions                                                            |
+| product_manufacturer                 | 10.0.1.0.0 | |no_check| | Product Manufacturers                                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| rating                               | 10.0.1.0   | |same|     | Customer Rating                                                                  |
+| product_margin                       | 10.0.0.0   | |no_check| | Margins by Products                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| rating_project                       | 10.0.1.0   | |same|     | Project Rating                                                                   |
+| product_multi_category               | 10.0.1.0.0 | |no_check| | Product - Many Categories                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| rating_project_issue                 | 10.0.1.0   | |same|     | Issue Rating                                                                     |
+| product_multi_ean                    | |halt|     | |no_check| | Multiple EAN13 on products                                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| report                               | 10.0.0.0   | |same|     | Hidden                                                                           |
+| product_multi_price                  | |halt|     | |no_check| | product_multi_price                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| report_intrastat                     | 10.0.0.0   | |same|     | Intrastat Reporting                                                              |
+| product_packaging_barcode            | 10.0.1.0.0 | |no_check| |  Reimplement barcode field in Product Packagings                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| resource                             | 10.0.1.1   | |same|     | Resource                                                                         |
+| product_price_category               | 10.0.1.0.0 | |no_check| | Add Price Category field on product and allow to apply a pricelist on this field |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| sale                                 | 10.0.1.0   | |same|     | Quotations, Sales Orders, Invoicing                                              |
+| product_pricelist_fixed_price        | |halt|     | |no_check| | Fixed price in pricelists                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| sale_crm                             | 10.0.1.0   | |same|     | Opportunity to Quotation                                                         |
+| product_pricelist_tier               | 10.0.1.0.0 | |no_check| | Extends pricelists with tiered pricing.                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| sale_expense                         | 10.0.1.0   | |same|     | Quotation, Sale Orders, Delivery & Invoicing Control                             |
+| product_prices_on_variant            | |halt|     | |no_check| | product_prices_on_variant                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| sale_margin                          | 10.0.1.0   | |same|     | Margins in Sales Orders                                                          |
+| product_qt                           | |halt|     | |no_check| | Products & Pricelists - Define quality control and testing parameters in product |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| sale_mrp                             | 10.0.1.0   | |same|     | Sales and MRP Management                                                         |
+| product_quick_stock_rule             | |halt|     | |no_check| | product_quick_stock_rule                                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| sale_order_dates                     | 10.0.1.1   | |same|     | Dates on Sales Order                                                             |
+| product_search_reference             | |halt|     | |no_check| | Products Search Reference                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| sale_service_rating                  | 10.0.0.0   | |same|     | Sale Service Rating                                                              |
+| product_sequence                     | 10.0.1.0.0 | |no_check| | Product Sequence                                                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| sale_stock                           | 10.0.1.0   | |same|     | Quotation, Sale Orders, Delivery & Invoicing Control                             |
+| product_serial                       | |halt|     | |no_check| | Enhance Serial Number management                                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| sale_timesheet                       | 10.0.0.0   | |same|     | Sell based on timesheets                                                         |
+| product_series                       | |halt|     | |no_check| | Partner Product Series                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| sales_team                           | 10.0.1.0   | |same|     | Sales Team                                                                       |
+| product_service_duration             | 10.0.1.0.0 | |no_check| | Extends events and meetings with services.                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| stock                                | 10.0.1.1   | |same|     | Inventory, Logistics, Warehousing                                                |
+| product_size                         | |halt|     | |no_check| | Sizes of lots (width, length, thickness)                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| stock_account                        | 10.0.1.1   | |same|     | Inventory, Logistic, Valuation, Accounting                                       |
+| product_special_type                 | |halt|     | |no_check| | Product Special Types                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_special_type_invoice         | |halt|     | |no_check| | Product Special Type on Invoice                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_special_type_sale            | |halt|     | |no_check| | Product Special Type on Sale                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_state                        | 10.0.1.0.0 | |no_check| | Product State                                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_supplierinfo_discount        | 10.0.1.0.0 | |no_check| | Discounts in product supplier info                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_supplierinfo_for_customer_in | |halt|     | |no_check| | Based on product_customer_code, this module loads in every account invoice the c |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_supplierinfo_for_customer_pi | 10.0.1.0.0 | |no_check| | This module makes the product customer code visible in the stock moves of a pick |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_supplierinfo_for_customer_sa | 10.0.1.0.0 | |no_check| | Loads in every sale order line the customer code defined in the product          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_uom                          | 10.0.1.0.0 | |no_check| | Provide missing uom                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| product_weight                       | 10.0.1.0.0 | |no_check| | Allows to calculate products weight from its components.                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| production_lot_custom_attributes     | |halt|     | |no_check| | production_lot_custom_attributes                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| professional_templates               | 10.0.1.7.5 | |no_check| |  Professional Report Templates: Purchase Order, RFQ, Sales Order, Quotation, Inv |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project                              | 10.0.1.1   | |no_check| | Projects, Tasks                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_analytic_line_view           | |halt|     | |no_check| | Project analytic account line view                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_baseuser                     | |halt|     | |no_check| | Extend Project user roles to support more complex use cases                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_categ                        | |halt|     | |no_check| | Allow for Project specific category lists for Tasks                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_categ_issue                  | |halt|     | |no_check| | Projects Issues can have an allowed category list                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_classification               | |halt|     | |no_check| | Project classification (easy hierarchy and setup for project managers)           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_department                   | 10.0.1.0.0 | |no_check| | Project Department Categorization                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_description                  | 10.0.1.0.0 | |no_check| | Add a description to projects                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_double_alias                 | 10.0.1.0.1 | |no_check| | Define an alias for tasks and another alias for issues                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_functional_block             | |halt|     | |no_check| | Project requiring functional blocks                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_gtd                          | 10.0.1.0.0 | |no_check| | Personal Tasks, Contexts, Timeboxes                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_issue                        | 10.0.1.0   | |no_check| | Support, Bug Tracker, Helpdesk                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_issue_baseuser               | |halt|     | |no_check| | Extend Project user roles to support more complex use cases                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_issue_code                   | 10.0.1.0.0 | |no_check| | Adding Field Code For Project Issue                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_issue_sheet                  | 10.0.1.0   | |no_check| | Timesheet on Issues                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_issue_task                   | |halt|     | |no_check| | Use Tasks to support Issue resolution reports                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_issue_timesheet_time_control | 10.0.1.1.0 | |no_check| | Project issue timesheet time control                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_model_to_task                | 10.0.0.1.0 | |no_check| | Project Model to Task                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_parent                       | 10.0.1.0.0 | |no_check| | Project Parent                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_recalculate                  | 10.0.1.0.2 | |no_check| | Project Recalculate                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_service_type                 | |halt|     | |no_check| | Add type of service on project                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_sla                          | |halt|     | |no_check| | Define SLAs for your Contracts                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_stage_closed                 | 10.0.1.0.0 | |no_check| | Make the Closed flag on Task Stages available without installing sale_service    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_stage_state                  | 10.0.1.0.0 | |no_check| | Restore State attribute removed from Project Stages in 8.0                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_task_add_very_high           | 10.0.1.1.0 | |no_check| | Adds an extra option 'Very High' on tasks                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_task_category                | 10.0.1.1.0 | |no_check| | Allow unique category for Tasks                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_task_code                    | 10.0.1.0.0 | |no_check| | Sequential Code for Tasks                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_task_default_stage           | 10.0.1.1.0 | |no_check| | Recovery default task stage projects from v8                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_task_dependency              | 10.0.1.0.1 | |no_check| | Enables to define dependencies (other tasks) of a task                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_task_material                | 10.0.1.0.0 | |no_check| | Record products spent in a Task                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_task_material_analytic_partn | 10.0.1.0.0 | |no_check| | Select alternative partner in task materials                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_task_material_stock          | 10.0.1.0.0 | |no_check| | Create stock and analytic moves from record products spent in a Task             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_task_pull_request            | 10.0.1.0.0 | |no_check| | Adds a field for a PR URI to project tasks                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_timeline                     | 10.0.1.1.0 | |no_check| | Timeline view for projects                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_timesheet_analytic_partner   | |halt|     | |no_check| | Propagate task partner to timesheet entries                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_timesheet_currency           | 10.0.1.0.0 | |no_check| | Multi-currency analytic costs                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_timesheet_time_control       | 10.0.1.0.1 | |no_check| | Project timesheet time control                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| project_wbs                          | 10.0.1.0.0 | |no_check| | Project Work Breakdown Structure                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase                             | 10.0.1.2   | |no_check| | Purchase Orders, Receipts, Vendor Bills                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_all_shipments               | |halt|     | |no_check| | Purchase All Shipments                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_allowed_product             | 10.0.1.0.0 | |no_check| | This module allows to select only products that can be supplied by the supplier  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_cancel_reason               | 10.0.1.0.0 | |no_check| | Purchase Cancel Reason                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_commercial_partner          | 10.0.1.0.0 | |no_check| | Add stored related field 'Commercial Supplier' on POs                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_delivery_address            | |halt|     | |no_check| | Deprecated: install purchase_transport_multi_address and stock_transport_multi_a |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_delivery_split_date         | 10.0.1.0.0 | |no_check| | Allows Purchase Order you confirm to generate one Incoming Shipment for each exp |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_delivery_term               | |halt|     | |no_check| | Delivery term for purchase orders                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_discount                    | 10.0.1.0.3 | |no_check| | Purchase order lines with discounts                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_fiscal_position_update      | 10.0.1.0.0 | |no_check| | Changing the fiscal position of a purchase order will auto-update purchase order |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_fop_shipping                | 10.0.1.0.0 | |no_check| | Purchase Free-Of-Paiment shipping                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_group_hooks                 | |halt|     | |no_check| | Add hooks to the merge PO feature.                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_group_orders                | |halt|     | |no_check| | Purchase Group Orders by Shop and Carrier                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_landed_costs                | |halt|     | |no_check| | Purchase Landed Costs                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_last_price_info             | |halt|     | |no_check| | Product Last Price Info - Purchase                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_line_product_image          | 10.0.1.0.0 | |no_check| | Show Product Image at Purchase Order Line.                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_location_by_line            | 10.0.1.0.0 | |no_check| | Allows to define a specific destination location on each PO line                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_minimum_amount              | 10.0.1.0.0 | |no_check| | Purchase Minimum Amount                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_mrp                         | 10.0.1.0   | |no_check| | Purchase and MRP Management                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_multi_picking               | |halt|     | |no_check| | Multi Pickings from Purchase Orders                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_open_qty                    | 10.0.1.1.0 | |no_check| | Allows to identify the purchase orders that have quantities pending to invoice o |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_order_analytic_search       | 10.0.1.0.0 | |no_check| | Search purchase orders by analytic account. New menu entry in Purchasing to list |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_order_approval_block        | 10.0.1.0.0 | |no_check| | Purchase Order Approval Block                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_order_approved              | 10.0.1.0.0 | |no_check| | Add a new state 'Approved' in purchase orders.                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_order_force_number          | |halt|     | |no_check| | Force purchase orders numeration                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_order_line_description      | 10.0.1.0.0 | |no_check| | Purchase order line description                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_order_line_form             | 10.0.8.0.0 | |no_check| | Purchase Order lines easy editor                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_order_reorder_lines         | |halt|     | |no_check| | Purchase order lines with sequence number                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_order_revision              | 10.0.1.0.0 | |no_check| | Purchase order revisions                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_order_type                  | |halt|     | |no_check| | Purchase Order Type                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_origin_address              | |halt|     | |no_check| | Deprecated: use purchase_transport_multi_address from OCA/stock-logistics-transp |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_packaging                   | 10.0.1.0.8 | |no_check| | In purchase, use package                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_partial_invoicing           | |halt|     | |no_check| | Purchase partial invoicing                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_partner_invoice_method      | |halt|     | |no_check| | Adds supplier invoicing control on partner form                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_picking_state               | 10.0.1.0.0 | |no_check| | Add the status of all the incoming picking in the purchase order                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_request                     | 10.0.1.1.0 | |no_check| | Use this module to have notification of requirements of materials and/or externa |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_request_procurement         | 10.0.1.0.1 | |no_check| | Purchase Request Procurement                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_request_to_procurement      | 10.0.1.0.0 | |no_check| |  This module introduces the possiblity to create procurement order from purchase |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_request_to_rfq              | 10.0.1.0.0 | |no_check| | Purchase Request to RFQ                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_requisition                 | 10.0.0.1   | |no_check| | Purchase Requisitions                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_requisition_auto_rfq        | |halt|     | |no_check| | Automatically create RFQ from a purchase requisition                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_requisition_auto_rfq_bid_se | |halt|     | |no_check| | Bridge module for PR Auto RFQ / Bid Selection                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_requisition_bid_selection   | |halt|     | |no_check| | Purchase Requisition Bid Selection                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_requisition_delivery_addres | |halt|     | |no_check| | Deprecated: install purchase_requisition_transport_multi_address instead         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_requisition_multicurrency   | |halt|     | |no_check| | Purchase Requisition Multicurrency                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_requisition_transport_docum | |halt|     | |no_check| | Add Transport Documents to Purchase Requisitions                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_rfq_bid_workflow            | |halt|     | |no_check| | Improve the purchase workflow to manage RFQ, Bids, and Orders                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_stock_picking_return_invoic | 10.0.1.0.1 | |no_check| | Add an option to refund returned pickings                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_transport_document          | |halt|     | |no_check| | Add a new Transport Document object in the Purchase Order                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| purchase_triple_discount             | 10.0.1.1.0 | |no_check| | Manage triple discount on purchase order lines                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| rating                               | 10.0.1.0   | |no_check| | Customer Rating                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| rating_project                       | 10.0.1.0   | |no_check| | Project Rating                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| rating_project_issue                 | 10.0.1.0   | |no_check| | Issue Rating                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| refocus_report                       | 10.0.0.1.6 | |no_check| | Customized report for Refocus                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report                               | 10.0.0.0   | |no_check| | Hidden                                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_intrastat                     | 10.0.0.0   | |no_check| | Intrastat Reporting                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_py3o                          | |halt|     | |no_check| | Reporting engine based on Libreoffice (ODT -> ODT, ODT -> PDF, ODT -> DOC, ODT - |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_py3o_fusion_server            | |halt|     | |no_check| | Let the fusion server handle format conversion.                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_qweb_element_page_visibility  | 10.0.1.0.0 | |no_check| | Report Qweb Element Page Visibility                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_qweb_parameter                | 10.0.1.0.1 | |no_check| |  Add new parameters for qweb templates in order to reduce field length and check |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_qweb_pdf_watermark            | 10.0.1.0.2 | |no_check| | Add watermarks to your QWEB PDF reports                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_qweb_signer                   | 10.0.1.0.1 | |no_check| | Sign Qweb PDFs usign a PKCS#12 certificate                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_qweb_txt                      | 10.0.1.0.0 | |no_check| | Use Qweb to generate text and CSV reports                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_webkit_chapter_server         | |halt|     | |no_check| | Chapter server helper for report webkit                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_wkhtmltopdf_param             | 10.0.1.0.1 | |no_check| |  Add new parameters for a paper format to be used by wkhtmltopdf command as argu |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_xlsx                          | 10.0.1.0.1 | |no_check| |  Base module to create xlsx report                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_xlsx_helper                   | 10.0.1.0.0 | |no_check| | Report xlsx helpers                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| report_xml                           | 10.0.1.0.0 | |no_check| | Allow to generate XML reports                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| res_config_settings_enterprise_remov | 10.0.1.0.0 | |no_check| | Remove fields in all settings views marked as enterprise                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| res_partner_affiliate                | |halt|     | |no_check| | Partner Affiliates                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| resource                             | 10.0.1.1   | |no_check| | Resource                                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale                                 | 10.0.1.0   | |no_check| | Quotations, Sales Orders, Invoicing                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_agent_profile                   | 10.0.0.1.1 | |no_check| | Set default agent authorization user profile                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_automatic_workflow              | 10.0.1.0.1 | |no_check| | Sale Automatic Workflow                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_automatic_workflow_exception    | 10.0.1.0.0 | |no_check| | Sale Automatic Workflow Exception                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_automatic_workflow_payment_mode | 10.0.1.0.1 | |no_check| | Sale Automatic Workflow - Payment Mode                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_cancel_reason                   | 10.0.1.0.0 | |no_check| | Sale Cancel Reason                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_commercial_partner              | 10.0.1.0.1 | |no_check| | Add stored related field 'Commercial Entity' on sale orders                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_commission                      | 10.0.11.0. | |no_check| | Sales commissions                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_company_currency                | 10.0.1.0.0 | |no_check| | Company currency in sale orders                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_condition_text                  | |halt|     | |no_check| | Sale/invoice condition                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_crm                             | 10.0.1.0   | |no_check| | Opportunity to Quotation                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_delivery_split_date             | 10.0.1.0.0 | |no_check| | Sale Deliveries split by date                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_delivery_term                   | |halt|     | |no_check| | Delivery term for sale orders                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_discount_display_amount         | 10.0.1.0.0 | |no_check| |  This addon intends to display the amount of the discount computed on sale_order |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_dropshipping                    | |halt|     | |no_check| | Sale Dropshipping                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_exception                       | 10.0.2.0.0 | |no_check| | Custom exceptions on sale order                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_exception_nostock               | |halt|     | |no_check| | Sale stock exception                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_expense                         | 10.0.1.0   | |no_check| | Quotation, Sale Orders, Delivery & Invoicing Control                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_fiscal_position_update          | |halt|     | |no_check| | Changing the fiscal position of a sale order will auto-update sale order lines   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_fixed_discount                  | 10.0.1.0.0 | |no_check| | Allows to apply fixed amount discounts in sales orders.                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_force_invoiced                  | 10.0.1.0.0 | |no_check| | Allows to force the invoice status of the sales order to Invoiced                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_generator                       | |halt|     | |no_check| | Sale Generator                                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_invoice_auto_deliver            | 10.0.1.0.0 | |no_check| | Sale Invoice Automatic Deliver                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_invoice_group_method            | 10.0.1.0.0 | |no_check| | Sale Invoice Group Method                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_isolated_quotation              | 10.0.1.0.0 | |no_check| | Sales - Isolated Quotation                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_jit_on_services                 | |halt|     | |no_check| | Sale Service Just In Time                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_last_price_info                 | |halt|     | |no_check| | Product Last Price Info - Sale                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_layout_hidden                   | 10.0.1.0.1 | |no_check| | Sale Layout Hidden Sections                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_margin                          | 10.0.1.0   | |no_check| | Margins in Sales Orders                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_merge_draft_invoice             | 10.0.1.0.0 | |no_check| | Sale Merge Draft Invoice                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_mrp                             | 10.0.1.0   | |no_check| | Sales and MRP Management                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_mrp_link                        | 10.0.1.0.0 | |no_check| | Show manufacturing orders generated from sales order                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_multi_picking                   | |halt|     | |no_check| | Multi Pickings from Sale Orders                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_action_invoice_create_hoo | 10.0.1.0.0 | |no_check| | Sale Order Action Invoice Create Hook                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_add_variants              | |halt|     | |no_check| | Add variants from template into sale order                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_dates                     | 10.0.1.1   | |no_check| | Dates on Sales Order                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_force_number              | |halt|     | |no_check| | Force sale orders numeration                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_invoicing_finished_task   | 10.0.1.0.3 | |no_check| | Control invoice order lines if his task has been finished                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_line_date                 | 10.0.1.0.0 | |no_check| | Sale Order Line Date                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_line_description          | 10.0.1.0.0 | |no_check| | Sale order line description                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_line_sequence             | 10.0.1.0.0 | |no_check| | Propagates SO line sequence to invoices and stock picking.                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_lot_generator             | 10.0.0.0.1 | |no_check| | sale_order_lot_generator                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_lot_mrp                   | 10.0.1.0.0 | |no_check| | sale_order_lot_mrp                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_lot_selection             | 10.0.1.0.0 | |no_check| | Sale Order Lot Selection                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_margin_percent            | 10.0.1.0.0 | |no_check| | Show Percent in sale order                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_partial_invoice           | |halt|     | |no_check| | Sale Partial Invoice                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_price_recalculation       | 10.0.1.0.0 | |no_check| | Price recalculation in sales orders                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_priority                  | 10.0.1.0.0 | |no_check| | Define priority on sale orders                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_project                   | 10.0.1.0.0 | |no_check| | Sale Order Project                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_revision                  | 10.0.1.0.1 | |no_check| | Sale order revisions                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_type                      | 10.0.1.1.0 | |no_check| | Sale Order Type                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_order_weight                    | 10.0.1.0.0 | |no_check| | Sale Order Weight                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_owner_stock_sourcing            | 10.0.1.0.0 | |no_check| | Manage stock ownership on sale order lines                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_packaging                       | 10.0.1.0.1 | |no_check| | In sale, use uom's package                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_packaging_price                 | |halt|     | |no_check| | Sale Packaging Price                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_payment_term_interest           | |halt|     | |no_check| | Sales Payment Term Interests                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_procurement_group_by_line       | 10.0.1.1.0 | |no_check| | Base module for multiple procurement group by Sale order                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_product_multi_add               | 10.0.1.0.0 | |no_check| |  Sale Product Multi Add                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_product_set                     | 10.0.1.0.2 | |no_check| | Sale product set                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_product_set_layout              | 10.0.1.0.0 | |no_check| | Sale product set layout                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_quotation_number                | 10.0.1.1.0 | |no_check| | Different sequence for sale quotations                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_quotation_sourcing              | |halt|     | |no_check| | manual sourcing of sale quotations                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_quotation_sourcing_stock_route_ | |halt|     | |no_check| | Link module for sale_quotation_sourcing + stock_route_transit                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_reason_to_export                | |halt|     | |no_check| | Reason to export in Sales Order                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_rental                          | 10.0.1.0.0 | |no_check| | Manage Rental of Products                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_resellers                       | 10.0.1.5.4 | |no_check| | Manage Sale Resellers                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_revert_done                     | 10.0.1.0.0 | |no_check| | This module extends the functionality of sales to allow you to set a sales order |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_service_rating                  | 10.0.0.0   | |no_check| | Sale Service Rating                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_shipping_info_helper            | 10.0.1.0.0 | |no_check| | Add shipping amounts on sale order                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_sourced_by_line                 | 10.0.1.0.0 | |no_check| | Multiple warehouse source locations for Sale order                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_sourced_by_line_sale_transport_ | |halt|     | |no_check| | Make sale_sourced_by_line and sale_transport_multi_addresswork together          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_start_end_dates                 | 10.0.1.0.0 | |no_check| | Adds start date and end date on sale order lines                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_stock                           | 10.0.1.0   | |no_check| | Quotation, Sale Orders, Delivery & Invoicing Control                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_stock_global_delivery_lead_time | |halt|     | |no_check| | Sale global delivery lead time                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_stock_picking_blocking          | 10.0.1.0.0 | |no_check| | Allow you to block the creation of deliveries from a sale order.                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_stock_picking_blocking_proc_gro | 10.0.1.0.0 | |no_check| | Module that allows module sale_delivery_block to work with sale_procurement_grou |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_timesheet                       | 10.0.0.0   | |no_check| | Sell based on timesheets                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_timesheet_invoice_description   | 10.0.1.0.0 | |no_check| | Add timesheet details in invoice line                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_triple_discount                 | 10.0.1.0.0 | |no_check| | Manage triple discount on sale order lines                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sale_validity                        | 10.0.1.0.0 | |no_check| | Set a default validity delay on quotations                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sales_team                           | 10.0.1.0   | |no_check| | Sales Team                                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| scheduler_error_mailer               | 10.0.1.0.0 | |no_check| | Scheduler Error Mailer                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| security_protector                   | |halt|     | |no_check| | Security protector                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sentry                               | 10.0.1.0.1 | |no_check| | Report Odoo errors to Sentry                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sequence_check_digit                 | 10.0.1.0.0 | |no_check| | Adds a check digit on sequences                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sequence_date_range                  | |halt|     | |no_check| | Module used to use the year of the date_to into sequences (instead of date_from) |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| server_env_base_external_referential | |halt|     | |no_check| | Server environment for base_external_referential                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| server_environment                   | |halt|     | |no_check| | move some configurations out of the database                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| server_environment_files_sample      | 10.0.1.0.0 | |no_check| | sample config file for server_environment                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| server_environment_ir_config_paramet | |halt|     | |no_check| |  Override System Parameters from server environment file                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| service_desk                         | |halt|     | |no_check| | Use Projects for Service Desks and service teams                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| service_desk_issue                   | |halt|     | |no_check| | Use Project Issues for Service Desks and service teams                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| so_convert_po                        | 10.0.0.6.1 | |no_check| | Converting Sale Order to Purchase Order/RFQ with single button click, transfer a |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| so_po_field                          | 10.0.0.2.3 | |no_check| | Purchase Order field in Sale Order form                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sql_export                           | 10.0.1.0.0 | |no_check| | Export data in csv file with SQL requests                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| sql_request_abstract                 | 10.0.1.0.1 | |no_check| | Abstract Model to manage SQL Requests                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| status_widget                        | 10.0.1.0.0 | |no_check| | Status Widget                                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock                                | 10.0.1.1   | |no_check| | Inventory, Logistics, Warehousing                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_account                        | 10.0.1.1   | |no_check| | Inventory, Logistic, Valuation, Accounting                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_account_change_product_valuati | 10.0.1.0.0 | |no_check| | Adjusts valuation of the products and quants when the cost method or type of a p |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_account_quant_merge            | 10.0.1.0.0 | |no_check| | extension of 'stock_quant_merge', and adds the cost as a criteria to merge quant |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_auto_move                      | 10.0.1.0.0 | |no_check| | Automatic Move Processing                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | stock_available                      | 10.0.1.0.0 | |no_check| | Stock available to promise                                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | stock_available_immediately          | 10.0.1.0.0 | |no_check| | Ignore planned receptions in quantity available to promise                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| stock_calendar                       | 10.0.1.0   | |same|     | Calendars                                                                        |
+| stock_available_mrp                  | |halt|     | |no_check| | Consider the production potential is available to promise                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| stock_dropshipping                   | 10.0.1.0   | |same|     | Drop Shipping                                                                    |
+| stock_available_product_expiry       | 10.0.1.0.3 | |no_check| |  Allows to get product availability taking into account lot removal date         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| stock_landed_costs                   | 10.0.1.1   | |same|     | Landed Costs                                                                     |
+| stock_available_sale                 | |halt|     | |no_check| | Quotations in quantity available to promise                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_available_unreserved           | 10.0.1.0.0 | |no_check| | Quantity of stock available for immediate use                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_barcode_reader                 | |halt|     | |no_check| | Stock bar code reader                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_batch_picking                  | |halt|     | |no_check| | Stock batch picking                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_calendar                       | 10.0.1.0   | |no_check| | Calendars                                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_cancel                         | |halt|     | |no_check| | Stock Cancel                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_cancel_delivery                | 10.0.0.1.0 | |no_check| |                                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_change_price_at_date           | 10.0.1.0.0 | |no_check| |  This module allows to fill in a date in the standard wizard that changes produc |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_change_qty_reason              | 10.0.1.0.0 | |no_check| |  Stock Quantity Change Reason                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_cost_method_last               | 10.0.1.0.0 | |no_check| | Add a new Costing Method 'Last Price'                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_cycle_count                    | 10.0.1.0.0 | |no_check| | Adds the capability to schedule cycle counts in a warehouse through different ru |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_delivery_internal              | 10.0.1.0.0 | |no_check| | Adds an internal carrier to delivery options                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_delivery_note                  | 10.0.1.0.0 | |no_check| |  This module allows to fill in a delivery note that will be displayed on deliver |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_demand_estimate                | 10.0.1.1.0 | |no_check| | Allows to create demand estimates.                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_disable_force_availability_but | 10.0.1.0.0 | |no_check| | Disable force availability button                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_dropshipping                   | 10.0.1.0   | |no_check| | Drop Shipping                                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_dropshipping_dual_invoice      | |halt|     | |no_check| | Create both Supplier and Customer Invoices from a Dropshipping Delivery          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_exclude_to_remove_lot          | 10.0.1.0.0 | |no_check| |  This modules allows to exclude lots based on their removal date                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_inventory_chatter              | 10.0.1.0.0 | |no_check| | Log changes being done in Inventory Adjustments                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_inventory_discrepancy          | 10.0.1.0.0 | |no_check| | Adds the capability to show the discrepancy of every line in an inventory and to |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_inventory_exclude_sublocation  | 10.0.1.0.0 | |no_check| | Allow to perform inventories of a location without including its child locations |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_inventory_lockdown             | 10.0.1.0.1 | |no_check| | Lock down stock locations during inventories.                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_inventory_preparation_filter   | |halt|     | |no_check| | More filters for inventory adjustments                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_inventory_retry_assign         | |halt|     | |no_check| | Check Availability after Inventories                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_inventory_revaluation          | 10.0.1.1.0 | |no_check| | Introduces inventory revaluation as single point to change the valuation of prod |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_inventory_sequence             | |halt|     | |no_check| | Stock Inventory Sequence                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_inventory_verification_request | 10.0.1.0.0 | |no_check| | Adds the capability to request a Slot Verification when a inventory is Pending t |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_invoice_picking_incoterm       | |halt|     | |no_check| | Stock Invoice Picking Incoterm                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_landed_costs                   | 10.0.1.1   | |no_check| | Landed Costs                                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_location_area_data             | |halt|     | |no_check| | Add surface units of measure                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_location_area_management       | |halt|     | |no_check| | Enter a location's area based on different units of measure                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_location_flow_creator          | |halt|     | |no_check| | Create configuration of stock location flow                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_location_lockdown              | 10.0.1.1.0 | |no_check| | Prevent to add stock on flagged locations                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_location_ownership             | |halt|     | |no_check| | Stock Location Ownership                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_location_restrict_procurement_ | 10.0.1.1.0 | |no_check| |  Allows to restrict location to a dedicated procurement group (e.g. : For orders |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_lot_sale_tracking              | 10.0.1.0.0 | |no_check| | This addon allows to retrieve all customer deliveries impacted by a lot          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_lot_scrap                      | 10.0.1.0.0 | |no_check| | This module adds a button in Production Lot/Serial Number view form to Scrap all |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_lot_valuation                  | |halt|     | |no_check| | Lot Valuation                                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_move_backdating                | |halt|     | |no_check| | Allows back-dating of stock moves                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_move_description               | |halt|     | |no_check| | Stock move description                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_move_location                  | |halt|     | |no_check| | Move Stock Location                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_move_on_hold                   | |halt|     | |no_check| | Stock On Hold Status                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_move_packaging                 | |halt|     | |no_check| | Move Stock Packaging                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_move_split_default             | |halt|     | |no_check| | Stock Tracking Split                                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | stock_mts_mto_rule                   | 10.0.1.0.0 | |no_check| | Add a MTS+MTO route                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_no_negative                    | 10.0.1.0.2 | |no_check| | Disallow negative stock levels by default                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_obsolete                       | |halt|     | |no_check| | Add product depreciation                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_operation_package_mandatory    | 10.0.1.0.0 | |no_check| |  Makes destination package mandatory on stock pack operations                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_optional_valuation             | |halt|     | |no_check| | Stock optional valuation                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_orderpoint_automatic_creation  | 10.0.1.0.0 | |no_check| | Stock Orderpoint Automatic Creation                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_orderpoint_creator             | |halt|     | |no_check| | Configuration of order point in mass                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_orderpoint_manual_procurement  | 10.0.1.0.0 | |no_check| | Allows to create procurement orders from orderpoints instead of relying only on  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_orderpoint_manual_procurement_ | 10.0.1.0.0 | |no_check| | Glue module for stock_orderpoint_uom and stock_orderpoint_manual_procurement     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_orderpoint_uom                 | 10.0.1.0.1 | |no_check| | Allows to create procurement orders in the UoM indicated in the orderpoint       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_ownership_availability_rules   | 10.0.1.0.0 | |no_check| | Enforce ownership on stock availability                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_ownership_by_move              | 10.0.0.1.0 | |no_check| | Preserve Ownership of moves (not pickings) on reception.                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_pack_operation_auto_fill       | 10.0.1.0.1 | |no_check| |  Stock pack operation auto fill                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_packaging_usability            | |halt|     | |no_check| | Faster packaging process in Odoo                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_packaging_usability_ul         | |halt|     | |no_check| | Faster packaging process with logistical units                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_partner_lot                    | |halt|     | |no_check| | Show lots on the partners that own them                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_back2draft             | 10.0.1.0.0 | |no_check| | Reopen cancelled pickings                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_backorder_strategy     | |halt|     | |no_check| | Picking backordering strategies                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_compute_delivery_date  | |halt|     | |no_check| | Stock Picking Compute Delivery Date                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_customer_ref           | 10.0.1.0.0 | |no_check| | This module displays the sale reference/description in the pickings              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_deliver_uos            | |halt|     | |no_check| | Adds fields uos and uos_quantity to Stock Transfer Details                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_filter_lot             | 10.0.1.0.0 | |no_check| | In picking out lots' selection, filter lots based on their location              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_invoice_link           | |halt|     | |no_check| | Adds link between pickings and generated invoices                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_invoicing              | |halt|     | |no_check| | Stock Picking Invoicing                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_line_sequence          | 10.0.1.2.0 | |no_check| | Manages the order of stock moves by displaying its sequence                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_mass_action            | 10.0.1.0.0 | |no_check| | Stock Picking Mass Action                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_mass_assign            | |halt|     | |no_check| | Delivery Orders Mass Assign                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_operation_quick_change | 10.0.1.0.0 | |no_check| | Change location of all picking operations                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | stock_picking_package_preparation    | 10.0.1.0.1 | |no_check| | Stock Picking Package Preparation                                                |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | stock_picking_package_preparation_li | 10.0.1.0.1 | |no_check| | Stock Picking Package Preparation Line                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_priority               | |halt|     | |no_check| | Picking Priority                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_reorder_lines          | |halt|     | |no_check| |  Provide a new field on stock moves, allowing to manage the orders of moves in a |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| stock_picking_show_backorder         | 10.0.1.0.0 | |no_check| | Provides a new field on stock pickings, allowing to display the corresponding ba |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 | stock_picking_show_return            | 10.0.1.0.0 | |no_check| | Show returns on stock pickings                                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| stock_picking_wave                   | 10.0.1.0   | |same|     | Warehouse Management: Waves                                                      |
+| stock_picking_transfer_lot_autoassig | 10.0.1.0.0 | |no_check| | Auto-assignation of lots on pickings                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| subscription                         | 10.0.0.0   | |same|     | Recurring Documents                                                              |
+| stock_picking_wave                   | 10.0.1.0   | |no_check| | Warehouse Management: Waves                                                      |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| survey                               | 10.0.2.0   | |same|     | Create surveys, collect answers and print statistics                             |
+| stock_product_category_tracked       | |halt|     | |no_check| | Stock Product Category Tracked                                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| survey_crm                           | 10.0.2.0   | |same|     | Survey CRM                                                                       |
+| stock_product_location_sorted_by_qty | 10.0.1.0.0 | |no_check| | In the update wizard of quantities for a product, sort the stock location by qua |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| theme_bootswatch                     | 10.0.1.0   | |same|     | Support for Bootswatch themes in master                                          |
+| stock_putaway_product                | 10.0.1.0.0 | |no_check| | Set a product location and put-away strategy per product                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| theme_default                        | 10.0.1.0   | |same|     | Default Theme                                                                    |
+| stock_quant_manual_assign            | |halt|     | |no_check| | Stock - Manual assignment of quants                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| utm                                  | 10.0.1.0   | |same|     | UTM Trackers                                                                     |
+| stock_quant_merge                    | 10.0.1.0.0 | |no_check| | Stock - Quant merge                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| web                                  | 10.0.1.0   | |same|     | Web                                                                              |
+| stock_quant_reserved_qty_uom         | 10.0.1.0.0 | |no_check| | Stock Quant Reserved Qty UoM                                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| web_calendar                         | 10.0.2.0   | |same|     | Web Calendar                                                                     |
+| stock_removal_location_by_priority   | 10.0.1.0.0 | |no_check| | Establish a removal priority on stock locations.                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| web_diagram                          | 10.0.2.0   | |same|     | Odoo Web Diagram                                                                 |
+| stock_reord_rule                     | |halt|     | |no_check| | Improved reordering rules                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| web_editor                           | 10.0.0.0   | |same|     | Web Editor                                                                       |
+| stock_reserve                        | 10.0.1.0.0 | |no_check| | Stock reservations on products                                                   |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| web_kanban                           | 10.0.2.0   | |same|     | Base Kanban                                                                      |
+| stock_reserve_sale                   | |halt|     | |no_check| | Stock Reserve Sales                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| web_kanban_gauge                     | 10.0.1.0   | |same|     | Gauge Widget for Kanban                                                          |
+| stock_sale_filters                   | |halt|     | |no_check| | SO related filters on stock.picking and sale.order                               |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| web_planner                          | 10.0.1.0   | |same|     | Help to configure application                                                    |
+| stock_scanner                        | 10.0.1.0.0 | |no_check| | Allows managing barcode readers with simple scenarios                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| web_settings_dashboard               | 10.0.1.0   | |same|     | Quick actions for installing new app, adding users, completing planners, etc.    |
+| stock_scanner_inventory              | 10.0.1.0.0 | |no_check| | Stock Scanner Inventory                                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| web_tour                             | 10.0.0.1   | |same|     | Tours                                                                            |
+| stock_scanner_receipt                | 10.0.1.0.0 | |no_check| | Stock Scanner Receipt                                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website                              | 10.0.1.0   | |same|     | Build Your Enterprise Website                                                    |
+| stock_split_picking                  | 10.0.1.0.0 | |no_check| | Split a picking in two not transferred pickings                                  |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_blog                         | 10.0.1.0   | |same|     | News, Blogs, Announces, Discussions                                              |
+| stock_tracking_add_move              | |halt|     | |no_check| | Stock tracking add moves                                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_crm                          | 10.0.2.0   | |same|     | Create Leads From Contact Form                                                   |
+| stock_tracking_add_remove            | |halt|     | |no_check| | Stock tracking add or remove object                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_crm_partner_assign           | 10.0.1.0   | |same|     | Publish Your Channel of Resellers                                                |
+| stock_tracking_add_remove_pack       | |halt|     | |no_check| | Stock tracking add packs                                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_customer                     | 10.0.1.0   | |same|     | Publish Your Customer References                                                 |
+| stock_tracking_child                 | |halt|     | |no_check| | Stock Tracking Child                                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_event                        | 10.0.0.0   | |same|     | Schedule, Promote and Sell Events                                                |
+| stock_tracking_extended              | |halt|     | |no_check| | Stock Tracking extended                                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_event_questions              | 10.0.1.0   | |same|     | Questions on Events                                                              |
+| stock_tracking_prodlot               | |halt|     | |no_check| | Stock Tracking Prodlot                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_event_sale                   | 10.0.0.0   | |same|     | Sell Your Event's Tickets                                                        |
+| stock_tracking_reopen                | |halt|     | |no_check| | Stock tracking Re-open                                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_event_track                  | 10.0.1.0   | |same|     | Sponsors, Tracks, Agenda, Event News                                             |
+| stock_tracking_state                 | |halt|     | |no_check| | Stock Tracking State                                                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_form                         | 10.0.1.0   | |same|     | Generic controller for web forms                                                 |
+| stock_tracking_swap                  | |halt|     | |no_check| | Stock tracking swap                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_forum                        | 10.0.1.0   | |same|     | Forum, FAQ, Q&A                                                                  |
+| stock_tracking_swap_pack             | |halt|     | |no_check| | Stock tracking swap                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_forum_doc                    | 10.0.0.0   | |same|     | Forum, Documentation                                                             |
+| stock_transfer_split_multi           | |halt|     | |no_check| | In the stock transfer wizard, you can split by multiple units                    |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_gengo                        | 10.0.0.0   | |same|     | Website Gengo Translator                                                         |
+| stock_valuation_account_manual_adjus | 10.0.1.0.0 | |no_check| | Shows in the product inventory stock value and the accounting value and allows t |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_google_map                   | 10.0.1.0   | |same|     |                                                                                  |
+| stock_warehouse_orderpoint_stock_inf | 10.0.1.0.0 | |no_check| | Stock Warehouse Orderpoint Stock Info                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_hr                           | 10.0.0.0   | |same|     | Present Your Team                                                                |
+| stock_warehouse_orderpoint_stock_inf | 10.0.1.0.0 | |no_check| | Stock Warehouse Orderpoint Stock Info Unreserved                                 |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_hr_recruitment               | 10.0.1.0   | |same|     | Job Descriptions And Application Forms                                           |
+| subcontracted_service                | 10.0.1.0.0 | |no_check| | Subcontracted service                                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_issue                        | 10.0.1.0   | |same|     | Create Issues From Contact Form                                                  |
+| subscription                         | 10.0.0.0   | |no_check| | Recurring Documents                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_links                        | 10.0.1.0   | |same|     | Website Link Tracker                                                             |
+| subscription_action                  | 10.0.1.0.0 | |no_check| | Run a server action on a newly created document                                  |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_livechat                     | 10.0.1.0   | |same|     | Chat With Your Website Visitors                                                  |
+| super_calendar                       | |halt|     | |no_check| | This module allows to create configurable calendars.                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_mail                         | 10.0.0.1   | |same|     | Website Module for Mail                                                          |
+| support_branding                     | 10.0.1.0.0 | |no_check| | Adds your branding to an Odoo instance                                           |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_mail_channel                 | 10.0.0.0   | |same|     | Mailing List Archive                                                             |
+| survey                               | 10.0.2.0   | |no_check| | Create surveys, collect answers and print statistics                             |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_mass_mailing                 | 10.0.1.0   | |same|     | Website Mass Mailing Campaigns                                                   |
+| survey_crm                           | 10.0.2.0   | |no_check| | Survey CRM                                                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_membership                   | 10.0.1.0   | |same|     | Publish Associations, Groups and Memberships                                     |
+| theme_bootswatch                     | 10.0.1.0   | |no_check| | Support for Bootswatch themes in master                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_partner                      | 10.0.0.1   | |same|     | Partner Module for Website                                                       |
+| theme_default                        | 10.0.1.0   | |no_check| | Default Theme                                                                    |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_payment                      | 10.0.1.0   | |same|     | Payment: Website Integration                                                     |
+| tko_base_download_multiple_attachmen | 10.0.0.009 | |no_check| | Download all Attachments                                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_portal                       | 10.0.1.0   | |same|     | Account Management Frontend for your Customers                                   |
+| tndb                                 | 10.0.0.4.1 | |no_check| | Trace and Debug                                                                  |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_portal_sale                  | 10.0.1.0   | |same|     | Add your sales document in the frontend portal (sales order, quotations, invoice |
+| user_immutable                       | 10.0.1.0.0 | |no_check| | Add Immutable User Support                                                       |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_project                      | 10.0.0.0   | |same|     | Website Project                                                                  |
+| user_threshold                       | 10.0.1.0.1 | |no_check| | Add Configurable User Threshold Support                                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_project_issue                | 10.0.0.1   | |same|     | Website Project Issue                                                            |
+| users_ldap_groups                    | |halt|     | |no_check| | Adds user accounts to groups based on rules defined by the administrator.        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_project_issue_sheet          | 10.0.0.1   | |same|     | Timesheet on Website Project Issue                                               |
+| users_ldap_mail                      | 10.0.1.0.0 | |no_check| | LDAP mapping for user name and e-mail                                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_project_timesheet            | 10.0.0.0   | |same|     | Timesheet in Website Portal                                                      |
+| users_ldap_populate                  | 10.0.1.0.3 | |no_check| | LDAP Populate                                                                    |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_quote                        | 10.0.1.0   | |same|     | Sales                                                                            |
+| utm                                  | 10.0.1.0   | |no_check| | UTM Trackers                                                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_rating_project_issue         | 10.0.0.1   | |same|     | Website Rating Project Issue                                                     |
+| vendor_consignment_stock             | |halt|     | |no_check| | Manage stock in our warehouse that is owned by a vendor                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_sale                         | 10.0.1.0   | |same|     | Sell Your Products Online                                                        |
+| vg7_report                           | 10.0.0.1.1 | |no_check| | Customized report for VG7                                                        |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_sale_delivery                | 10.0.1.0   | |same|     | Add Delivery Costs to Online Sales                                               |
+| web                                  | 10.0.1.0   | |no_check| | Web                                                                              |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_sale_digital                 | 10.0.0.1   | |same|     | Website Sale Digital - Sell digital products                                     |
+| web_access_rule_buttons              | 10.0.1.0.0 | |no_check| | Disable Edit button if access rules prevent this action                          |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_sale_options                 | 10.0.1.0   | |same|     | eCommerce Optional Products                                                      |
+| web_action_conditionable             | 10.0.1.0.0 | |no_check| | web_action_conditionable                                                         |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_sale_stock                   | 10.0.0.0   | |same|     | Website Sale Stock - Website Delivery Information                                |
+| web_advanced_search_wildcard         | 10.0.1.0.0 | |no_check| | Webmodule to add wildcard operators in advanced search field                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_slides                       | 10.0.1.0   | |same|     | Share and Publish Videos, Presentations and Documents                            |
+| web_advanced_search_x2x              | 10.0.2.0.3 | |no_check| | Use a search widget in advanced search for x2x fields                            |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_theme_install                | 10.0.1.0   | |same|     | Website Theme Install                                                            |
+| web_calendar                         | 10.0.2.0   | |no_check| | Web Calendar                                                                     |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
-| website_twitter                      | 10.0.1.0   | |same|     | Add twitter scroller snippet in website builder                                  |
+| web_chatter_paste                    | 10.0.1.0.0 | |no_check| |  Paste images and drop files into the chatter and upload them directly           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_ckeditor4                        | |halt|     | |no_check| | Provides a widget for editing HTML fields using CKEditor 4.x                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_confirm_window_close             | 10.0.1.0.0 | |no_check| | Check for unsaved data when closing browser window                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_context_in_colors                | |halt|     | |no_check| | Use the context in a tree view's colors and fonts attribute                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_dashboard_open_action            | |halt|     | |no_check| | Adds a button to open a dashboard in full mode                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_dashboard_tile                   | |halt|     | |no_check| | Add Tiles to Dashboard                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_decimal_numpad_dot               | 10.0.1.1.0 | |no_check| | Allows using numpad dot to enter period decimal separator                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_diagram                          | 10.0.2.0   | |no_check| | Odoo Web Diagram                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_dialog_size                      | 10.0.1.0.2 | |no_check| |  A module that lets the user expand a dialog box to the full screen width.       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_dom_model_classes                | |halt|     | |no_check| | Allows small UI changes with simple CSS                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_domain_field                     | 10.0.1.0.0 | |no_check| |  Use computed field as domain                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_drop_target                      | 10.0.1.0.0 | |no_check| | Allows to drag files into Odoo                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_duplicate_visibility             | |halt|     | |no_check| | Manage the duplicate button visibiliy                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_editor                           | 10.0.0.0   | |no_check| | Web Editor                                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_editor_background_color          | 10.0.1.0.0 | |no_check| | Set any background color for web editor snippets                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_environment_ribbon               | 10.0.1.0.0 | |no_check| | Web Environment Ribbon                                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_export_view                      | 10.0.1.0.0 | |no_check| | Web Export Current View                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_favicon                          | 10.0.1.0.0 | |no_check| | Allows to set a custom shortcut icon (aka favicon)                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_fullscreen                       | 10.0.1.0.0 | |no_check| | Adds a fullscreen mode button                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_graph_improved                   | |halt|     | |no_check| | Improves graph views.                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_group_expand                     | |halt|     | |no_check| | Group Expand Buttons                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_hide_db_manager_link             | 10.0.1.0.0 | |no_check| | Hide link to database manager in login screen                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_ir_actions_act_window_message    | 10.0.1.0.0 | |no_check| | Show a message box to users                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_ir_actions_act_window_page       | 10.0.1.0.0 | |no_check| | Allows a developer to trigger a pager to show the previous or next next record i |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_kanban                           | 10.0.2.0   | |no_check| | Base Kanban                                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_kanban_gauge                     | 10.0.1.0   | |no_check| | Gauge Widget for Kanban                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_last_viewed_records              | |halt|     | |no_check| | Last viewed records                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_listview_invert_selection        | 10.0.1.0.0 | |no_check| | Invert current selection of list of records                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_listview_range_select            | 10.0.1.0.0 | |no_check| |  Enables selecting a range of records using the shift key                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_m2x_options                      | 10.0.1.1.1 | |no_check| | web_m2x_options                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_menu_navbar_needaction           | |halt|     | |no_check| | Show the sum of submenus' needaction counters in main menu                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_no_bubble                        | 10.0.1.0.0 | |no_check| | Remove the bubbles from the web interface                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_notify                           | 10.0.1.0.0 | |no_check| |  Send notification messages to user                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_option_auto_color                | |halt|     | |no_check| | Web Option Auto Color                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_planner                          | 10.0.1.0   | |no_check| | Help to configure application                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_polymorphic_many2one             | |halt|     | |no_check| | Web Polymorphic Many2One                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_readonly_bypass                  | 10.0.1.0.1 | |no_check| | Allow to save onchange modifications to readonly fields                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_recipients_uncheck               | |halt|     | |no_check| | Uncheck recipients on res.partner                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_responsive                       | 10.0.1.2.3 | |no_check| | It provides a mobile compliant interface for Odoo Community web                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_search_alphabetic                | |halt|     | |no_check| | Web Alphabetical Search                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_search_autocomplete_prefetch     | 10.0.1.0.0 | |no_check| | Offer only items on autocompletion that will yield results                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_search_with_and                  | 10.0.1.0.0 | |no_check| | Use AND conditions on omnibar search                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_searchbar_full_width             | 10.0.1.0.0 | |no_check| | Show search bar in full screen width                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_send_message_popup               | 10.0.1.0.0 | |no_check| | Web Send Message as Popup                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_settings_dashboard               | 10.0.1.0   | |no_check| | Quick actions for installing new app, adding users, completing planners, etc.    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_sheet_full_width                 | 10.0.1.0.1 | |no_check| | Use the whole available screen width when displaying sheets                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_sheet_full_width_selective       | |halt|     | |no_check| | Show selected sheets with full width                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_shortcut                         | 10.0.1.0.1 | |no_check| | Shortcut Menu                                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_switch_company_warning           | 10.0.0.1.0 | |no_check| | Show a warning if current company has been switched in another tab or window.    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_timeline                         | 10.0.1.2.1 | |no_check| | Interactive visualization chart to show events in time                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_tour                             | 10.0.0.1   | |no_check| | Tours                                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_translate_dialog                 | 10.0.1.0.1 | |no_check| | Easy-to-use pop-up to translate fields in several languages                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_tree_dynamic_colored_field       | 10.0.1.0.0 | |no_check| | Allows you to dynamically color fields on tree views                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_tree_image                       | 10.0.1.1.0 | |no_check| | Show images in tree views                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_tree_many2one_clickable          | 10.0.1.0.0 | |no_check| | Open the linked resource when clicking on their name                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_bokeh_chart               | 10.0.1.0.0 | |no_check| | This widget allows to display charts using Bokeh library.                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_char_switchcase           | 10.0.1.0.2 | |no_check| | Web Char Switchcase Widget                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_color                     | 10.0.1.0.0 | |no_check| | Web Widget Color                                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_darkroom                  | 10.0.1.0.0 | |no_check| | Provides web widget for image editing and adds it to standard image widget as mo |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_datepicker_options        | |halt|     | |no_check| | web_widget_datepicker_options                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_digitized_signature       | 10.0.0.1.0 | |no_check| | Web Widget Digitized Signature                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_domain_v11                | 10.0.1.0.1 | |no_check| | Updated domain widget                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_float_formula             | 10.0.1.0.0 | |no_check| | Allow use of simple formulas in float fields                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_fonticonbinder            | 10.0.1     | |no_check| | Binds a form field value to a font icon (default fontawesome 4.5).               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_fonticonpicker            | 10.0.1     | |no_check| | Add a form field widget to pick font icons (default fontawesome 4.5).            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_image_download            | 10.0.1.0.0 | |no_check| | Allows to download any image from its widget                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_image_webcam              | 10.0.1.0.0 | |no_check| | Allows to take image with WebCam                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_many2many_tags_multi_sele | 10.0.1.0.0 | |no_check| | Tags multiple selection                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_mermaid                   | 10.0.8.4.0 | |no_check| | Render mermaid markdown flowcharts                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_slick                     | 10.0.1.0.0 | |no_check| | Adds SlickJS slider widget for use as a carousel on Many2one attachment fields i |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_slick_example             | 10.0.1.0.0 | |no_check| | Example usage of the web_widget_slick and web_widget_slickroom modules           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_slickroom                 | 10.0.1.0.0 | |no_check| | Provides Slick Carousel Widget with DarkroomJS image editing                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_text_markdown             | 10.0.1.0.0 | |no_check| | web_widget_text_markdown                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_timepicker                | 10.0.1.0.0 | |no_check| | Web Timepicker Widget                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_widget_x2many_2d_matrix          | 10.0.1.0.1 | |no_check| | Show list fields as a matrix                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| web_x2many_delete_all                | 10.0.1.0.0 | |no_check| |  Adds a button to x2many fields that removes all linked records                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| webhook                              | 10.0.1.0.0 | |no_check| | Webhook                                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website                              | 10.0.1.0   | |no_check| | Build Your Enterprise Website                                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_analytics_piwik              | 10.0.1.0.0 | |no_check| | Track website users using piwik                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_anchor_smooth_scroll         | 10.0.1.0.0 | |no_check| | Replace default behavior for internal links (anchor only) with smooth scroll     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_backend_views                | |halt|     | |no_check| | Hook backend views into your website frontend                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_blog                         | 10.0.1.0   | |no_check| | News, Blogs, Announces, Discussions                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_blog_category                | 10.0.1.0.0 | |no_check| | Website Blog - Categories                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_blog_facebook_comment        | |halt|     | |no_check| | Add Facebook comments on blog posts                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_blog_mgmt                    | |halt|     | |no_check| | Website blog Management                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_breadcrumb                   | 10.0.1.0.0 | |no_check| | Let you have breadcrumbs in website pages                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_canonical_url                | 10.0.1.1.0 | |no_check| | Canonical URL in Website Headers                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_container_fluid              | 10.0.1.0.0 | |no_check| | Let you choose between fixed or fluid containers                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_cookie_notice                | |halt|     | |no_check| | Show cookie notice according to cookie law                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_crm                          | 10.0.2.0   | |no_check| | Create Leads From Contact Form                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_crm_partner_assign           | 10.0.1.0   | |no_check| | Publish Your Channel of Resellers                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_crm_privacy_policy           | |halt|     | |no_check| | Website CRM privacy policy                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_crm_quick_answer             | 10.0.1.0.0 | |no_check| | Add an automatic answer for contacts asking for info                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_crm_recaptcha                | 10.0.1.0.0 | |no_check| | Provides a ReCaptcha validation in Website Contact Form                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_customer                     | 10.0.1.0   | |no_check| | Publish Your Customer References                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_event                        | 10.0.0.0   | |no_check| | Schedule, Promote and Sell Events                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_event_questions              | 10.0.1.0   | |no_check| | Questions on Events                                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_event_sale                   | 10.0.0.0   | |no_check| | Sell Your Event's Tickets                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_event_track                  | 10.0.1.0   | |no_check| | Sponsors, Tracks, Agenda, Event News                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_field_autocomplete           | 10.0.1.0.0 | |no_check| | Provides an autocomplete field for Website on any model                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_form                         | 10.0.1.0   | |no_check| | Generic controller for web forms                                                 |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_form_builder                 | 10.0.1.0.1 | |no_check| | Build customized forms in your website                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_form_metadata                | 10.0.1.0.0 | |no_check| | Website Form Metadata                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_form_recaptcha               | 10.0.1.0.0 | |no_check| | Provides a ReCaptcha field for Website Forms                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_forum                        | 10.0.1.0   | |no_check| | Forum, FAQ, Q&A                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_forum_censored               | |halt|     | |no_check| | Block phrases entered in forum posts and comments.                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_forum_doc                    | 10.0.0.0   | |no_check| | Forum, Documentation                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_gengo                        | 10.0.0.0   | |no_check| | Website Gengo Translator                                                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_google_map                   | 10.0.1.0   | |no_check| |                                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_hr                           | 10.0.0.0   | |no_check| | Present Your Team                                                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_hr_department                | |halt|     | |no_check| |  Display the structure of your departments and their members.                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_hr_recruitment               | 10.0.1.0   | |no_check| | Job Descriptions And Application Forms                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_issue                        | 10.0.1.0   | |no_check| | Create Issues From Contact Form                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_legal_page                   | |halt|     | |no_check| | Website Legal Page                                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_links                        | 10.0.1.0   | |no_check| | Website Link Tracker                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_livechat                     | 10.0.1.0   | |no_check| | Chat With Your Website Visitors                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_logo                         | |halt|     | |no_check| | Website company logo                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_mail                         | 10.0.0.1   | |no_check| | Website Module for Mail                                                          |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_mail_channel                 | 10.0.0.0   | |no_check| | Mailing List Archive                                                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_mass_mailing                 | 10.0.1.0   | |no_check| | Website Mass Mailing Campaigns                                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_membership                   | 10.0.1.0   | |no_check| | Publish Associations, Groups and Memberships                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_menu_by_user_status          | |halt|     | |no_check| | Allow to manage the display of website.menus                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_menu_multilang               | |halt|     | |no_check| | Website Menu Multilanguage                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_multi_theme                  | 10.0.1.4.0 | |no_check| | Support different theme per website                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_no_crawler                   | 10.0.1.0.0 | |no_check| | Disables robots.txt for indexing by webcrawlers like Google                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_odoo_debranding              | 10.0.1.0.0 | |no_check| | Remove odoo.com bindings on website                                              |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_partner                      | 10.0.0.1   | |no_check| | Partner Module for Website                                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_payment                      | 10.0.1.0   | |no_check| | Payment: Website Integration                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_portal                       | 10.0.1.0   | |no_check| | Account Management Frontend for your Customers                                   |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_portal_contact               | |halt|     | |no_check| | Allows logged in portal users to manage their contacts                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_portal_contract              | 10.0.1.0.0 | |no_check| | Extends website portal with contracts.                                           |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_portal_purchase              | |halt|     | |no_check| | Add purchase orders and quotation in the frontend portal                         |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_portal_sale                  | 10.0.1.0   | |no_check| | Add your sales document in the frontend portal (sales order, quotations, invoice |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_project                      | 10.0.0.0   | |no_check| | Website Project                                                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_project_issue                | 10.0.0.1   | |no_check| | Website Project Issue                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_project_issue_sheet          | 10.0.0.1   | |no_check| | Timesheet on Website Project Issue                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_project_timesheet            | 10.0.0.0   | |no_check| | Timesheet in Website Portal                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_quote                        | 10.0.1.0   | |no_check| | Sales                                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_rating_project_issue         | 10.0.0.1   | |no_check| | Website Rating Project Issue                                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_sale                         | 10.0.1.0   | |no_check| | Sell Your Products Online                                                        |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_sale_delivery                | 10.0.1.0   | |no_check| | Add Delivery Costs to Online Sales                                               |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_sale_digital                 | 10.0.0.1   | |no_check| | Website Sale Digital - Sell digital products                                     |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_sale_hide_empty_category     | 10.0.1.0.0 | |no_check| | Hide any Product Categories that are empty                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_sale_line_total              | 10.0.1.0.0 | |no_check| | Adds separate columns for unit price and total price                             |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_sale_options                 | 10.0.1.0   | |no_check| | eCommerce Optional Products                                                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_sale_order_company           | |halt|     | |no_check| | Set order company according to products company                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_sale_stock                   | 10.0.0.0   | |no_check| | Website Sale Stock - Website Delivery Information                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_sale_unsaleable_options      | |halt|     | |no_check| | Prevent optional products to be sold singularly                                  |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_seo_redirection              | 10.0.1.0.0 | |no_check| | Redirect any controller to the URL of your dreams                                |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_signup_legal_page_required   | 10.0.1.0.0 | |no_check| | Force the user to accept the legal terms to open an account                      |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_slides                       | 10.0.1.0   | |no_check| | Share and Publish Videos, Presentations and Documents                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_snippet_anchor               | 10.0.1.0.0 | |no_check| | Allow to reach a concrete section in the page                                    |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_snippet_barcode              | 10.0.1.0.0 | |no_check| | Generates barcodes for advertising content                                       |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_snippet_country_dropdown     | 10.0.1.0.0 | |no_check| | Allow to select country in a dropdown                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_snippet_data_slider          | 10.0.1.0.0 | |no_check| | Abstract data slider for use on website.  Primary use (and default implementatio |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_theme_install                | 10.0.1.0   | |no_check| | Website Theme Install                                                            |
++--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
+| website_twitter                      | 10.0.1.0   | |no_check| | Add twitter scroller snippet in website builder                                  |
 +--------------------------------------+------------+------------+----------------------------------------------------------------------------------+
 
-
-OCA comparation / Confronto con OCA
------------------------------------
-
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Description / Descrizione                                                    | Zeroincombenze   | OCA           | Notes / Note                                                  |
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Coverage                                                                     | |Codecov Status| | |OCA Codecov| |                                                               |
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Ignore rst error in module description / Ignora errore in descrizione modulo | |check|          | |no_check|    | Avoid error due from translation / Evita errori da traduzioni |
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Currency Exchange Error / Errore in cambio valuta                            | |check|          | |no_check|    |                                                               |
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Currency Rate / Cambio valuta                                                | no company       | with company  |                                                               |
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Force https / 'web.base.url.cvt2https' / in 'web.base.url'                   | |check|          | |no_check|    | New parameter / Nuovo parametro / 'web.base.url.cvt2https'    |
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
-| Journal default selection                                                    | |check|          | |no_check|    | Journal default selection based on sequence                   |
-+------------------------------------------------------------------------------+------------------+---------------+---------------------------------------------------------------+
 
 
 
@@ -598,7 +2438,7 @@ Installation / Installazione
 +---------------------------------+------------------------------------------+
 | Suggested deployment is:        | Posizione suggerita per l'installazione: |
 +---------------------------------+------------------------------------------+
-| /opt/odoo/10.0                                                             |
+| /opt/odoo/10.0/10.0/                                                       |
 +----------------------------------------------------------------------------+
 
 ::
@@ -607,11 +2447,8 @@ Installation / Installazione
     git clone https://github.com/zeroincombenze/tools.git
     cd ./tools
     ./install_tools.sh -p
-    export PATH=$HOME/dev:$PATH
-    odoo_install_repository OCB -b 10.0 -O zero
-    for pkg in os0 z0lib; do
-        pip install $pkg -U
-    done
+    source /opt/odoo/dev/activate_tools
+    odoo_install_repository 10.0 -b 10.0 -O zero
     sudo manage_odoo requirements -b 10.0 -vsy -o /opt/odoo/10.0
 
 
@@ -628,7 +2465,7 @@ Upgrade / Aggiornamento
 
 ::
 
-    odoo_install_repository OCB -b 10.0 -O zero -U
+    odoo_install_repository 10.0 -b 10.0 -O zero -U
     # Adjust following statements as per your system
     sudo systemctl restart odoo
 
@@ -646,7 +2483,7 @@ Get involved / Ci mettiamo in gioco
 
 Bug reports are welcome! You can use the issue tracker to report bugs,
 and/or submit pull requests on `GitHub Issues
-<https://github.com/zeroincombenze/OCB/issues>`_.
+<https://github.com/zeroincombenze/10.0/issues>`_.
 
 In case of trouble, please check there if your issue has already been reported.
 
@@ -667,6 +2504,7 @@ Copyright
 
 Odoo is a trademark of `Odoo S.A. <https://www.odoo.com/>`__ (formerly OpenERP)
 
+
 ----------------
 
 
@@ -686,13 +2524,13 @@ La distribuzione `Zeroincombenze® <https://wiki.zeroincombenze.org/en/Odoo>`__ 
 |
 
 
-Last Update / Ultimo aggiornamento: 2019-06-20
+Last Update / Ultimo aggiornamento: 2019-12-30
 
 .. |Maturity| image:: https://img.shields.io/badge/maturity-Alfa-red.png
     :target: https://odoo-community.org/page/development-status
     :alt: Alfa
-.. |Build Status| image:: https://travis-ci.org/zeroincombenze/OCB.svg?branch=10.0
-    :target: https://travis-ci.org/zeroincombenze/OCB
+.. |Build Status| image:: https://travis-ci.org/zeroincombenze/10.0.svg?branch=10.0
+    :target: https://travis-ci.org/zeroincombenze/10.0
     :alt: github.com
 .. |license gpl| image:: https://img.shields.io/badge/licence-LGPL--3-7379c3.svg
     :target: http://www.gnu.org/licenses/lgpl-3.0-standalone.html
@@ -700,11 +2538,11 @@ Last Update / Ultimo aggiornamento: 2019-06-20
 .. |license opl| image:: https://img.shields.io/badge/licence-OPL-7379c3.svg
     :target: https://www.odoo.com/documentation/user/9.0/legal/licenses/licenses.html
     :alt: License: OPL
-.. |Coverage Status| image:: https://coveralls.io/repos/github/zeroincombenze/OCB/badge.svg?branch=10.0
-    :target: https://coveralls.io/github/zeroincombenze/OCB?branch=10.0
+.. |Coverage Status| image:: https://coveralls.io/repos/github/zeroincombenze/10.0/badge.svg?branch=10.0
+    :target: https://coveralls.io/github/zeroincombenze/10.0?branch=10.0
     :alt: Coverage
-.. |Codecov Status| image:: https://codecov.io/gh/zeroincombenze/OCB/branch/10.0/graph/badge.svg
-    :target: https://codecov.io/gh/zeroincombenze/OCB/branch/10.0
+.. |Codecov Status| image:: https://codecov.io/gh/zeroincombenze/10.0/branch/10.0/graph/badge.svg
+    :target: https://codecov.io/gh/zeroincombenze/10.0/branch/10.0
     :alt: Codecov
 .. |Tech Doc| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-10.svg
     :target: https://wiki.zeroincombenze.org/en/Odoo/10.0/dev
@@ -715,8 +2553,8 @@ Last Update / Ultimo aggiornamento: 2019-06-20
 .. |Try Me| image:: https://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-10.svg
     :target: https://erp10.zeroincombenze.it
     :alt: Try Me
-.. |OCA Codecov| image:: https://codecov.io/gh/OCA/OCB/branch/10.0/graph/badge.svg
-    :target: https://codecov.io/gh/OCA/OCB/branch/10.0
+.. |OCA Codecov| image:: https://codecov.io/gh/OCA/10.0/branch/10.0/graph/badge.svg
+    :target: https://codecov.io/gh/OCA/10.0/branch/10.0
     :alt: Codecov
 .. |Odoo Italia Associazione| image:: https://www.odoo-italia.org/images/Immagini/Odoo%20Italia%20-%20126x56.png
    :target: https://odoo-italia.org
