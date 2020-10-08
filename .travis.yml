@@ -12,7 +12,7 @@ python:
   - "2.7"
 
 virtualenv:
-  system_site_packages: true
+  system_site_packages: false
 
 git:
   submodules: false
@@ -26,37 +26,33 @@ addons:
   apt:
     sources:
       - pov-wkhtmltopdf
-#   Search your sources alias here:
-#     https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
+    # Search your sources alias here:
+    # https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
     packages:
-      # - build-essential                 # Already in TravisCI
+      # - build-essential                 # Pre-installed
       - cups
-      # - curl                            # Already in TravisCI
+      # - curl                            # Pre-installed
       - expect-dev
-      # - git                             # Already in TravisCI
+      # - git                             # Pre-installed
+      # - less-plugin-clean-css           # Pre-installed
+      # - lessc                           # Pre-installed
       - libffi-dev
       - libssl-dev
-      - libxml2-dev
-      - libxslt1-dev
-      # - nodejs                          # Already in TravisCI
-      # - npm                             # Already in TravisCI
+      # - nodejs                          # Pre-installed
+      # - npm                             # Pre-installed
       - python-dev
+      # - python-setuptools               # Pre-installed
+      # - wkhtmltopdf                     # Pre-installed
       - zlib1g
-      - zlib1g-dev
-      # - build-essential                 # Already in TravisCI
-      # - curl                            # Already in TravisCI
-      # - git                             # Already in TravisCI
-      # - nodejs                          # Already in TravisCI
-      # - npm                             # Already in TravisCI
 
 before_install:
+  # Use Zeroincombenze(R) tools
+  - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --single-branch --depth=1
+  - ${HOME}/tools/install_tools.sh -qopt
+  - source ${HOME}/dev/activate_tools
   # - "export DISPLAY=:99.0"
   # - "sh -e /etc/init.d/xvfb start"
   # - sleep 3 # give xvfb some time to start
-  # Use Zeroincombenze(R) tools
-  - git clone https://github.com/zeroincombenze/tools.git ${HOME}/tools --single-branch --depth=1
-  - mv ${HOME}/tools/maintainer-quality-tools ${HOME}
-  - export PATH=${HOME}/maintainer-quality-tools/travis:${PATH}
 
 install:
   - travis_install_env
@@ -65,7 +61,7 @@ install:
 
 env:
   global:
-  - export TRAVIS_DEBUG_MODE="1"
+  - TRAVIS_DEBUG_MODE="2"
   - WKHTMLTOPDF_VERSION="0.12.1"
   - VERSION="7.0" TESTS="0" LINT_CHECK="0" ODOO_TNLBOT="0" WEBSITE_REPO="1"
 
