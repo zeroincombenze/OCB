@@ -1,19 +1,24 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# * im_livechat_mail_bot
+# 	* im_livechat_mail_bot
 # 
 # Translators:
-# keecome <7017511@qq.com>, 2018
-# 珠海-杜哥 <liangjia@qq.com>, 2018
-# Martin Trigaux, 2018
-# snow wang <147156565@qq.com>, 2018
+# Martin Trigaux, 2020
+# Jeffery CHEN Fan <jeffery9@gmail.com>, 2020
+# liAnGjiA <liangjia@qq.com>, 2020
+# keecome <7017511@qq.com>, 2020
+# 敬雲 林 <chingyun@yuanchih-consult.com>, 2020
+# inspur qiuguodong <qiuguodong@inspur.com>, 2020
+# Felix Yang - Elico Corp <felixyangsh@aliyun.com>, 2020
+# as co02 <asco02@163.com>, 2020
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server saas~11.5\n"
+"Project-Id-Version: Odoo Server saas~13.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-02 10:05+0000\n"
-"PO-Revision-Date: 2018-10-02 10:05+0000\n"
-"Last-Translator: snow wang <147156565@qq.com>, 2018\n"
+"POT-Creation-Date: 2020-09-01 07:29+0000\n"
+"PO-Revision-Date: 2020-09-07 08:13+0000\n"
+"Last-Translator: as co02 <asco02@163.com>, 2020\n"
 "Language-Team: Chinese (China) (https://www.transifex.com/odoo/teams/41243/zh_CN/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -22,23 +27,31 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 
 #. module: im_livechat_mail_bot
-#: selection:res.users,odoobot_state:0
-msgid "Disabled"
-msgstr "残疾"
+#: model:ir.model.fields,field_description:im_livechat_mail_bot.field_mail_bot__display_name
+#: model:ir.model.fields,field_description:im_livechat_mail_bot.field_res_users__display_name
+msgid "Display Name"
+msgstr "显示名称"
 
 #. module: im_livechat_mail_bot
-#: code:addons/im_livechat_mail_bot/models/mail_bot.py:18
+#: code:addons/im_livechat_mail_bot/models/mail_bot.py:0
 #, python-format
 msgid ""
 "Good, you can customize canned responses in the live chat "
 "application.<br/><br/><b>It's the end of this overview</b>, enjoy "
 "discovering Odoo!"
-msgstr "太好了，你可以在实时聊天应用程序中定制录音响应。<br/><br/><b>是这个概述的结尾</b>，享受发现Odoo！"
+msgstr "太好了，你可以在实时聊天应用程序中定制录音响应。<br/><br/><b>这是概要的结尾</b>，享受发现Odoo！"
 
 #. module: im_livechat_mail_bot
-#: selection:res.users,odoobot_state:0
-msgid "Idle"
-msgstr "闲置"
+#: model:ir.model.fields,field_description:im_livechat_mail_bot.field_mail_bot__id
+#: model:ir.model.fields,field_description:im_livechat_mail_bot.field_res_users__id
+msgid "ID"
+msgstr "ID"
+
+#. module: im_livechat_mail_bot
+#: model:ir.model.fields,field_description:im_livechat_mail_bot.field_mail_bot____last_update
+#: model:ir.model.fields,field_description:im_livechat_mail_bot.field_res_users____last_update
+msgid "Last Modified on"
+msgstr "最后修改日"
 
 #. module: im_livechat_mail_bot
 #: model:ir.model,name:im_livechat_mail_bot.model_mail_bot
@@ -46,53 +59,31 @@ msgid "Mail Bot"
 msgstr "邮件机器人"
 
 #. module: im_livechat_mail_bot
-#: selection:res.users,odoobot_state:0
-msgid "Not initialized"
-msgstr "未初始化"
-
-#. module: im_livechat_mail_bot
-#: code:addons/im_livechat_mail_bot/models/mail_bot.py:21
+#: code:addons/im_livechat_mail_bot/models/mail_bot.py:0
 #, python-format
 msgid ""
-"Not sure wat you are doing. Please press : and wait for the propositions. "
-"Select one of them and press enter."
-msgstr "不确定你在做什么。请按：并等待命题。选择其中一个并按回车。"
+"Not sure what you are doing. Please, type <span "
+"class=\"o_odoobot_command\">:</span> and wait for the propositions. Select "
+"one of them and press enter."
+msgstr ""
 
 #. module: im_livechat_mail_bot
 #: model:ir.model.fields,field_description:im_livechat_mail_bot.field_res_users__odoobot_state
 msgid "OdooBot Status"
-msgstr "OdooBot 状态"
+msgstr "小秘书状态"
 
 #. module: im_livechat_mail_bot
-#: selection:res.users,odoobot_state:0
-msgid "Onboarding attachement"
-msgstr "Onboarding 附件"
-
-#. module: im_livechat_mail_bot
-#: selection:res.users,odoobot_state:0
+#: model:ir.model.fields.selection,name:im_livechat_mail_bot.selection__res_users__odoobot_state__onboarding_canned
 msgid "Onboarding canned"
 msgstr "Onboarding 录制"
 
 #. module: im_livechat_mail_bot
-#: selection:res.users,odoobot_state:0
-msgid "Onboarding command"
-msgstr "Onboarding 命令"
-
-#. module: im_livechat_mail_bot
-#: selection:res.users,odoobot_state:0
-msgid "Onboarding emoji"
-msgstr "Onboarding emoji"
-
-#. module: im_livechat_mail_bot
-#: selection:res.users,odoobot_state:0
-msgid "Onboarding ping"
-msgstr "Onboarding ping"
-
-#. module: im_livechat_mail_bot
-#: code:addons/im_livechat_mail_bot/models/mail_bot.py:15
+#: code:addons/im_livechat_mail_bot/models/mail_bot.py:0
 #, python-format
-msgid "That's me! 🎉<br/>Try to type \":\" to use canned responses."
-msgstr "放开那个女孩让我来! 🎉<br/>试着输入 \":\" 使用取消原因."
+msgid ""
+"That's me! 🎉<br/>Try typing <span class=\"o_odoobot_command\">:</span> to "
+"use canned responses."
+msgstr ""
 
 #. module: im_livechat_mail_bot
 #: model:ir.model,name:im_livechat_mail_bot.model_res_users

@@ -89,7 +89,11 @@ function wrap_context(context) {
     for (var k in context) {
         if (!context.hasOwnProperty(k)) { continue; }
         var val = context[k];
-
+        // Don't add a test case like ``val === undefined``
+        // this is intended to prevent letting crap pass
+        // on the context without even knowing it.
+        // If you face an issue from here, try to sanitize
+        // the context upstream instead
         if (val === null) { continue; }
         if (val.constructor === Array) {
             context[k] = wrapping_list.fromJSON(val);
@@ -250,14 +254,29 @@ function tz_offset() {
 
 
 function pycontext() {
+    const d = new Date();
+    const today = `${
+        String(d.getFullYear()).padStart(4, "0")}-${
+        String(d.getMonth() + 1).padStart(2, "0")}-${
+        String(d.getDate()).padStart(2, "0")}`;
+    const now = `${
+        String(d.getUTCFullYear()).padStart(4, "0")}-${
+        String(d.getUTCMonth() + 1).padStart(2, "0")}-${
+        String(d.getUTCDate()).padStart(2, "0")} ${
+        String(d.getUTCHours()).padStart(2, "0")}:${
+        String(d.getUTCMinutes()).padStart(2, "0")}:${
+        String(d.getUTCSeconds()).padStart(2, "0")}`;
+
+    const { datetime, relativedelta, time } = py.extras;
     return {
-        datetime: py.extras.datetime,
-        context_today: context_today,
-        time: py.extras.time,
-        relativedelta: py.extras.relativedelta,
-        current_date: py.PY_call(
-            py.extras.time.strftime, [py.str.fromJSON('%Y-%m-%d')]),
-        tz_offset: tz_offset,
+        current_date: today,
+        datetime,
+        time,
+        now,
+        today,
+        relativedelta,
+        context_today,
+        tz_offset,
     };
 }
 
@@ -415,7 +434,7 @@ function _formatAST(ast, lbp) {
         case "(number)":
             return String(ast.value);
         case "(string)":
-            return "'" + ast.value + "'";
+            return JSON.stringify(ast.value);
         case "(constant)":
             return ast.value;
         case "(name)":
@@ -460,6 +479,11 @@ function _formatAST(ast, lbp) {
             // real lbp is not accessible, it is inside a closure
             var actualBP = BINDING_POWERS[ast.id] || 130;
             return ast.id + _formatAST(ast.first, actualBP);
+        case "if":
+            var t = _formatAST(ast.ifTrue)
+                + ' if ' + _formatAST(ast.condition)
+                + ' else ' + _formatAST(ast.ifFalse);
+            return ast.lbp < lbp ? '(' + t + ')' : t;
         case ".":
             return _formatAST(ast.first, ast.lbp) + '.' + _formatAST(ast.second);
         case "not":

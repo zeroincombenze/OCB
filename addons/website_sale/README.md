@@ -57,8 +57,8 @@ of your website (a new blog post, a page modification, product descriptions,
 Fine Tune Your Catalog
 ----------------------
 
-Get a full control on how you display your products in the catalog page:
-promotional ribbons, related sized of products, discounts, variants, grid/list
+Get full control on how you display your products in the catalog page:
+promotional ribbons, related size of products, discounts, variants, grid/list
 view, etc.
 
 Edit any product inline to make your website evolve with your customer need.
@@ -77,7 +77,7 @@ efficiently in Google.
 Leverage Social Media
 ---------------------
 
-Create new landing pages easily with the Odoo inline edition feature. Send
+Create new landing pages easily with the Odoo inline editing feature. Send
 visitors of your different marketing campaigns to specific landing pages to
 optimize conversions.
 

@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <template>
 <t t-name="DashBoard">
-    <div class="oe_dashboard_links">
-        <button type="button" class="button oe_dashboard_link_change_layout" title="Change Layout..">
-            <img src="/board/static/src/img/layout_1-1-1.png" width="16" height="16" alt=""/>
-            <span> Change Layout </span>
-        </button>
-    </div>
+    <t t-if="isMobile">
+        <t t-set="node.attrs.layout" t-value="1"/>
+    </t>
+    <t t-if="!isMobile">
+        <div class="oe_dashboard_links">
+            <button type="button" class="button oe_dashboard_link_change_layout btn btn-secondary"
+                title="Change Layout..">
+                <img src="/board/static/src/img/layout_1-1-1.png" width="16" height="16" alt=""/>
+                <span> Change Layout </span>
+            </button>
+        </div>
+    </t>
     <table t-att-data-layout="node.attrs.layout" t-attf-class="oe_dashboard oe_dashboard_layout_#{node.attrs.layout}" cellspacing="0" cellpadding="0" border="0">
     <tr>
         <td t-foreach="node.children" t-as="column" t-if="column.tag == 'column'"
@@ -72,6 +78,28 @@
 <t t-name="HomeWidget.content">
     <h3><t t-esc="widget.title"/></h3>
     <iframe width="100%" frameborder="0" t-att-src="url"/>
+</t>
+
+<t t-name="AddToBoardMenu" owl="1">
+    <li class="o_menu_item o_add_to_board" role="menuitem">
+        <button type="button" class="dropdown-item"
+            t-ref="fallback-focus"
+            t-on-click="state.open = !state.open"
+            >
+            <t>Add to my dashboard</t>
+        </button>
+        <t t-if="state.open">
+            <div class="dropdown-item-text">
+                <input type="text" class="o_input" autofocus=""
+                    t-model.trim="state.name"
+                    t-on-keydown="_onInputKeydown"
+                />
+            </div>
+            <div class="dropdown-item-text">
+                <button type="button" class="btn btn-primary" t-on-click="_addToBoard">Add</button>
+            </div>
+        </t>
+    </li>
 </t>
 
 <t t-name="SearchView.addtodashboard">

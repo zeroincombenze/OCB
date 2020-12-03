@@ -25,15 +25,17 @@ Here is how it works:
     - Printing the invoice will trigger the download of two files: the invoice, and its ISR
     - Clicking the 'Send by mail' button will attach two files to your draft mail : the invoice, and the corresponding ISR.
     """,
-    'version': '10.0',
-    'author': 'Odoo S.A',
-    'category': 'Localization',
+    'version': '11.0',
+    'category': 'Accounting/Localizations/Account Charts',
 
     'depends': ['account', 'l10n_multilang', 'base_iban'],
 
     'data': [
         'data/l10n_ch_chart_data.xml',
+        'data/account.account.template.csv',
+        'data/l10n_ch_chart_post_data.xml',
         'data/account_data.xml',
+        'data/account_tax_report_data.xml',
         'data/account_vat2011_data.xml',
         'data/account_fiscal_position_data.xml',
         'data/account_chart_template_data.xml',
@@ -42,10 +44,12 @@ Here is how it works:
         'views/res_bank_view.xml',
         'views/account_invoice_view.xml',
         'views/res_config_settings_views.xml',
+        'views/setup_wizard_views.xml',
     ],
 
     'demo': [
         'demo/account_cash_rounding.xml',
+        'demo/demo_company.xml',
     ],
     'post_init_hook': 'post_init',
 

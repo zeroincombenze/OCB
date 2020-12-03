@@ -3,7 +3,7 @@
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
-from odoo.tools import pycompat, ormcache
+from odoo.tools import ormcache
 
 TYPE2FIELD = {
     'char': 'value_text',
@@ -18,6 +18,18 @@ TYPE2FIELD = {
     'selection': 'value_text',
 }
 
+TYPE2CLEAN = {
+    'boolean': bool,
+    'integer': lambda val: val or False,
+    'float': lambda val: val or False,
+    'char': lambda val: val or False,
+    'text': lambda val: val or False,
+    'selection': lambda val: val or False,
+    'binary': lambda val: val or False,
+    'date': lambda val: val.date() if val else False,
+    'datetime': lambda val: val or False,
+}
+
 
 class Property(models.Model):
     _name = 'ir.property'
@@ -26,11 +38,11 @@ class Property(models.Model):
     name = fields.Char(index=True)
     res_id = fields.Char(string='Resource', index=True, help="If not set, acts as a default value for new resources",)
     company_id = fields.Many2one('res.company', string='Company', index=True)
-    fields_id = fields.Many2one('ir.model.fields', string='Field', ondelete='cascade', required=True, index=True)
+    fields_id = fields.Many2one('ir.model.fields', string='Field', ondelete='cascade', required=True)
     value_float = fields.Float()
     value_integer = fields.Integer()
     value_text = fields.Text()  # will contain (char, text)
-    value_binary = fields.Binary()
+    value_binary = fields.Binary(attachment=False)
     value_reference = fields.Char()
     value_datetime = fields.Datetime()
     type = fields.Selection([('char', 'Char'),
@@ -48,11 +60,18 @@ class Property(models.Model):
                             default='many2one',
                             index=True)
 
-    @api.multi
+    def init(self):
+        # Ensure there is at most one active variant for each combination.
+        query = """
+            CREATE UNIQUE INDEX IF NOT EXISTS ir_property_unique_index
+            ON %s (fields_id, COALESCE(company_id, 0), COALESCE(res_id, ''))
+        """
+        self.env.cr.execute(query % self._table)
+
     def _update_values(self, values):
-        value = values.pop('value', None)
-        if not value:
+        if 'value' not in values:
             return values
+        value = values.pop('value')
 
         prop = None
         type_ = values.get('type')
@@ -68,9 +87,11 @@ class Property(models.Model):
             raise UserError(_('Invalid type'))
 
         if field == 'value_reference':
-            if isinstance(value, models.BaseModel):
+            if not value:
+                value = False
+            elif isinstance(value, models.BaseModel):
                 value = '%s,%d' % (value._name, value.id)
-            elif isinstance(value, pycompat.integer_types):
+            elif isinstance(value, int):
                 field_id = values.get('fields_id')
                 if not field_id:
                     if not prop:
@@ -84,7 +105,6 @@ class Property(models.Model):
         values[field] = value
         return values
 
-    @api.multi
     def write(self, values):
         # if any of the records we're writing on has a res_id=False *or*
         # we're writing a res_id=False on any record
@@ -98,6 +118,11 @@ class Property(models.Model):
             )
         r = super(Property, self).write(self._update_values(values))
         if default_set:
+            # DLE P44: test `test_27_company_dependent`
+            # Easy solution, need to flush write when changing a property.
+            # Maybe it would be better to be able to compute all impacted cache value and update those instead
+            # Then clear_caches must be removed as well.
+            self.flush()
             self.clear_caches()
         return r
 
@@ -107,10 +132,11 @@ class Property(models.Model):
         created_default = any(not v.get('res_id') for v in vals_list)
         r = super(Property, self).create(vals_list)
         if created_default:
+            # DLE P44: test `test_27_company_dependent`
+            self.flush()
             self.clear_caches()
         return r
 
-    @api.multi
     def unlink(self):
         default_deleted = False
         if self._ids:
@@ -124,7 +150,6 @@ class Property(models.Model):
             self.clear_caches()
         return r
 
-    @api.multi
     def get_by_record(self):
         self.ensure_one()
         if self.type in ('char', 'text', 'selection'):
@@ -151,7 +176,42 @@ class Property(models.Model):
         return False
 
     @api.model
-    def get(self, name, model, res_id=False):
+    def _set_default(self, name, model, value, company=False):
+        """ Set the given field's generic value for the given company.
+
+        :param name: the field's name
+        :param model: the field's model name
+        :param value: the field's value
+        :param company: the company (record or id)
+        """
+        field_id = self.env['ir.model.fields']._get(model, name).id
+        company_id = int(company) if company else False
+        prop = self.sudo().search([
+            ('fields_id', '=', field_id),
+            ('company_id', '=', company_id),
+            ('res_id', '=', False),
+        ])
+        if prop:
+            prop.write({'value': value})
+        else:
+            prop.create({
+                'fields_id': field_id,
+                'company_id': company_id,
+                'res_id': False,
+                'name': name,
+                'value': value,
+                'type': self.env[model]._fields[name].type,
+            })
+
+    @api.model
+    def _get(self, name, model, res_id=False):
+        """ Get the given field's generic value for the record.
+
+        :param name: the field's name
+        :param model: the field's model name
+        :param res_id: optional resource, format: "<id>" (int) or
+                       "<model>,<id>" (str)
+        """
         if not res_id:
             t, v = self._get_default_property(name, model)
             if not v or t != 'many2one':
@@ -163,11 +223,9 @@ class Property(models.Model):
             return p.get_by_record()
         return False
 
-    # only cache Property.get(res_id=False) as that's
-    # sub-optimally, we can only call _company_default_get without a field
-    # unless we want to create a more complete helper which does the
-    # returning-a-company-id-from-a-model-and-name
-    COMPANY_KEY = "self.env.context.get('force_company') or self.env['res.company']._company_default_get(model).id"
+    # only cache Property._get(res_id=False) as that's
+    # sub-optimally.
+    COMPANY_KEY = "self.env.company.id"
     @ormcache(COMPANY_KEY, 'name', 'model')
     def _get_default_property(self, name, model):
         prop = self._get_property(name, model, res_id=False)
@@ -181,21 +239,22 @@ class Property(models.Model):
     def _get_property(self, name, model, res_id):
         domain = self._get_domain(name, model)
         if domain is not None:
+            if res_id and isinstance(res_id, int):
+                res_id = "%s,%s" % (model, res_id)
             domain = [('res_id', '=', res_id)] + domain
             #make the search with company_id asc to make sure that properties specific to a company are given first
-            return self.search(domain, limit=1, order='company_id')
-        return self.browse(())
+            return self.sudo().search(domain, limit=1, order='company_id')
+        return self.sudo().browse(())
 
     def _get_domain(self, prop_name, model):
-        self._cr.execute("SELECT id FROM ir_model_fields WHERE name=%s AND model=%s", (prop_name, model))
-        res = self._cr.fetchone()
-        if not res:
+        field_id = self.env['ir.model.fields']._get(model, prop_name).id
+        if not field_id:
             return None
-        company_id = self._context.get('force_company') or self.env['res.company']._company_default_get(model, res[0]).id
-        return [('fields_id', '=', res[0]), ('company_id', 'in', [company_id, False])]
+        company_id = self.env.company.id
+        return [('fields_id', '=', field_id), ('company_id', 'in', [company_id, False])]
 
     @api.model
-    def get_multi(self, name, model, ids):
+    def _get_multi(self, name, model, ids):
         """ Read the property field `name` for the records of model `model` with
             the given `ids`, and return a dictionary mapping `ids` to their
             corresponding value.
@@ -203,52 +262,63 @@ class Property(models.Model):
         if not ids:
             return {}
 
-        domain = self._get_domain(name, model)
-        if domain is None:
-            return dict.fromkeys(ids, False)
-
-        # retrieve the values for the given ids and the default value, too
-        refs = {('%s,%s' % (model, id)): id for id in ids}
-        refs[False] = False
-        domain += [('res_id', 'in', list(refs))]
-
-        # note: order by 'company_id asc' will return non-null values first
-        props = self.search(domain, order='company_id asc')
-        result = {}
-
         field = self.env[model]._fields[name]
+        field_id = self.env['ir.model.fields']._get(model, name).id
+        company_id = self.env.company.id
+
         if field.type == 'many2one':
-            # optimization for many2one fields
-            Comodel = self.env[field.comodel_name]
-            co_ids = set()
-            for prop in props:
-                # for a given res_id, take the first property only
-                id = refs.pop(prop.res_id, None)
-                if id is not None:
-                    val = prop.value_reference
-                    if val:
-                        val = int(val.split(',')[1])
-                        co_ids.add(val)
-                    result[id] = val
-            # check for existence in batch, and update result accordingly
-            existing = {rec.id: rec for rec in Comodel.browse(co_ids).exists()}
-            result = {id: existing.get(val, Comodel) for id, val in result.items()}
+            comodel = self.env[field.comodel_name]
+            model_pos = len(model) + 2
+            value_pos = len(comodel._name) + 2
+            # retrieve values: both p.res_id and p.value_reference are formatted
+            # as "<rec._name>,<rec.id>"; the purpose of the LEFT JOIN is to
+            # return the value id if it exists, NULL otherwise
+            query = """
+                SELECT substr(p.res_id, %s)::integer, r.id
+                FROM ir_property p
+                LEFT JOIN {} r ON substr(p.value_reference, %s)::integer=r.id
+                WHERE p.fields_id=%s
+                    AND (p.company_id=%s OR p.company_id IS NULL)
+                    AND (p.res_id IN %s OR p.res_id IS NULL)
+                ORDER BY p.company_id NULLS FIRST
+            """.format(comodel._table)
+            params = [model_pos, value_pos, field_id, company_id]
+            clean = comodel.browse
+
+        elif field.type in TYPE2FIELD:
+            model_pos = len(model) + 2
+            # retrieve values: p.res_id is formatted as "<rec._name>,<rec.id>"
+            query = """
+                SELECT substr(p.res_id, %s)::integer, p.{}
+                FROM ir_property p
+                WHERE p.fields_id=%s
+                    AND (p.company_id=%s OR p.company_id IS NULL)
+                    AND (p.res_id IN %s OR p.res_id IS NULL)
+                ORDER BY p.company_id NULLS FIRST
+            """.format(TYPE2FIELD[field.type])
+            params = [model_pos, field_id, company_id]
+            clean = TYPE2CLEAN[field.type]
 
         else:
-            for prop in props:
-                # for a given res_id, take the first property only
-                id = refs.pop(prop.res_id, None)
-                if id is not None:
-                    result[id] = prop.get_by_record()
+            return dict.fromkeys(ids, False)
 
-        # set the default value to the ids that are not in result
-        default_value = result.pop(False, False)
-        for id in ids:
-            result.setdefault(id, default_value)
-        return result
+        # retrieve values
+        cr = self.env.cr
+        result = {}
+        refs = {"%s,%s" % (model, id) for id in ids}
+        for sub_refs in cr.split_for_in_conditions(refs):
+            cr.execute(query, params + [sub_refs])
+            result.update(cr.fetchall())
+
+        # determine all values and format them
+        default = result.get(None, None)
+        return {
+            id: clean(result.get(id, default))
+            for id in ids
+        }
 
     @api.model
-    def set_multi(self, name, model, values, default_value=None):
+    def _set_multi(self, name, model, values, default_value=None):
         """ Assign the property field `name` for the records of model `model`
             with `values` (dictionary mapping record ids to their value).
             If the value for a given record is the same as the default
@@ -269,14 +339,13 @@ class Property(models.Model):
             if domain is None:
                 raise Exception()
             # retrieve the default value for the field
-            default_value = clean(self.get(name, model))
+            default_value = clean(self._get(name, model))
 
         # retrieve the properties corresponding to the given record ids
-        self._cr.execute("SELECT id FROM ir_model_fields WHERE name=%s AND model=%s", (name, model))
-        field_id = self._cr.fetchone()[0]
-        company_id = self.env.context.get('force_company') or self.env['res.company']._company_default_get(model, field_id).id
+        field_id = self.env['ir.model.fields']._get(model, name).id
+        company_id = self.env.company.id
         refs = {('%s,%s' % (model, id)): id for id in values}
-        props = self.search([
+        props = self.sudo().search([
             ('fields_id', '=', field_id),
             ('company_id', '=', company_id),
             ('res_id', 'in', list(refs)),
@@ -289,8 +358,6 @@ class Property(models.Model):
             if value == default_value:
                 # avoid prop.unlink(), as it clears the record cache that can
                 # contain the value of other properties to set on record!
-                prop.check_access_rights('unlink')
-                prop.check_access_rule('unlink')
                 self._cr.execute("DELETE FROM ir_property WHERE id=%s", [prop.id])
             elif value != clean(prop.get_by_record()):
                 prop.write({'value': value})
@@ -308,7 +375,7 @@ class Property(models.Model):
                     'value': value,
                     'type': self.env[model]._fields[name].type,
                 })
-        self.create(vals_list)
+        self.sudo().create(vals_list)
 
     @api.model
     def search_multi(self, name, model, operator, value):
@@ -356,7 +423,13 @@ class Property(models.Model):
             elif value > 0 and operator == '<':
                 operator = '>='
                 include_zero = True
-
+        elif field.type == 'boolean':
+            if not value and operator == '=':
+                operator = '!='
+                include_zero = True
+            elif value and operator == '!=':
+                operator = '='
+                include_zero = True
 
         # retrieve the properties that match the condition
         domain = self._get_domain(name, model)

@@ -3,8 +3,8 @@
 
 {
     'name': 'Online Jobs',
-    'category': 'Website',
-    'sequence': 142,
+    'category': 'Website/Website',
+    'sequence': 310,
     'version': '1.0',
     'summary': 'Manage your online hiring process',
     'description': "This module allows to publish your available job positions on your website and keep track of application submissions easily. It comes as an add-on of *Recruitment* app.",

@@ -10,15 +10,28 @@ var BasicModel = require('web.BasicModel');
 var FormController = require('web.FormController');
 var FormRenderer = require('web.FormRenderer');
 var FormView = require('web.FormView');
+const { qweb } = require("web.core");
 
 var QuickCreateFormRenderer = FormRenderer.extend({
     /**
      * @override
      */
-    start: function () {
+    start: async function () {
+        await this._super.apply(this, arguments);
         this.$el.addClass('o_xxs_form_view');
-        return this._super.apply(this, arguments);
+        this.$el.removeClass('o_xxl_form_view');
     },
+
+    //--------------------------------------------------------------------------
+    // Private
+    //--------------------------------------------------------------------------
+
+    /**
+     * Override to do nothing so that the renderer won't resize on window resize
+     *
+     * @override
+     */
+    _applyFormSizeClass() {},
 
     //--------------------------------------------------------------------------
     // Handlers
@@ -56,10 +69,6 @@ var QuickCreateFormModel = BasicModel.extend({
 });
 
 var QuickCreateFormController = FormController.extend({
-    custom_events: _.extend({}, FormController.prototype.custom_events, {
-        env_updated: '_onEnvUpdated',
-    }),
-
     //--------------------------------------------------------------------------
     // Public
     //--------------------------------------------------------------------------
@@ -75,7 +84,7 @@ var QuickCreateFormController = FormController.extend({
      */
     commitChanges: function () {
         var mutexDef = this.mutex.getUnlockedDef();
-        return $.when(mutexDef, this.renderer.commitChanges(this.handle));
+        return Promise.all([mutexDef, this.renderer.commitChanges(this.handle)]);
     },
     /**
      * @returns {Object} the changes done on the current record
@@ -84,22 +93,24 @@ var QuickCreateFormController = FormController.extend({
         return this.model.getChanges(this.handle);
     },
 
-    //--------------------------------------------------------------------------
-    // Handlers
-    //--------------------------------------------------------------------------
+    /**
+     * @override
+     */
+    renderButtons($node) {
+        this.$buttons = $(qweb.render('KanbanView.RecordQuickCreate.buttons'));
+        if ($node) {
+            this.$buttons.appendTo($node);
+        }
+    },
 
     /**
-     * Stops the propagation of the 'env_updated' event to prevent interferences
-     * with the kanban controller.
-     *
-     * @private
+     * @override
      */
-    _onEnvUpdated: function (ev) {
-        ev.stopPropagation();
-    },
+    updateButtons() {/* No need to update the buttons */},
 });
 
 var QuickCreateFormView = FormView.extend({
+    withControlPanel: false,
     config: _.extend({}, FormView.prototype.config, {
         Model: QuickCreateFormModel,
         Renderer: QuickCreateFormRenderer,

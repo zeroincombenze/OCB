@@ -52,6 +52,14 @@ class Note(models.Model):
     date_done = fields.Date('Date done')
     color = fields.Integer(string='Color Index')
     tag_ids = fields.Many2many('note.tag', 'note_tags_rel', 'note_id', 'tag_id', string='Tags')
+    message_partner_ids = fields.Many2many(
+        comodel_name='res.partner', string='Followers (Partners)',
+        compute='_get_followers', search='_search_follower_partners',
+        compute_sudo=True)
+    message_channel_ids = fields.Many2many(
+        comodel_name='mail.channel', string='Followers (Channels)',
+        compute='_get_followers', search='_search_follower_channels',
+        compute_sudo=True)
 
     @api.depends('memo')
     def _compute_name(self):
@@ -60,7 +68,6 @@ class Note(models.Model):
             text = html2plaintext(note.memo) if note.memo else ''
             note.name = text.strip().replace('*', '').split("\n")[0]
 
-    @api.multi
     def _compute_stage_id(self):
         first_user_stage = self.env['note.stage'].search([('user_id', '=', self.env.uid)], limit=1)
         for note in self:
@@ -70,7 +77,6 @@ class Note(models.Model):
             if not note.stage_id:
                 note.stage_id = first_user_stage
 
-    @api.multi
     def _inverse_stage_id(self):
         for note in self.filtered('stage_id'):
             note.stage_ids = note.stage_id + note.stage_ids.filtered(lambda stage: stage.user_id != self.env.user)
@@ -124,10 +130,8 @@ class Note(models.Model):
             return result
         return super(Note, self).read_group(domain, fields, groupby, offset=offset, limit=limit, orderby=orderby, lazy=lazy)
 
-    @api.multi
     def action_close(self):
         return self.write({'open': False, 'date_done': fields.date.today()})
 
-    @api.multi
     def action_open(self):
         return self.write({'open': True})

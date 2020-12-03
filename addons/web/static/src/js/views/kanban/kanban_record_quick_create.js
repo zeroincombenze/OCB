@@ -8,9 +8,8 @@ odoo.define('web.kanban_record_quick_create', function (require) {
 
 var core = require('web.core');
 var QuickCreateFormView = require('web.QuickCreateFormView');
+const session = require('web.session');
 var Widget = require('web.Widget');
-
-var qweb = core.qweb;
 
 var RecordQuickCreate = Widget.extend({
     className: 'o_kanban_quick_create',
@@ -47,14 +46,14 @@ var RecordQuickCreate = Widget.extend({
      */
     willStart: function () {
         var self = this;
-        var def1 = this._super.apply(this, arguments);
-        var def2;
+        var superWillStart = this._super.apply(this, arguments);
+        var viewsLoaded;
         if (this.formViewRef) {
             var views = [[false, 'form']];
             var context = _.extend({}, this.context, {
                 form_view_ref: this.formViewRef,
             });
-            def2 = this.loadViews(this.model, context, views);
+            viewsLoaded = this.loadViews(this.model, context, views);
         } else {
             var fieldsView = {};
             fieldsView.arch = '<form>' +
@@ -65,27 +64,27 @@ var RecordQuickCreate = Widget.extend({
             };
             fieldsView.fields = fields;
             fieldsView.viewFields = fields;
-            def2 = $.when({form: fieldsView});
+            viewsLoaded = Promise.resolve({form: fieldsView});
         }
-        def2 = def2.then(function (fieldsViews) {
+        viewsLoaded = viewsLoaded.then(function (fieldsViews) {
             var formView = new QuickCreateFormView(fieldsViews.form, {
                 context: self.context,
                 modelName: self.model,
-                userContext: self.getSession().user_context,
+                userContext: session.user_context,
             });
             return formView.getController(self).then(function (controller) {
                 self.controller = controller;
                 return self.controller.appendTo(document.createDocumentFragment());
             });
         });
-        return $.when(def1, def2);
+        return Promise.all([superWillStart, viewsLoaded]);
     },
     /**
      * @override
      */
     start: function () {
         this.$el.append(this.controller.$el);
-        this.$el.append(qweb.render('KanbanView.RecordQuickCreate.buttons'));
+        this.controller.renderButtons(this.$el);
 
         // focus the first field
         this.controller.autofocus();
@@ -113,7 +112,7 @@ var RecordQuickCreate = Widget.extend({
      * have been made yet
      *
      * @private
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     cancel: function () {
         var self = this;
@@ -129,7 +128,6 @@ var RecordQuickCreate = Widget.extend({
     //--------------------------------------------------------------------------
 
     /**
-     * @override
      * @private
      * @param {Object} [options]
      * @param {boolean} [options.openRecord] set to true to directly open the
@@ -139,7 +137,7 @@ var RecordQuickCreate = Widget.extend({
         var self = this;
         if (this._disabled) {
             // don't do anything if we are already creating a record
-            return $.Deferred();
+            return;
         }
         // disable the widget to prevent the user from creating multiple records
         // with the current values ; if the create works, the widget will be
@@ -157,13 +155,13 @@ var RecordQuickCreate = Widget.extend({
             } else {
                 self._enableQuickCreate();
             }
-        }).fail(this._enableQuickCreate.bind(this));
+        }).guardedCatch(this._enableQuickCreate.bind(this));
     },
     /**
      * Notifies the environment that the quick creation must be cancelled
      *
      * @private
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     _cancel: function () {
         this.trigger_up('cancel_quick_create');
@@ -278,6 +276,11 @@ var RecordQuickCreate = Widget.extend({
             return;
         }
 
+        // ignore clicks while a modal is just about to open
+        if ($(document.body).hasClass('modal-open')) {
+            return;
+        }
+
         // ignore clicks if target is no longer in dom (e.g., a click on the
         // 'delete' trash icon of a m2m tag)
         if (!document.contains(ev.target)) {
@@ -285,7 +288,7 @@ var RecordQuickCreate = Widget.extend({
         }
 
         // ignore clicks if target is inside the quick create
-        if (this.el.contains(ev.target) && this.el !== ev.target) {
+        if (this.el.contains(ev.target) || this.el === ev.target) {
             return;
         }
 

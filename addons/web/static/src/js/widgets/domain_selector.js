@@ -188,11 +188,14 @@ var DomainTree = DomainNode.extend({
     },
     /**
      * @see DomainNode.start
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     start: function () {
         this._postRender();
-        return $.when(this._super.apply(this, arguments), this._renderChildrenTo(this.$childrenContainer));
+        return Promise.all([
+            this._super.apply(this, arguments),
+            this._renderChildrenTo(this.$childrenContainer)
+        ]);
     },
 
     //--------------------------------------------------------------------------
@@ -369,11 +372,11 @@ var DomainTree = DomainNode.extend({
      *
      * @private
      * @param {jQuery} $to - the jQuery node to which the children must be added
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     _renderChildrenTo: function ($to) {
         var $div = $("<div/>");
-        return $.when.apply($, _.map(this.children, (function (child) {
+        return Promise.all(_.map(this.children, (function (child) {
             return child.appendTo($div);
         }).bind(this))).then((function () {
             _.each(this.children, function (child) {
@@ -485,11 +488,11 @@ var DomainSelector = DomainTree.extend({
      * does nothing.
      *
      * @param {string} domain
-     * @returns {Deferred} resolved when the rerendering is finished
+     * @returns {Promise} resolved when the rerendering is finished
      */
     setDomain: function (domain) {
         if (domain === Domain.prototype.arrayToString(this.getDomain())) {
-            return $.when();
+            return Promise.resolve();
         }
         var parsedDomain = this._parseDomain(domain);
         if (parsedDomain) {
@@ -532,17 +535,14 @@ var DomainSelector = DomainTree.extend({
 
         // Warn the user if the domain is not valid after rendering
         if (!this._isValid) {
-            this.do_warn(
-                _t("Domain error"),
-                _t("The domain you entered is not properly formed")
-            );
+            this.do_warn(false, _t("Domain not supported"));
         }
     },
     /**
      * This method is ugly but achieves the right behavior without flickering.
      *
      * @param {Array|string} domain
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     _redraw: function (domain) {
         var oldChildren = this.children.slice();
@@ -580,7 +580,7 @@ var DomainSelector = DomainTree.extend({
         try {
             domain = Domain.prototype.stringToArray($(e.currentTarget).val());
         } catch (err) { // If there is a syntax error, just ignore the change
-            this.do_warn(_t("Syntax error"), _t("The domain you entered is not properly formed"));
+            this.do_warn(_t("Syntax error"), _t("Domain not properly formed"));
             return;
         }
         this._redraw(domain).then((function () {
@@ -637,7 +637,7 @@ var DomainLeaf = DomainNode.extend({
      * Prepares the information the rendering of the widget will need by
      * pre-instantiating its internal field selector widget.
      *
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     willStart: function () {
         var defs = [this._super.apply(this, arguments)];
@@ -649,7 +649,7 @@ var DomainLeaf = DomainNode.extend({
         this.fieldSelector = new ModelFieldSelector(
             this,
             this.model,
-            this.chain ? this.chain.split(".") : [],
+            this.chain !== undefined ? this.chain.toString().split(".") : [],
             this.options
         );
         defs.push(this.fieldSelector.appendTo($("<div/>")).then((function () {
@@ -702,17 +702,17 @@ var DomainLeaf = DomainNode.extend({
                     }).bind(this)));
                 }
 
-                return $.when.apply($, wDefs);
+                return Promise.all(wDefs);
             }
         }).bind(this)));
 
-        return $.when.apply($, defs);
+        return Promise.all(defs);
     },
     /**
      * @see DomainNode.start
      * Appends the prepared field selector and value widget.
      *
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     start: function () {
         this.fieldSelector.$el.prependTo(this.$("> .o_domain_leaf_info, > .o_domain_leaf_edition")); // place the field selector

@@ -3,40 +3,56 @@ odoo.define('web_unsplash.image_widgets', function (require) {
 
 var core = require('web.core');
 var UnsplashAPI = require('unsplash.api');
-
-var ImageWidget = require('web_editor.widget').ImageWidget;
-var QWeb = core.qweb;
+var widgetsMedia = require('wysiwyg.widgets.media');
 
 var unsplashAPI = null;
 
-ImageWidget.include({
-    xmlDependencies: ImageWidget.prototype.xmlDependencies.concat(
+// Prevent base class from treating unsplash images like regular attachments
+const originalEvents = widgetsMedia.ImageWidget.prototype.events;
+const clickHandler = originalEvents['click .o_existing_attachment_cell'];
+if (!clickHandler) {
+    throw new Error(`Couldn't find a handler for o_existing_attachment_cell clicks.
+The unsplash image widget needs to prevent this handler from executing on unsplash attachments.`);
+}
+_.extend(originalEvents, {
+    'click .o_existing_attachment_cell:not(.o_unsplash_attachment_cell)': clickHandler,
+});
+delete originalEvents['click .o_existing_attachment_cell'];
+
+widgetsMedia.ImageWidget.include({
+    xmlDependencies: widgetsMedia.ImageWidget.prototype.xmlDependencies.concat(
         ['/web_unsplash/static/src/xml/unsplash_image_widget.xml']
     ),
-    events: _.extend({}, ImageWidget.prototype.events, {
-        'input input.unsplash_search': '_onChangeUnsplashSearch',
-        'dblclick .unsplash_img_container [data-imgid]': '_onUnsplashImgDblClick',
-        'click .unsplash_img_container [data-imgid]': '_onUnsplashImgClick',
-        'click button.save_unsplash': '_onSaveUnsplash',
+    events: _.extend({}, widgetsMedia.ImageWidget.prototype.events, {
+        'click .o_unsplash_attachment_cell[data-imgid]': '_onUnsplashImgClick',
+        'click button.save_unsplash': '_onSaveUnsplashCredentials',
     }),
+
     /**
      * @override
      */
     init: function () {
+        this._super.apply(this, arguments);
+
         this._unsplash = {
             selectedImages: {},
             isMaxed: false,
             query: false,
+            error: false,
+            records: [],
         };
-        // TODO This is a `hack` to prevent the UnsplashAPI to be destroyed every time
-        //      the media dialog is closed.
-        //      Indeed, UnsplashAPI has a cache system to recude unsplash call, it is
-        //      then better to keep its state to benefic from it from one media dialog
-        //      call to another.
-        //      Unsplash API will either be (it's still being discussed):
-        //      * a service (ideally coming with an improvement to not auto load the service)
-        //      * initialized in the website_root (trigger_up)
-        var def = this._super.apply(this, arguments);
+
+        // TODO improve this
+        //
+        // This is a `hack` to prevent the UnsplashAPI to be destroyed every
+        // time the media dialog is closed. Indeed, UnsplashAPI has a cache
+        // system to recude unsplash call, it is then better to keep its state
+        // to take advantage from it from one media dialog call to another.
+        //
+        // Unsplash API will either be (it's still being discussed):
+        //  * a service (ideally coming with an improvement to not auto load
+        //    the service)
+        //  * initialized in the website_root (trigger_up)
         if (unsplashAPI === null) {
             this.unsplashAPI = new UnsplashAPI(this);
             unsplashAPI = this.unsplashAPI;
@@ -44,8 +60,10 @@ ImageWidget.include({
             this.unsplashAPI = unsplashAPI;
             this.unsplashAPI.setParent(this);
         }
-        return def;
     },
+    /**
+     * @override
+     */
     destroy: function () {
         // TODO See `hack` explained in `init`. This prevent the media dialog destroy
         //      to destroy unsplashAPI when destroying the children
@@ -60,45 +78,55 @@ ImageWidget.include({
     /**
      * @override
      */
-    getControlPanelConfig: function () {
-        var config = this._super.apply(this, arguments);
-        if (this._unsplash.query) {
-            _.extend(config, {
-                pagerLeftEnabled: this.page > 1,
-                pagerRightEnabled: !this._unsplash.isMaxed,
+    _save: async function () {
+        const _super = this._super;
+        if (Object.keys(this._unsplash.selectedImages).length) {
+            this.saved = true;
+            const images = await this._rpc({
+                route: '/web_unsplash/attachment/add',
+                params: {
+                    unsplashurls: this._unsplash.selectedImages,
+                    res_model: this.options.res_model,
+                    res_id: this.options.res_id,
+                    query: this._unsplash.query,
+                },
             });
+            this.attachments.push(...images);
+            this.selectedAttachments.push(...images);
         }
-        return config;
+        return _super.apply(this, arguments);
     },
     /**
      * @override
      */
-    save: function () {
-        if (!this._unsplash.query) {
-            return this._super.apply(this, arguments);
-        }
+    search: async function (needle) {
         var self = this;
-        var args = arguments;
-        var _super = this._super;
-        return this._rpc({
-            route: '/web_unsplash/attachment/add',
-            params: {
-                unsplashurls: self._unsplash.selectedImages,
-                res_model : self.options.res_model,
-                res_id: self.options.res_id,
-            }
-        }).then(function (images) {
-            for (var img in self._unsplash.selectedImages) {
-                self.unsplashAPI.notifyDownload(self._unsplash.selectedImages[img].download_url);
-            }
+        await this._super(...arguments);
 
-            _.each(images, function (image) {
-                image.src = image.url;
-                image.isDocument = !(/gif|jpe|jpg|png/.test(image.mimetype));
-            });
-            self.images = images;
-            return _super.apply(self, args);
+        this._unsplash.query = needle;
+        if (!needle) {
+            this._unsplash.records = [];
+            return;
+        }
+
+        await this.unsplashAPI.getImages(needle, this.numberOfAttachmentsToDisplay).then(function (res) {
+            self._unsplash.isMaxed = res.isMaxed;
+            self._unsplash.records = res.images;
+            self._unsplash.error = false;
+        }, function (err) {
+            self._unsplash.error = err;
         });
+    },
+    /**
+     * @override
+     */
+    hasContent() {
+        if (this.searchService === 'all') {
+            return this._super(...arguments) || (this.unsplashRecords && this.unsplashRecords.length);
+        } else if (this.searchService === 'unsplash') {
+            return (this.unsplashRecords && this.unsplashRecords.length);
+        }
+        return this._super(...arguments);
     },
 
     //--------------------------------------------------------------------------
@@ -106,52 +134,72 @@ ImageWidget.include({
     //--------------------------------------------------------------------------
 
     /**
-     * Highlights selected image, when an image is clicked and when pager change
-     *
+     * @override
+     */
+    _highlightSelected: function () {
+        this._super.apply(this, arguments);
+
+        const $select = this.$('.o_unsplash_attachment_cell[data-imgid]').filter((i, el) => {
+            return $(el).data('imgid') in this._unsplash.selectedImages;
+        }).addClass('o_we_attachment_selected');
+        return $select;
+    },
+    /**
      * @private
      */
-    _highlightSelectedImages: function () {
-        var self = this;
-        if (!this._unsplash.query) {
-            return this._super.apply(this, arguments);
+    _loadMoreImages: function (forceSearch) {
+        if (!this.$('.o_we_search').val()) {
+            return this._super(forceSearch);
         }
-        this.$('.o_unsplash_img_cell.o_selected').removeClass("o_selected");
-        var $select = this.$('.o_unsplash_img_cell [data-imgid]').filter(function () {
-            return $(this).data('imgid') in self._unsplash.selectedImages;
-        });
-        $select.closest('.o_unsplash_img_cell').addClass("o_selected");
-        return $select;
+        this.numberOfAttachmentsToDisplay += 10;
+        this.search(this.$('.o_we_search').val()).then(() => this._renderThumbnails());
     },
     /**
      * @override
      */
-    _renderImages: function () {
-        var self = this;
-        if (!this._unsplash.query) {
-            return this._super.apply(this, arguments);
+    _renderThumbnails: function () {
+        this._super(...arguments);
+        this.$('.unsplash_error').empty();
+        if (!['all', 'unsplash'].includes(this.searchService)) {
+            return;
         }
-        this.unsplashAPI.getImages(this._unsplash.query, this.IMAGES_PER_PAGE, this.page).then(function (res) {
-            self._unsplash.isMaxed = res.isMaxed;
-            var rows = _(res.images).chain()
-                .groupBy(function (a, index) { return Math.floor(index / self.IMAGES_PER_ROW); })
-                .values()
-                .value();
+        if (this._unsplash.query && this._unsplash.error) {
+            this.$('.unsplash_error').html(
+                core.qweb.render('web_unsplash.dialog.error.content', {
+                    status: this._unsplash.error,
+                })
+            );
+            return;
+        }
 
-            self.$('.unsplash_img_container').html(QWeb.render('web_unsplash.dialog.image.content', { rows: rows }));
-            self._highlightSelectedImages();
-        }).fail(function (err) {
-            self.$('.unsplash_img_container').html(QWeb.render('web_unsplash.dialog.error.content', err));
-        }).always(function () {
-            self._toggleAttachmentContaines(false);
-        });
+        if (['all', 'unsplash'].includes(this.searchService) && this._unsplash.query && !this._unsplash.isMaxed) {
+            this.$('.o_load_more').removeClass('d-none');
+            this.$('.o_load_done_msg').addClass('d-none');
+        }
     },
     /**
-     * @private
+     * @override
      */
-    _toggleAttachmentContaines: function (hideUnsplash) {
-        this.$('.existing-attachments').toggleClass('o_hidden', !hideUnsplash);
-        this.$('.unsplash_img_container').toggleClass('o_hidden', hideUnsplash);
-        this.trigger_up('update_control_panel');
+    _renderExisting: function (attachments) {
+        this.unsplashRecords = this._unsplash.records.map(record => {
+            const url = new URL(record.urls.regular);
+            // In small windows, row height could get quite a bit larger than the min, so we keep some leeway.
+            url.searchParams.set('h', 2 * this.MIN_ROW_HEIGHT);
+            url.searchParams.delete('w');
+            return Object.assign({}, record, {
+                url: url.toString(),
+            });
+        });
+        return this._super(...arguments);
+    },
+    /**
+     * @override
+     */
+    _selectAttachement: function (attachment, save) {
+        if (!this.options.multiImages) {
+            this._unsplash.selectedImages = {};
+        }
+        this._super(...arguments);
     },
 
     //--------------------------------------------------------------------------
@@ -161,7 +209,7 @@ ImageWidget.include({
     /**
      * @private
      */
-    _onSaveUnsplash: function () {
+    _onSaveUnsplashCredentials: function () {
         var self = this;
         var key = this.$('#accessKeyInput').val().trim();
         var appId = this.$('#appIdInput').val().trim();
@@ -170,18 +218,14 @@ ImageWidget.include({
         this.$('#appIdInput').toggleClass('is-invalid', !appId);
 
         if (key && appId) {
-            var params = {
-                'key': key,
-                'appId': appId,
-            };
-
             if (!this.$el.find('.is-invalid').length) {
                 this._rpc({
                     route: '/web_unsplash/save_unsplash',
-                    params: params,
+                    params: {key: key, appId: appId},
                 }).then(function () {
                     self.unsplashAPI.clientId = key;
-                    self._renderImages();
+                    self._unsplash.error = false;
+                    self.search(self._unsplash.query).then(() => self._renderThumbnails());
                 });
             }
         }
@@ -189,41 +233,27 @@ ImageWidget.include({
     /**
      * @private
      */
-    _onChangeUnsplashSearch: _.debounce(function () {
-        // oldPage saves the original image widget pager.
-        // Emptying the unsplash search will set the pager to its previous state
-        this._unsplash.query = this.$('.unsplash_search').val().trim();
-        if (this._unsplash.query) {
-            this.oldPage = this.page;
-            this.page = 1;
-            this._renderImages();
-        } else {
-            this.page = this.oldPage || 0;
-            this._toggleAttachmentContaines(true);
-        }
-    }, 1000),
-    /**
-     * @private
-     */
     _onUnsplashImgClick: function (ev) {
-        var imgid = $(ev.currentTarget).data('imgid');
-        var url = $(ev.currentTarget).data('url');
-        var download_url = $(ev.currentTarget).data('download-url');
-        if (!this.multiImages) {
+        if (this.saved) {
+            // already saved, probably a double click. Ignore.
+            return;
+        }
+        const {imgid, url, downloadUrl, description} = ev.currentTarget.dataset;
+        if (!this.options.multiImages) {
             this._unsplash.selectedImages = {};
+            this.selectedAttachments = [];
         }
         if (imgid in this._unsplash.selectedImages) {
             delete this._unsplash.selectedImages[imgid];
         } else {
-            this._unsplash.selectedImages[imgid] = {url: url, download_url: download_url};
+            const _1920Url = new URL(url);
+            _1920Url.searchParams.set('w', '1920');
+            this._unsplash.selectedImages[imgid] = {url: _1920Url.href, download_url: downloadUrl, description: description};
         }
-        this._highlightSelectedImages();
-    },
-    /**
-     * @private
-     */
-    _onUnsplashImgDblClick: function (ev) {
-        this.trigger_up('save_request');
+        this._highlightSelected();
+        if (!this.options.multiImages) {
+            this.trigger_up('save_request');
+        }
     },
 });
 });

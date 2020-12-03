@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from odoo.tests.common import SavepointCase
+from odoo.exceptions import UserError
 
-
-class TestProjectBase(SavepointCase):
+class TestProjectCommon(SavepointCase):
 
     @classmethod
     def setUpClass(cls):
-        super(TestProjectBase, cls).setUpClass()
+        super(TestProjectCommon, cls).setUpClass()
 
         user_group_employee = cls.env.ref('base.group_user')
         user_group_project_user = cls.env.ref('project.group_project_user')
@@ -19,6 +19,9 @@ class TestProjectBase(SavepointCase):
         cls.partner_2 = cls.env['res.partner'].create({
             'name': 'Valid Poilvache',
             'email': 'valid.other@gmail.com'})
+        cls.partner_3 = cls.env['res.partner'].create({
+            'name': 'Valid Poilboeuf',
+            'email': 'valid.poilboeuf@gmail.com'})
 
         # Test users to use through the various tests
         Users = cls.env['res.users'].with_context({'no_reset_password': True})
@@ -89,3 +92,15 @@ class TestProjectBase(SavepointCase):
         mail = template.format(to=to, subject=subject, cc=cc, extra=extra, email_from=email_from, msg_id=msg_id)
         self.env['mail.thread'].with_context(mail_channel_noautofollow=True).message_process(model, mail)
         return self.env[target_model].search([(target_field, '=', subject)])
+
+    def test_delete_project_with_tasks(self):
+        """User should never be able to delete a project with tasks"""
+
+        with self.assertRaises(UserError):
+            self.project_pigs.unlink()
+
+        # click on the archive button
+        self.project_pigs.write({'active': False})
+
+        with self.assertRaises(UserError):
+            self.project_pigs.unlink()

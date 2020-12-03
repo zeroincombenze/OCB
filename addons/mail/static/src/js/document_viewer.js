@@ -9,11 +9,17 @@ var QWeb = core.qweb;
 var SCROLL_ZOOM_STEP = 0.1;
 var ZOOM_STEP = 0.5;
 
+/**
+ * This widget is deprecated, and should instead use AttachmentViewer component.
+ * @see `mail/static/src/components/attachment_viewer/attachment_viewer.js`
+ * TODO: remove this widget when it's not longer used
+ *
+ * @deprecated
+ */
 var DocumentViewer = Widget.extend({
     template: "DocumentViewer",
     events: {
         'click .o_download_btn': '_onDownload',
-        'click .o_split_btn': '_onSplitPDF',
         'click .o_viewer_img': '_onImageClicked',
         'click .o_viewer_video': '_onVideoClicked',
         'click .move_next': '_onNext',
@@ -44,12 +50,11 @@ var DocumentViewer = Widget.extend({
     init: function (parent, attachments, activeAttachmentID) {
         this._super.apply(this, arguments);
         this.attachment = _.filter(attachments, function (attachment) {
-        var match = attachment.type == 'url' ? attachment.url.match("(youtu|.png|.jpg|.gif)") : attachment.mimetype.match("(image|video|application/pdf|text)");
-
+            var match = attachment.type === 'url' ? attachment.url.match("(youtu|.png|.jpg|.gif)") : attachment.mimetype.match("(image|video|application/pdf|text)");
             if (match) {
-                attachment.type = match[1];
+                attachment.fileType = match[1];
                 if (match[1].match("(.png|.jpg|.gif)")) {
-                    attachment.type = 'image';
+                    attachment.fileType = 'image';
                 }
                 if (match[1] === 'youtu') {
                     var youtube_array = attachment.url.split('/');
@@ -67,6 +72,7 @@ var DocumentViewer = Widget.extend({
             }
         });
         this.activeAttachment = _.findWhere(attachments, {id: activeAttachmentID});
+        this.modelName = 'ir.attachment';
         this._reset();
     },
     /**
@@ -76,7 +82,7 @@ var DocumentViewer = Widget.extend({
     start: function () {
         this.$el.modal('show');
         this.$el.on('hidden.bs.modal', _.bind(this._onDestroy, this));
-        this.$('.o_viewer_img').load(_.bind(this._onImageLoaded, this));
+        this.$('.o_viewer_img').on("load", _.bind(this._onImageLoaded, this));
         this.$('[data-toggle="tooltip"]').tooltip({delay: 0});
         return this._super.apply(this, arguments);
     },
@@ -87,7 +93,6 @@ var DocumentViewer = Widget.extend({
         if (this.isDestroyed()) {
             return;
         }
-        this.trigger_up('document_viewer_closed');
         this.$el.modal('hide');
         this.$el.remove();
         this._super.apply(this, arguments);
@@ -132,7 +137,7 @@ var DocumentViewer = Widget.extend({
         this.$('.o_viewer_content').html(QWeb.render('DocumentViewer.Content', {
             widget: this
         }));
-        this.$('.o_viewer_img').load(_.bind(this._onImageLoaded, this));
+        this.$('.o_viewer_img').on("load", _.bind(this._onImageLoaded, this));
         this.$('[data-toggle="tooltip"]').tooltip({delay: 0});
         this._reset();
     },
@@ -200,7 +205,7 @@ var DocumentViewer = Widget.extend({
      */
     _onDownload: function (e) {
         e.preventDefault();
-        window.location = '/web/content/' + this.activeAttachment.id + '?download=true';
+        window.location = '/web/content/' + this.modelName + '/' + this.activeAttachment.id + '/' + 'datas' + '?download=true';
     },
     /**
      * @private
@@ -324,24 +329,6 @@ var DocumentViewer = Widget.extend({
             scale = this.scale - SCROLL_ZOOM_STEP;
             this._zoom(scale);
         }
-    },
-    /**
-     * @private
-     * @param {MouseEvent} e
-     */
-    _onSplitPDF: function (e) {
-        e.stopPropagation();
-        var self = this;
-        var indices = $("input[name=Indices]").val();
-        var remainder = $("input[type=checkbox][name=remainder]").is(":checked");
-        this._rpc({
-            model: 'ir.attachment',
-            method: 'split_pdf',
-            args: [this.activeAttachment.id, indices, remainder],
-        }).always(function () {
-            self.trigger_up('document_viewer_attachment_changed');
-            self.destroy();
-        });
     },
     /**
      * @private

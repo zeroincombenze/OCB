@@ -21,30 +21,34 @@ WebsiteNewMenu.include({
      * it and redirects the user to this new post.
      *
      * @private
-     * @returns {Deferred} Unresolved if there is a redirection
+     * @returns {Promise} Unresolved if there is a redirection
      */
     _createNewBlogPost: function () {
         return this._rpc({
             model: 'blog.blog',
-            method: 'name_search',
-        }).then(function (blog_ids) {
-            if (blog_ids.length === 1) {
-                document.location = '/blog/' + blog_ids[0][0] + '/post/new';
-                return $.Deferred();
-            } else if (blog_ids.length > 1) {
+            method: 'search_read',
+            args: [wUtils.websiteDomain(this), ['name']],
+        }).then(function (blogs) {
+            if (blogs.length === 1) {
+                document.location = '/blog/' + blogs[0]['id'] + '/post/new';
+                return new Promise(function () {});
+            } else if (blogs.length > 1) {
                 return wUtils.prompt({
                     id: 'editor_new_blog',
                     window_title: _t("New Blog Post"),
                     select: _t("Select Blog"),
                     init: function (field) {
-                        return blog_ids;
+                        return _.map(blogs, function (blog) {
+                            return [blog['id'], blog['name']];
+                        });
                     },
-                }).then(function (blog_id) {
+                }).then(function (result) {
+                    var blog_id = result.val;
                     if (!blog_id) {
                         return;
                     }
                     document.location = '/blog/' + blog_id + '/post/new';
-                    return $.Deferred();
+                    return new Promise(function () {});
                 });
             }
         });
@@ -58,21 +62,47 @@ odoo.define('website_blog.editor', function (require) {
 'use strict';
 
 require('web.dom_ready');
-var weWidgets = require('web_editor.widget');
-var options = require('web_editor.snippets.options');
-var rte = require('web_editor.rte');
+const {qweb, _t} = require('web.core');
+const options = require('web_editor.snippets.options');
+var WysiwygMultizone = require('web_editor.wysiwyg.multizone');
 
 if (!$('.website_blog').length) {
-    return $.Deferred().reject("DOM doesn't contain '.website_blog'");
+    return Promise.reject("DOM doesn't contain '.website_blog'");
 }
 
-rte.Class.include({
+const NEW_TAG_PREFIX = 'new-blog-tag-';
+
+WysiwygMultizone.include({
+    custom_events: Object.assign({}, WysiwygMultizone.prototype.custom_events, {
+        'set_blog_post_updated_tags': '_onSetBlogPostUpdatedTags',
+    }),
+
     /**
      * @override
      */
-    start: function () {
+    init() {
+        this._super(...arguments);
+        this.blogTagsPerBlogPost = {};
+    },
+    /**
+     * @override
+     */
+    async start() {
+        await this._super(...arguments);
         $('.js_tweet, .js_comment').off('mouseup').trigger('mousedown');
-        return this._super.apply(this, arguments);
+    },
+
+    //--------------------------------------------------------------------------
+    // Public
+    //--------------------------------------------------------------------------
+
+    /**
+     * @override
+     */
+    async save() {
+        const ret = await this._super(...arguments);
+        await this._saveBlogTags(); // Note: important to be called after save otherwise cleanForSave is not called before
+        return ret;
     },
 
     //--------------------------------------------------------------------------
@@ -80,31 +110,43 @@ rte.Class.include({
     //--------------------------------------------------------------------------
 
     /**
-     * @override
+     * Saves the blog tags in the database.
+     *
+     * @private
      */
-    _saveElement: function ($el, context) {
-        var defs = [this._super.apply(this, arguments)];
-        // TODO the o_dirty class is not put on the right element for blog cover
-        // edition. For some strange reason, it was forcly put (even if not
-        // dirty) in <= saas-16 but this is not the case anymore.
-        var $blogContainer = $el.closest('.o_blog_cover_container');
-        if (!this.__blogCoverSaved && $blogContainer.length) {
-            $el = $blogContainer;
-            this.__blogCoverSaved = true;
-            defs.push(this._rpc({
-                route: '/blog/post_change_background',
-                params: {
-                    post_id: parseInt($el.closest('[name="blog_post"], .website_blog').find('[data-oe-model="blog.post"]').first().data('oe-id'), 10),
-                    cover_properties: {
-                        'background-image': $el.children('.o_blog_cover_image').css('background-image').replace(/"/g, '').replace(window.location.protocol + "//" + window.location.host, ''),
-                        'background-color': $el.data('filterColor'),
-                        'opacity': $el.data('filterValue'),
-                        'resize_class': $el.data('coverClass'),
-                    },
-                },
-            }));
+    async _saveBlogTags() {
+        for (const [key, tags] of Object.entries(this.blogTagsPerBlogPost)) {
+            const proms = tags.filter(tag => typeof tag.id === 'string').map(tag => {
+                return this._rpc({
+                    model: 'blog.tag',
+                    method: 'create',
+                    args: [{
+                        'name': tag.name,
+                    }],
+                });
+            });
+            const createdIDs = await Promise.all(proms);
+
+            await this._rpc({
+                model: 'blog.post',
+                method: 'write',
+                args: [parseInt(key), {
+                    'tag_ids': [[6, 0, tags.filter(tag => typeof tag.id === 'number').map(tag => tag.id).concat(createdIDs)]],
+                }],
+            });
         }
-        return $.when.apply($, defs);
+    },
+
+    //--------------------------------------------------------------------------
+    // Handlers
+    //--------------------------------------------------------------------------
+
+    /**
+     * @private
+     * @param {OdooEvent} ev
+     */
+    _onSetBlogPostUpdatedTags: function (ev) {
+        this.blogTagsPerBlogPost[ev.data.blogPostID] = ev.data.tags;
     },
 });
 
@@ -126,34 +168,67 @@ options.registry.many2one.include({
                 var $img = $(this).find('img');
                 var css = window.getComputedStyle($img[0]);
                 $img.css({ width: css.width, height: css.height });
-                $img.attr('src', '/web/image/res.partner/'+self.ID+'/image');
+                $img.attr('src', '/web/image/res.partner/'+self.ID+'/image_1024');
             });
             setTimeout(function () { $nodes.removeClass('o_dirty'); },0);
         }
     }
 });
 
-options.registry.blog_cover = options.Class.extend({
+options.registry.CoverProperties.include({
     /**
-     * @constructor
+     * @override
      */
-    init: function () {
-        this._super.apply(this, arguments);
+    updateUI: async function () {
+        await this._super(...arguments);
+        var isRegularCover = this.$target.is('.o_wblog_post_page_cover_regular');
+        var $coverFull = this.$el.find('[data-select-class*="o_full_screen_height"]');
+        var $coverMid = this.$el.find('[data-select-class*="o_half_screen_height"]');
+        var $coverAuto = this.$el.find('[data-select-class*="cover_auto"]');
+        this._coverFullOriginalLabel = this._coverFullOriginalLabel || $coverFull.text();
+        this._coverMidOriginalLabel = this._coverMidOriginalLabel || $coverMid.text();
+        this._coverAutoOriginalLabel = this._coverAutoOriginalLabel || $coverAuto.text();
+        $coverFull.children('div').text(isRegularCover ? _t("Large") : this._coverFullOriginalLabel);
+        $coverMid.children('div').text(isRegularCover ? _t("Medium") : this._coverMidOriginalLabel);
+        $coverAuto.children('div').text(isRegularCover ? _t("Tiny") : this._coverAutoOriginalLabel);
+    },
+});
 
-        this.$image = this.$target.children('.o_blog_cover_image');
-        this.$filter = this.$target.children('.o_blog_cover_filter');
+options.registry.BlogPostTagSelection = options.Class.extend({
+    xmlDependencies: (options.Class.prototype.xmlDependencies || [])
+        .concat(['/website_blog/static/src/xml/website_blog_tag.xml']),
+
+    /**
+     * @override
+     */
+    async willStart() {
+        const _super = this._super.bind(this);
+
+        this.blogPostID = parseInt(this.$target[0].dataset.blogId);
+        this.isEditingTags = false;
+        const tags = await this._rpc({
+            model: 'blog.tag',
+            method: 'search_read',
+            args: [[], ['id', 'name', 'post_ids']],
+        });
+        this.allTagsByID = {};
+        this.tagIDs = [];
+        for (const tag of tags) {
+            this.allTagsByID[tag.id] = tag;
+            if (tag['post_ids'].includes(this.blogPostID)) {
+                this.tagIDs.push(tag.id);
+            }
+        }
+
+        return _super(...arguments);
     },
     /**
      * @override
      */
-    start: function () {
-        this.$filterValueOpts = this.$el.find('[data-filter-value]');
-        this.$filterColorOpts = this.$el.find('[data-filter-color]');
-        this.filterColorClasses = this.$filterColorOpts.map(function () {
-            return $(this).data('filterColor');
-        }).get().join(' ');
-
-        return this._super.apply(this, arguments);
+    cleanForSave() {
+        if (this.isEditingTags) {
+            this._notifyUpdatedTags();
+        }
     },
 
     //--------------------------------------------------------------------------
@@ -161,55 +236,84 @@ options.registry.blog_cover = options.Class.extend({
     //--------------------------------------------------------------------------
 
     /**
-     * @see this.selectClass for parameters
+     * @see this.selectClass for params
      */
-    clear: function (previewMode, value, $opt) {
-        this.selectClass(previewMode, '', $());
-        this.$image.css('background-image', '');
+    editTagList(previewMode, widgetValue, params) {
+        this.isEditingTags = true;
+        this.rerender = true;
     },
     /**
-     * @see this.selectClass for parameters
+     * Send changes that will be saved in the database.
+     *
+     * @see this.selectClass for params
      */
-    change: function (previewMode, value, $opt) {
-        var $image = $('<img/>');
-        var background = this.$image.css('background-image');
-        if (background && background !== 'none') {
-            $image.attr('src', background.match(/^url\(["']?(.+?)["']?\)$/)[1]);
+    saveTagList(previewMode, widgetValue, params) {
+        this.isEditingTags = false;
+        this.rerender = true;
+        this._notifyUpdatedTags();
+    },
+    /**
+     * @see this.selectClass for params
+     */
+    setNewTagName(previewMode, widgetValue, params) {
+        this.newTagName = widgetValue;
+    },
+    /**
+     * @see this.selectClass for params
+     */
+    confirmNew(previewMode, widgetValue, params) {
+        if (!this.newTagName) {
+            return;
         }
+        const existing = Object.values(this.allTagsByID).some(tag => tag.name.toLowerCase() === this.newTagName.toLowerCase());
+        if (existing) {
+            return this.displayNotification({
+                type: 'warning',
+                message: _t("This tag already exists"),
+            });
+        }
+        const newTagID = _.uniqueId(NEW_TAG_PREFIX);
+        this.allTagsByID[newTagID] = {
+            'id': newTagID,
+            'name': this.newTagName,
+        };
+        this.tagIDs.push(newTagID);
+        this.newTagName = '';
+        this.rerender = true;
+    },
+    /**
+     * @see this.selectClass for params
+     */
+    addTag(previewMode, widgetValue, params) {
+        const tagID = parseInt(widgetValue);
+        this.tagIDs.push(tagID);
+        this.rerender = true;
+    },
+    /**
+     * @see this.selectClass for params
+     */
+    removeTag(previewMode, widgetValue, params) {
+        this.tagIDs = this.tagIDs.filter(tagID => (`${tagID}` !== widgetValue));
+        if (widgetValue.startsWith(NEW_TAG_PREFIX)) {
+            delete this.allTagsByID[widgetValue];
+        }
+        this.rerender = true;
+    },
 
-        var editor = new weWidgets.MediaDialog(this, {
-            onlyImages: true,
-            firstFilters: ['background']
-        }, $image, $image[0]).open();
-        editor.on('save', this, function (event, img) {
-            var src = $image.attr('src');
-            this.$image.css('background-image', src ? ('url(' + src + ')') : '');
-            if (!this.$target.hasClass('cover')) {
-                var $opt = this.$el.find('[data-select-class]').first();
-                this.selectClass(previewMode, $opt.data('selectClass'), $opt);
-            }
-            this._setActive();
-        });
-    },
-    /**
-     * @see this.selectClass for parameters
-     */
-    filterValue: function (previewMode, value, $opt) {
-        this.$filter.css('opacity', value);
-    },
-    /**
-     * @see this.selectClass for parameters
-     */
-    filterColor: function (previewMode, value, $opt) {
-        this.$filter.removeClass(this.filterColorClasses);
-        if (value) {
-            this.$filter.addClass(value);
-        }
+    //--------------------------------------------------------------------------
+    // Public
+    //--------------------------------------------------------------------------
 
-        var $firstVisibleFilterOpt = this.$filterValueOpts.eq(1);
-        if (parseFloat(this.$filter.css('opacity')) < parseFloat($firstVisibleFilterOpt.data('filterValue'))) {
-            this.filterValue(previewMode, $firstVisibleFilterOpt.data('filterValue'), $firstVisibleFilterOpt);
+    /**
+     * @override
+     */
+    async updateUI() {
+        if (this.rerender) {
+            this.rerender = false;
+            await this._rerenderXML();
+            return;
         }
+        return this._super(...arguments);
     },
 
     //--------------------------------------------------------------------------
@@ -217,36 +321,59 @@ options.registry.blog_cover = options.Class.extend({
     //--------------------------------------------------------------------------
 
     /**
-     * @private
      * @override
      */
-    _setActive: function () {
-        this._super.apply(this, arguments);
-        var self = this;
-
-        _.each(this.$el, function (el) {
-            var $el = $(el);
-            $el.toggleClass('d-none',
-                $el.is(':not([data-change])') && !self.$target.hasClass('cover')
-                || $el.is(':has([data-select-class])') && self.$target.hasClass('o_list_cover'));
+    async _computeWidgetVisibility(widgetName, params) {
+        if (['blog_existing_tag_opt', 'new_tag_input_opt', 'new_tag_button_opt', 'save_tags_opt'].includes(widgetName)) {
+            return this.isEditingTags;
+        }
+        if (widgetName === 'edit_tags_opt') {
+            return !this.isEditingTags;
+        }
+        if (params.optionsPossibleValues['removeTag']) {
+            return this.isEditingTags;
+        }
+        return this._super(...arguments);
+    },
+    /**
+     * @override
+     */
+    async _computeWidgetState(methodName, params) {
+        if (methodName === 'addTag') {
+            // The related widget allows to select a value but then resets its state to a non-selected value
+            return '';
+        }
+        return this._super(...arguments);
+    },
+    /**
+     * @private
+     */
+    _notifyUpdatedTags() {
+        this.trigger_up('set_blog_post_updated_tags', {
+            blogPostID: this.blogPostID,
+            tags: this.tagIDs.map(tagID => this.allTagsByID[tagID]),
         });
-
-        this.$filterValueOpts.removeClass('active');
-        this.$filterColorOpts.removeClass('active');
-
-        var activeFilterValue = this.$filterValueOpts
-            .filter(function () {
-                return (parseFloat($(this).data('filterValue')).toFixed(1) === parseFloat(self.$filter.css('opacity')).toFixed(1));
-            }).addClass('active').data('filterValue');
-
-        var activeFilterColor = this.$filterColorOpts
-            .filter(function () {
-                return self.$filter.hasClass($(this).data('filterColor'));
-            }).addClass('active').data('filterColor');
-
-        this.$target.data('coverClass', this.$el.find('.active[data-select-class]').data('selectClass') || '');
-        this.$target.data('filterValue', activeFilterValue || 0.0);
-        this.$target.data('filterColor', activeFilterColor || '');
+    },
+    /**
+     * @override
+     */
+    async _renderCustomXML(uiFragment) {
+        const $tagList = $(uiFragment.querySelector('.o_wblog_tag_list'));
+        for (const tagID of this.tagIDs) {
+            const tag = this.allTagsByID[tagID];
+            $tagList.append(qweb.render('website_blog.TagListItem', {
+                tag: tag,
+            }));
+        }
+        const $select = $(uiFragment.querySelector('we-select[data-name="blog_existing_tag_opt"]'));
+        for (const [key, tag] of Object.entries(this.allTagsByID)) {
+            if (this.tagIDs.includes(parseInt(key))) {
+                continue;
+            }
+            $select.prepend(qweb.render('website_blog.TagSelectItem', {
+                tag: tag,
+            }));
+        }
     },
 });
 });

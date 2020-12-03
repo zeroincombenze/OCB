@@ -137,7 +137,7 @@ var DateTimePicker = function ($, moment) {
             previous: 'fa fa-chevron-left',
             next: 'fa fa-chevron-right',
             today: 'fa fa-calendar-check-o',
-            clear: 'fa fa-delete',
+            clear: 'fa fa-trash',
             close: 'fa fa-times'
         },
         tooltips: {
@@ -490,7 +490,7 @@ var DateTimePicker = function ($, moment) {
         DateTimePicker.prototype._change = function _change(e) {
             var val = $(e.target).val().trim(),
                 parsedDate = val ? this._parseInputDate(val) : null;
-            this._setValue(parsedDate);
+            this._setValue(parsedDate, 0); // Odoo FIX: if a valid date is replaced by an invalid one, lib will crash, see https://github.com/tempusdominus/bootstrap-4/issues/223
             e.stopImmediatePropagation();
             return false;
         };
@@ -563,10 +563,10 @@ var DateTimePicker = function ($, moment) {
         DateTimePicker.prototype._notifyEvent = function _notifyEvent(e) {
             // /!\ ODOO FIX: these next conditions have been modified by odoo
             // FIXME should write a test about the tricky case this handles
-            if (!e.date && !e.oldDate) {
-                return;
-            }
             if (e.type === DateTimePicker.Event.CHANGE) {
+                if (!e.date && !e.oldDate) {
+                    return;
+                }
                 // check _isUTC flag to ensure that we are not comparing apples and oranges
                 var bothUTC = e.date && e.oldDate && e.date._isUTC === e.oldDate._isUTC;
                 if (bothUTC && e.date.isSame(e.oldDate)) {
@@ -2092,7 +2092,12 @@ var TempusDominusBootstrap4 = function ($) {
                 daysViewHeader.eq(2).addClass('disabled');
             }
 
-            currentDate = this._viewDate.clone().startOf('M').startOf('w').startOf('d');
+            // !! ODOO FIX START !!
+            var now = this.getMoment();
+            // currentDate = this._viewDate.clone().startOf('M').startOf('w').startOf('d');
+            // avoid issue of safari + DST at midnight
+            currentDate = this._viewDate.clone().startOf('M').startOf('w').add(12, 'hours');
+            // !! ODOO FIX END !!
 
             for (i = 0; i < 42; i++) {
                 //always display 42 days (should show 6 weeks)
@@ -2125,7 +2130,9 @@ var TempusDominusBootstrap4 = function ($) {
                 if (!this._isValid(currentDate, 'd')) {
                     clsName += ' disabled';
                 }
-                if (currentDate.isSame(this.getMoment(), 'd')) {
+                // !! ODOO FIX START !!
+                if (currentDate.date() === now.date() && currentDate.month() === now.month() && currentDate.year() === now.year()) {
+                // !! ODOO FIX END !!
                     clsName += ' today';
                 }
                 if (currentDate.day() === 0 || currentDate.day() === 6) {
@@ -2749,7 +2756,8 @@ var TempusDominusBootstrap4 = function ($) {
         if ($target.length === 0) {
             return;
         }
-        if (config._options.debug || window.debug) {
+        // /!\ ODOO FIX: check on 'config' existence added by odoo
+        if (config && config._options.debug || window.debug) {
             return;
         }
         TempusDominusBootstrap4._jQueryInterface.call($target, 'hide', event);
@@ -2771,7 +2779,8 @@ var TempusDominusBootstrap4 = function ($) {
         if ($target.length === 0) {
             return;
         }
-        if (!config._options.allowInputToggle) {
+        // /!\ ODOO FIX: check on 'config' existence added by odoo
+        if (!(config && config._options.allowInputToggle)) {
             return;
         }
         TempusDominusBootstrap4._jQueryInterface.call($target, 'show', event);

@@ -5,6 +5,7 @@ var core = require('web.core');
 var Dialog = require('web.Dialog');
 var websiteNavbarData = require('website.navbar');
 var wUtils = require('website.utils');
+var tour = require('web_tour.tour');
 
 var qweb = core.qweb;
 var _t = core._t;
@@ -12,8 +13,9 @@ var _t = core._t;
 var enableFlag = 'enable_new_content';
 
 var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
-    xmlDependencies: ['/web_editor/static/src/xml/editor.xml'],
+    xmlDependencies: ['/website/static/src/xml/website.editor.xml'],
     actions: _.extend({}, websiteNavbarData.WebsiteNavbarActionWidget.prototype.actions || {}, {
+        close_all_widgets: '_handleCloseDemand',
         new_page: '_createNewPage',
     }),
     events: _.extend({}, websiteNavbarData.WebsiteNavbarActionWidget.prototype.events || {}, {
@@ -47,7 +49,7 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
             $el.data('original-index', index);
             if ($el.data('module-id')) {
                 $el.appendTo($el.parent());
-                $el.find('a i, a p').addClass('text-muted');
+                $el.find('a i, a p').addClass('o_uninstalled_module');
             }
         });
 
@@ -55,6 +57,15 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
         this.$lastLink = this.$newContentMenuChoices.find('a:last');
 
         if ($.deparam.querystring()[enableFlag] !== undefined) {
+            Object.keys(tour.tours).forEach(
+                el => {
+                    let element = tour.tours[el];
+                    if (element.steps[0].trigger == '#new-content-menu > a'
+                        && !element.steps[0].extra_trigger) {
+                        element.steps[0].auto = true;
+                    }
+                }
+            );
             this._showMenu();
         }
         return this._super.apply(this, arguments);
@@ -69,7 +80,7 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
      * redirects the user to this new page.
      *
      * @private
-     * @returns {Deferred} Unresolved if there is a redirection
+     * @returns {Promise} Unresolved if there is a redirection
      */
     _createNewPage: function () {
         return wUtils.prompt({
@@ -80,21 +91,30 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
                 var $group = this.$dialog.find('div.form-group');
                 $group.removeClass('mb0');
 
-                var $add = $('<div/>', {'class': 'form-group mb0'})
+                var $add = $('<div/>', {'class': 'form-group mb0 row'})
                             .append($('<span/>', {'class': 'offset-md-3 col-md-9 text-left'})
-                                    .append(qweb.render('web_editor.components.switch', {id: 'switch_addTo_menu', label: _t("Add to menu")})));
+                                    .append(qweb.render('website.components.switch', {id: 'switch_addTo_menu', label: _t("Add to menu")})));
                 $add.find('input').prop('checked', true);
                 $group.after($add);
             }
-        }).then(function (val, field, $dialog) {
+        }).then(function (result) {
+            var val = result.val;
+            var $dialog = result.dialog;
             if (!val) {
                 return;
             }
             var url = '/website/add/' + encodeURIComponent(val);
-            if ($dialog.find('input[type="checkbox"]').is(':checked')) url +='?add_menu=1';
-            document.location = url;
-            return $.Deferred();
+            const res = wUtils.sendRequest(url, {
+                add_menu: $dialog.find('input[type="checkbox"]').is(':checked') || '',
+            });
+            return new Promise(function () {});
         });
+    },
+    /**
+     * @private
+     */
+    _handleCloseDemand: function () {
+        this._hideMenu();
     },
 
     //--------------------------------------------------------------------------
@@ -123,6 +143,7 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
      * @private
      */
     _hideMenu: function () {
+        this.shown = false;
         this.$newContentMenuChoices.addClass('o_hidden');
         $('body').removeClass('o_new_content_open');
     },
@@ -131,7 +152,7 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
      *
      * @private
      * @param {number} moduleId: the module to install
-     * @return {Deferred}
+     * @return {Promise}
      */
     _install: function (moduleId) {
         this.pendingInstall = true;
@@ -140,7 +161,7 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
             model: 'ir.module.module',
             method: 'button_immediate_install',
             args: [[moduleId]],
-        }).fail(function () {
+        }).guardedCatch(function () {
             $('body').css('pointer-events', '');
         });
     },
@@ -148,12 +169,22 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
      * Show the menu
      *
      * @private
+     * @returns {Promise}
      */
     _showMenu: function () {
-        this.firstTab = true;
-        this.$newContentMenuChoices.removeClass('o_hidden');
-        $('body').addClass('o_new_content_open');
-        this.$('> a').focus();
+        var self = this;
+        return new Promise(function (resolve, reject) {
+            self.trigger_up('action_demand', {
+                actionName: 'close_all_widgets',
+                onSuccess: resolve,
+            });
+        }).then(function () {
+            self.firstTab = true;
+            self.shown = true;
+            self.$newContentMenuChoices.removeClass('o_hidden');
+            $('body').addClass('o_new_content_open');
+            self.$('> a').focus();
+        });
     },
 
     //--------------------------------------------------------------------------
@@ -185,9 +216,13 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
      * @param {Event} ev
      */
     _onBackgroundKeydown: function (ev) {
+        if (!this.shown) {
+            return;
+        }
         switch (ev.which) {
             case $.ui.keyCode.ESCAPE:
                 this._hideMenu();
+                ev.stopPropagation();
                 break;
             case $.ui.keyCode.TAB:
                 if (ev.shiftKey) {
@@ -249,25 +284,31 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
                         }).last();
                     if ($finalPosition) {
                         $el.fadeTo(400, 0, function () {
-                            $el.insertAfter($finalPosition);
+                            // if once installed, button disapeear, don't need to move it.
+                            if (!$el.hasClass('o_new_content_element_once')) {
+                                $el.insertAfter($finalPosition);
+                            }
                             // change style to use spinner
                             $i.removeClass()
-                                .addClass('fa fa-spin fa-spinner fa-pulse');
-                            $p.removeClass('text-muted')
+                                .addClass('fa fa-spin fa-spinner fa-pulse')
+                                .css('background-image', 'none');
+                            $p.removeClass('o_uninstalled_module')
                                 .text(_.str.sprintf(self.newContentText.installPleaseWait, name));
                             $el.fadeTo(1000, 1);
                         });
                     }
-                    
+
                     self._install(moduleId).then(function () {
-                        window.location.href = window.location.origin + window.location.pathname + '?' + enableFlag;
+                        var origin = window.location.origin;
+                        var redirectURL = $el.find('a').data('url') || (window.location.pathname + '?' + enableFlag);
+                        window.location.href = origin + redirectURL;
                     }, function () {
                         $i.removeClass()
                             .addClass('fa fa-exclamation-triangle');
                         $p.text(_.str.sprintf(self.newContentText.failed, name));
                     });
                 }
-            },{
+            }, {
                 text: _t("Cancel"),
                 close: true,
             }];
@@ -276,7 +317,7 @@ var NewContentMenu = websiteNavbarData.WebsiteNavbarActionWidget.extend({
         new Dialog(this, {
             title: title,
             size: 'medium',
-            $content: $('<p/>', {text: content}),
+            $content: $('<div/>', {text: content}),
             buttons: buttons
         }).open();
     },

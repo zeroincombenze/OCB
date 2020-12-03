@@ -18,19 +18,13 @@ def pre_init_hook(cr):
         ('module', '=', 'stock')
     ]).unlink()
 
-def _create_warehouse(cr, registry):
-    """ This hook is used to add a warehouse on existing companies
-    when module stock is installed.
-    """
+def _assign_default_mail_template_picking_id(cr, registry):
     env = api.Environment(cr, SUPERUSER_ID, {})
-    company_ids  = env['res.company'].search([])
-    company_with_warehouse = env['stock.warehouse'].search([]).mapped('company_id')
-    company_without_warehouse = company_ids - company_with_warehouse
-    for company in company_without_warehouse:
-        company.create_transit_location()
-        env['stock.warehouse'].create({
-            'name': company.name,
-            'code': company.name[:5],
-            'company_id': company.id,
-            'partner_id': company.partner_id.id
+    company_ids_without_default_mail_template_id = env['res.company'].search([
+        ('stock_mail_confirmation_template_id', '=', False)
+    ])
+    default_mail_template_id = env.ref('stock.mail_template_data_delivery_confirmation', raise_if_not_found=False)
+    if default_mail_template_id:
+        company_ids_without_default_mail_template_id.write({
+            'stock_mail_confirmation_template_id': default_mail_template_id.id,
         })

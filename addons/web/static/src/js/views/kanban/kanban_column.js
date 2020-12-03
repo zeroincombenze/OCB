@@ -3,6 +3,7 @@ odoo.define('web.KanbanColumn', function (require) {
 
 var config = require('web.config');
 var core = require('web.core');
+var session = require('web.session');
 var Dialog = require('web.Dialog');
 var KanbanRecord = require('web.KanbanRecord');
 var RecordQuickCreate = require('web.kanban_record_quick_create');
@@ -29,7 +30,8 @@ var KanbanColumn = Widget.extend({
         'click .o_kanban_load_more': '_onLoadMore',
         'click .o_kanban_toggle_fold': '_onToggleFold',
         'click .o_column_archive_records': '_onArchiveRecords',
-        'click .o_column_unarchive_records': '_onUnarchiveRecords'
+        'click .o_column_unarchive_records': '_onUnarchiveRecords',
+        'click .o_kanban_config .dropdown-menu': '_onConfigDropdownClicked',
     },
     /**
      * @override
@@ -59,9 +61,11 @@ var KanbanColumn = Widget.extend({
         this.KanbanRecord = options.KanbanRecord || KanbanRecord; // the KanbanRecord class to use
         this.records_editable = options.records_editable;
         this.records_deletable = options.records_deletable;
+        this.recordsDraggable = options.recordsDraggable;
         this.relation = options.relation;
         this.offset = 0;
         this.remaining = data.count - this.data_records.length;
+        this.canBeFolded = this.folded;
 
         if (options.hasProgressBar) {
             this.barOptions = {
@@ -72,8 +76,8 @@ var KanbanColumn = Widget.extend({
 
         this.record_options = _.clone(recordOptions);
 
-        if (options.grouped_by_m2o) {
-            // For many2one, a false value means that the field is not set.
+        if (options.grouped_by_m2o || options.grouped_by_date ) {
+            // For many2one and datetime, a false value means that the field is not set.
             this.title = value ? value : _t('Undefined');
         } else {
             // False and 0 might be valid values for these fields.
@@ -81,11 +85,11 @@ var KanbanColumn = Widget.extend({
         }
 
         if (options.group_by_tooltip) {
-            this.tooltipInfo = _.map(options.group_by_tooltip, function (help, field) {
-                return (data.tooltipData && data.tooltipData[field] && "<div>" + help + "<br>" + data.tooltipData[field] + "</div>") || '';
-            }).join('');
-        } else {
-            this.tooltipInfo = "";
+            this.tooltipInfo = _.compact(_.map(options.group_by_tooltip, function (help, field) {
+                help = help ? help + "</br>" : '';
+                return (data.tooltipData && data.tooltipData[field] && "<div>" + help + data.tooltipData[field] + "</div>") || '';
+            }));
+            this.tooltipInfo = this.tooltipInfo.join("<div class='dropdown-divider' role='separator' />");
         }
     },
     /**
@@ -97,30 +101,31 @@ var KanbanColumn = Widget.extend({
         this.$header = this.$('.o_kanban_header');
 
         for (var i = 0; i < this.data_records.length; i++) {
-            var def = this._addRecord(this.data_records[i]);
-            if (def.state() === 'pending') {
-                defs.push(def);
-            }
+            defs.push(this._addRecord(this.data_records[i]));
         }
-        this.$header.find('.o_kanban_header_title').tooltip();
 
-        if (!config.device.isMobile) {
-            // deactivate sortable in mobile mode.  It does not work anyway,
-            // and it breaks horizontal scrolling in kanban views.  Someday, we
-            // should find a way to use the touch events to make sortable work.
+        if (this.recordsDraggable) {
             this.$el.sortable({
                 connectWith: '.o_kanban_group',
                 containment: this.draggable ? false : 'parent',
                 revert: 0,
                 delay: 0,
                 items: '> .o_kanban_record:not(.o_updating)',
-                helper: 'clone',
                 cursor: 'move',
                 over: function () {
                     self.$el.addClass('o_kanban_hover');
                 },
                 out: function () {
                     self.$el.removeClass('o_kanban_hover');
+                },
+                start: function (event, ui) {
+                    ui.item.addClass('o_currently_dragged');
+                },
+                stop: function (event, ui) {
+                    var item = ui.item;
+                    setTimeout(function () {
+                        item.removeClass('o_currently_dragged');
+                    });
                 },
                 update: function (event, ui) {
                     var record = ui.item.data('record');
@@ -153,17 +158,17 @@ var KanbanColumn = Widget.extend({
         var title = this.folded ? this.title + ' (' + this.data.count + ')' : this.title;
         this.$header.find('.o_column_title').text(title);
 
-        this.$el.toggleClass('o_column_folded', this.folded && !config.device.isMobile);
-        var tooltip = this.data.count + _t(' records');
-        tooltip = '<p>' + tooltip + '</p>' + this.tooltipInfo;
-        this.$header.find('.o_kanban_header_title').tooltip({}).attr('data-original-title', tooltip);
+        this.$el.toggleClass('o_column_folded', this.canBeFolded);
+        if (this.tooltipInfo) {
+            this.$header.find('.o_kanban_header_title').tooltip({}).attr('data-original-title', this.tooltipInfo);
+        }
         if (!this.remaining) {
             this.$('.o_kanban_load_more').remove();
         } else {
             this.$('.o_kanban_load_more').html(QWeb.render('KanbanView.LoadMore', {widget: this}));
         }
 
-        return $.when.apply($, defs);
+        return Promise.all(defs);
     },
     /**
      * Called when a record has been quick created, as a new column is rendered
@@ -173,6 +178,7 @@ var KanbanColumn = Widget.extend({
      * into a fragment, the focus has to be set manually once in the DOM.
      */
     on_attach_callback: function () {
+        _.invoke(this.records, 'on_attach_callback');
         if (this.quickCreateWidget) {
             this.quickCreateWidget.on_attach_callback();
         }
@@ -185,9 +191,9 @@ var KanbanColumn = Widget.extend({
     /**
      * Adds the quick create record to the top of the column.
      *
-     * @returns {Deferred}
+     * @returns {Promise}
      */
-    addQuickCreate: function () {
+    addQuickCreate: async function () {
         if (this.folded) {
             // first open the column, and then add the quick create
             this.trigger_up('column_toggle_fold', {
@@ -197,10 +203,9 @@ var KanbanColumn = Widget.extend({
         }
 
         if (this.quickCreateWidget) {
-            return $.Deferred().reject();
+            return Promise.reject();
         }
         this.trigger_up('close_quick_create'); // close other quick create widgets
-        this.trigger_up('start_quick_create');
         var context = this.data.getContext();
         context['default_' + this.groupedBy] = viewUtils.getGroupValue(this.data, this.groupedBy);
         this.quickCreateWidget = new RecordQuickCreate(this, {
@@ -208,7 +213,10 @@ var KanbanColumn = Widget.extend({
             formViewRef: this.quickCreateView,
             model: this.modelName,
         });
-        return this.quickCreateWidget.insertAfter(this.$header);
+        await this.quickCreateWidget.appendTo(document.createDocumentFragment());
+        this.trigger_up('start_quick_create');
+        this.quickCreateWidget.$el.insertAfter(this.$header);
+        this.quickCreateWidget.on_attach_callback();
     },
     /**
      * Closes the quick create widget if it isn't dirty.
@@ -237,7 +245,7 @@ var KanbanColumn = Widget.extend({
      * @param {Object} [options]
      * @param {string} [options.position]
      *        'before' to add at the top, add at the bottom by default
-     * @return {Deferred}
+     * @return {Promise}
      */
     _addRecord: function (recordState, options) {
         var record = new this.KanbanRecord(this, recordState, this.record_options);
@@ -281,13 +289,22 @@ var KanbanColumn = Widget.extend({
      * @private
      */
     _onAddQuickCreate: function () {
-        this.addQuickCreate();
+        this.trigger_up('add_quick_create', { groupId: this.db_id });
     },
     /**
      * @private
      */
     _onCancelQuickCreate: function () {
         this._cancelQuickCreate();
+    },
+    /**
+     * Prevent from closing the config dropdown when the user clicks on a
+     * disabled item (e.g. 'Fold' in sample mode).
+     *
+     * @private
+     */
+    _onConfigDropdownClicked(ev) {
+        ev.stopPropagation();
     },
     /**
      * @private
@@ -321,6 +338,7 @@ var KanbanColumn = Widget.extend({
         new view_dialogs.FormViewDialog(this, {
             res_model: this.relation,
             res_id: this.id,
+            context: session.user_context,
             title: _t("Edit Column"),
             on_saved: this.trigger_up.bind(this, 'reload'),
         }).open();

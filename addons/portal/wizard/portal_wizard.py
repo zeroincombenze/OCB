@@ -35,7 +35,7 @@ class PortalWizard(models.TransientModel):
         contact_ids = set()
         user_changes = []
         for partner in self.env['res.partner'].sudo().browse(partner_ids):
-            contact_partners = partner.child_ids or [partner]
+            contact_partners = partner.child_ids.filtered(lambda p: p.type in ('contact', 'other')) | partner
             for contact in contact_partners:
                 # make sure that each contact appears at most once in the list
                 if contact.id not in contact_ids:
@@ -53,7 +53,6 @@ class PortalWizard(models.TransientModel):
     user_ids = fields.One2many('portal.wizard.user', 'wizard_id', string='Users',default=_default_user_ids)
     welcome_message = fields.Text('Invitation Message', help="This text is included in the email sent to new users of the portal.")
 
-    @api.multi
     def action_apply(self):
         self.ensure_one()
         self.user_ids.action_apply()
@@ -74,12 +73,12 @@ class PortalWizardUser(models.TransientModel):
     in_portal = fields.Boolean('In Portal')
     user_id = fields.Many2one('res.users', string='Login User')
 
-    @api.multi
     def get_error_messages(self):
         emails = []
         partners_error_empty = self.env['res.partner']
         partners_error_emails = self.env['res.partner']
         partners_error_user = self.env['res.partner']
+        partners_error_internal_user = self.env['res.partner']
 
         for wizard_user in self.with_context(active_test=False).filtered(lambda w: w.in_portal and not w.partner_id.user_ids):
             email = extract_email(wizard_user.email)
@@ -87,10 +86,14 @@ class PortalWizardUser(models.TransientModel):
                 partners_error_empty |= wizard_user.partner_id
             elif email in emails:
                 partners_error_emails |= wizard_user.partner_id
-            user = self.env['res.users'].sudo().with_context(active_test=False).search([('login', '=', email)])
+            user = self.env['res.users'].sudo().with_context(active_test=False).search([('login', '=ilike', email)])
             if user:
                 partners_error_user |= wizard_user.partner_id
             emails.append(email)
+
+        for wizard_user in self.with_context(active_test=False):
+            if any(u.has_group('base.group_user') for u in wizard_user.sudo().partner_id.user_ids):
+                partners_error_internal_user |= wizard_user.partner_id
 
         error_msg = []
         if partners_error_empty:
@@ -101,14 +104,17 @@ class PortalWizardUser(models.TransientModel):
                                 '\n- '.join(partners_error_emails.mapped('email'))))
         if partners_error_user:
             error_msg.append("%s\n- %s" % (_("Some contacts have the same email as an existing portal user:"),
-                                '\n- '.join(['%s <%s>' % (p.display_name, p.email) for p in partners_error_user])))
+                                '\n- '.join([p.email_formatted for p in partners_error_user])))
+        if partners_error_internal_user:
+            error_msg.append("%s\n- %s" % (_("Some contacts are already internal users:"),
+                                '\n- '.join(partners_error_internal_user.mapped('email'))))
         if error_msg:
             error_msg.append(_("To resolve this error, you can: \n"
                 "- Correct the emails of the relevant contacts\n"
                 "- Grant access only to contacts with unique emails"))
+            error_msg[-1] += _("\n- Switch the internal users to portal manually")
         return error_msg
 
-    @api.multi
     def action_apply(self):
         self.env['res.partner'].check_access_rights('write')
         """ From selected partners, add corresponding users to chosen portal group. It either granted
@@ -134,8 +140,8 @@ class PortalWizardUser(models.TransientModel):
                     if wizard_user.partner_id.company_id:
                         company_id = wizard_user.partner_id.company_id.id
                     else:
-                        company_id = self.env['res.company']._company_default_get('res.users').id
-                    user_portal = wizard_user.sudo().with_context(company_id=company_id)._create_user()
+                        company_id = self.env.company.id
+                    user_portal = wizard_user.sudo().with_company(company_id)._create_user()
                 else:
                     user_portal = user
                 wizard_user.write({'user_id': user_portal.id})
@@ -154,21 +160,18 @@ class PortalWizardUser(models.TransientModel):
                     else:
                         user.write({'groups_id': [(3, group_portal.id)]})
 
-    @api.multi
     def _create_user(self):
         """ create a new user for wizard_user.partner_id
             :returns record of res.users
         """
-        company_id = self.env.context.get('company_id')
         return self.env['res.users'].with_context(no_reset_password=True)._create_user_from_template({
             'email': extract_email(self.email),
             'login': extract_email(self.email),
             'partner_id': self.partner_id.id,
-            'company_id': company_id,
-            'company_ids': [(6, 0, [company_id])],
+            'company_id': self.env.company.id,
+            'company_ids': [(6, 0, self.env.company.ids)],
         })
 
-    @api.multi
     def _send_email(self):
         """ send notification email to a new portal user """
         if not self.env.user.email:

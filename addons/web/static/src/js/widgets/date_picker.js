@@ -12,9 +12,13 @@ var DateWidget = Widget.extend({
     template: "web.datepicker",
     type_of_date: "date",
     events: {
-        'change.datetimepicker': 'changeDatetime',
+        'error.datetimepicker': 'errorDatetime',
         'change .o_datepicker_input': 'changeDatetime',
+        'click input': '_onInputClicked',
         'input input': '_onInput',
+        'keydown': '_onKeydown',
+        'show.datetimepicker': '_onDateTimePickerShow',
+        'hide.datetimepicker': '_onDateTimePickerHide',
     },
     /**
      * @override
@@ -24,9 +28,10 @@ var DateWidget = Widget.extend({
 
         this.name = parent.name;
         this.options = _.extend({
+            locale: moment.locale(),
             format : this.type_of_date === 'datetime' ? time.getLangDatetimeFormat() : time.getLangDateFormat(),
-            minDate: moment({ y: 1900 }),
-            maxDate: moment().add(200, "y"),
+            minDate: moment({ y: 1 }),
+            maxDate: moment({ y: 9999, M: 11, d: 31 }),
             useCurrent: false,
             icons: {
                 time: 'fa fa-clock-o',
@@ -36,8 +41,8 @@ var DateWidget = Widget.extend({
                 previous: 'fa fa-chevron-left',
                 next: 'fa fa-chevron-right',
                 today: 'fa fa-calendar-check-o',
-                clear: 'fa fa-delete',
-                close: 'fa fa-times'
+                clear: 'fa fa-trash',
+                close: 'fa fa-check primary',
             },
             calendarWeeks: true,
             buttons: {
@@ -47,10 +52,13 @@ var DateWidget = Widget.extend({
             },
             widgetParent: 'body',
             keyBinds: null,
-            allowInputToggle: true,
         }, options || {});
 
         this.__libInput = 0;
+        // tempusdominus doesn't offer any elegant way to check whether the
+        // datepicker is open or not, so we have to listen to hide/show events
+        // and manually keep track of the 'open' state
+        this.__isOpen = false;
     },
     /**
      * @override
@@ -66,6 +74,9 @@ var DateWidget = Widget.extend({
      * @override
      */
     destroy: function () {
+        if (this._onScroll) {
+            window.removeEventListener('wheel', this._onScroll, true);
+        }
         this.__libInput++;
         this.$el.datetimepicker('destroy');
         this.__libInput--;
@@ -80,8 +91,15 @@ var DateWidget = Widget.extend({
      * set datetime value
      */
     changeDatetime: function () {
+        if (this.__libInput > 0) {
+            if (this.options.warn_future) {
+                this._warnFuture(this.getValue());
+            }
+            this.trigger("datetime_changed");
+            return;
+        }
+        var oldValue = this.getValue();
         if (this.isValid()) {
-            var oldValue = this.getValue();
             this._setValueFromUi();
             var newValue = this.getValue();
             var hasChanged = !oldValue !== !newValue;
@@ -98,7 +116,16 @@ var DateWidget = Widget.extend({
                 }
                 this.trigger("datetime_changed");
             }
+        } else {
+            var formattedValue = oldValue ? this._formatClient(oldValue) : null;
+            this.$input.val(formattedValue);
         }
+    },
+    /**
+     * Library clears the wrong date format so just ignore error
+     */
+    errorDatetime: function (e) {
+        return false;
     },
     /**
      * Focuses the datepicker input. This function must be called in order to
@@ -156,9 +183,7 @@ var DateWidget = Widget.extend({
         this.set({'value': value});
         var formatted_value = value ? this._formatClient(value) : null;
         this.$input.val(formatted_value);
-        this.__libInput++;
-        this.$el.datetimepicker('date', value || null);
-        this.__libInput--;
+        this._setLibInputValue(value);
     },
 
     //--------------------------------------------------------------------------
@@ -176,11 +201,12 @@ var DateWidget = Widget.extend({
             this.$warning = $('<span>', {
                 class: 'fa fa-exclamation-triangle o_tz_warning o_datepicker_warning',
             });
-            var title = _t("This date is on the future. Make sure it is what you expected.");
+            var title = _t("This date is in the future. Make sure this is what you expect.");
             this.$warning.attr('title', title);
             this.$input.after(this.$warning);
         }
-        if (currentDate && currentDate.isAfter(moment())) {
+        // Get rid of time and TZ crap for comparison
+        if (currentDate && currentDate.format('YYYY-MM-DD') > moment().format('YYYY-MM-DD')) {
             this.$warning.show();
         } else {
             this.$warning.hide();
@@ -205,6 +231,15 @@ var DateWidget = Widget.extend({
     },
     /**
      * @private
+     * @param {Moment|false} value
+     */
+    _setLibInputValue: function (value) {
+        this.__libInput++;
+        this.$el.datetimepicker('date', value || null);
+        this.__libInput--;
+    },
+    /**
+     * @private
      * @param {boolean} readonly
      */
     _setReadonly: function (readonly) {
@@ -226,6 +261,59 @@ var DateWidget = Widget.extend({
     //--------------------------------------------------------------------------
 
     /**
+     * Reacts to the datetimepicker being hidden
+     * Used to unbind the scroll event from the datetimepicker
+     *
+     * @private
+     */
+    _onDateTimePickerHide: function () {
+        this.__isOpen = false;
+        this.changeDatetime();
+        if (this._onScroll) {
+            window.removeEventListener('wheel', this._onScroll, true);
+        }
+        this.changeDatetime();
+    },
+    /**
+     * Reacts to the datetimepicker being shown
+     * Could set/verify our widget value
+     * And subsequently update the datetimepicker
+     *
+     * @private
+     */
+    _onDateTimePickerShow: function () {
+        this.__isOpen = true;
+        if (this.$input.val().length !== 0 && this.isValid()) {
+            this.$input.select();
+        }
+        var self = this;
+        this._onScroll = function (ev) {
+            if (ev.target !== self.$input.get(0)) {
+                self.__libInput++;
+                self.$el.datetimepicker('hide');
+                self.__libInput--;
+            }
+        };
+        window.addEventListener('wheel', this._onScroll, true);
+    },
+    /**
+     * @private
+     * @param {KeyEvent} ev
+     */
+    _onKeydown: function (ev) {
+        if (ev.which === $.ui.keyCode.ESCAPE) {
+            if (this.__isOpen) {
+                // we don't want any other effects than closing the datepicker,
+                // like leaving the edition of a row in editable list view
+                ev.stopImmediatePropagation();
+                this.__libInput++;
+                this.$el.datetimepicker('hide');
+                this.__libInput--;
+                this.focus();
+            }
+        }
+    },
+    /**
      * Prevents 'input' events triggered by the library to bubble up, as they
      * might have unwanted effects (like triggering 'field_changed' events in
      * the context of field widgets)
@@ -237,6 +325,15 @@ var DateWidget = Widget.extend({
         if (this.__libInput > 0) {
             ev.stopImmediatePropagation();
         }
+    },
+    /**
+     * @private
+     */
+    _onInputClicked: function () {
+        this.__libInput++;
+        this.$el.datetimepicker('toggle');
+        this.__libInput--;
+        this.focus();
     },
 });
 

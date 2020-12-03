@@ -12,25 +12,12 @@ class Channel(models.Model):
         self.env['mail.bot']._apply_logic(self, kwargs, command="help")  # kwargs are not usefull but...
 
     @api.model
-    def channel_fetch_listeners(self, uuid):
-        """ Return the id, name and email of partners listening to the given channel """
-        result = super().channel_fetch_listeners(uuid)
-        odoobot = self.env.ref("base.partner_root").sudo()
-        return result + [{'id': odoobot.id, 'name': odoobot.name, 'email': odoobot.email}]
-
-    @api.model
     def init_odoobot(self):
-        if self.env.user.odoobot_state == 'not_initialized':
-            partner = self.env.user.partner_id
+        if self.env.user.odoobot_state in [False, 'not_initialized']:
             odoobot_id = self.env['ir.model.data'].xmlid_to_res_id("base.partner_root")
-            channel = self.with_context({"mail_create_nosubscribe": True}).create({
-                'channel_partner_ids': [(4, partner.id), (4, odoobot_id)],
-                'public': 'private',
-                'channel_type': 'chat',
-                'email_send': False,
-                'name': 'OdooBot'
-            })
-            message = _("Hello,<br/>Odoo's chat helps employees collaborate efficiently. I'm here to help you discover its features.<br/><b>Try to send me an emoji :)</b>")
-            channel.sudo().message_post(body=message, author_id=odoobot_id, message_type="comment", subtype="mail.mt_comment")
+            channel_info = self.channel_get([odoobot_id])
+            channel = self.browse(channel_info['id'])
+            message = _("Hello,<br/>Odoo's chat helps employees collaborate efficiently. I'm here to help you discover its features.<br/><b>Try to send me an emoji</b> <span class=\"o_odoobot_command\">:)</span>")
+            channel.sudo().message_post(body=message, author_id=odoobot_id, message_type="comment", subtype_xmlid="mail.mt_comment")
             self.env.user.odoobot_state = 'onboarding_emoji'
             return channel

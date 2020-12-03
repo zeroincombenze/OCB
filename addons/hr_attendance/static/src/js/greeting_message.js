@@ -3,12 +3,13 @@ odoo.define('hr_attendance.greeting_message', function (require) {
 
 var AbstractAction = require('web.AbstractAction');
 var core = require('web.core');
+var time = require('web.time');
 
 var _t = core._t;
 
 
 var GreetingMessage = AbstractAction.extend({
-    template: 'HrAttendanceGreetingMessage',
+    contentTemplate: 'HrAttendanceGreetingMessage',
 
     events: {
         "click .o_hr_attendance_button_dismiss": function() { this.do_action(this.next_action, {clear_breadcrumbs: true}); },
@@ -47,26 +48,17 @@ var GreetingMessage = AbstractAction.extend({
         this.previous_attendance_change_date = action.previous_attendance_change_date && moment.utc(action.previous_attendance_change_date).local();
 
         // check in/out times displayed in the greeting message template.
-        this.format_time = 'HH:mm:ss';
+        this.format_time = time.getLangTimeFormat();
         this.attendance.check_in_time = this.attendance.check_in && this.attendance.check_in.format(this.format_time);
         this.attendance.check_out_time = this.attendance.check_out && this.attendance.check_out.format(this.format_time);
-        this.employee_name = action.employee_name;
-    },
 
-    willStart: function() {
-        var self = this;
-        var def;
-        if (this.attendance && this.attendance.employee_id) {
-            def = this._rpc({
-                model: 'hr.employee',
-                method: 'read',
-                args: [this.attendance.employee_id[0], ['barcode']],
-             })
-            .then(function (employee) {
-                self.attendanceBarcode = employee[0].barcode;
-            });
+        if (action.hours_today) {
+            var duration = moment.duration(action.hours_today, "hours");
+            this.hours_today = duration.hours() + ' hours, ' + duration.minutes() + ' minutes';
         }
-        return $.when(this._super.apply(this, arguments), def);
+
+        this.employee_name = action.employee_name;
+        this.attendanceBarcode = action.barcode;
     },
 
     start: function() {
@@ -76,6 +68,7 @@ var GreetingMessage = AbstractAction.extend({
         if (this.activeBarcode) {
             core.bus.on('barcode_scanned', this, this._onBarcodeScanned);
         }
+        return this._super.apply(this, arguments);
     },
 
     welcome_message: function() {
@@ -167,7 +160,10 @@ var GreetingMessage = AbstractAction.extend({
                         self.do_action(result.action);
                     } else if (result.warning) {
                         self.do_warn(result.warning);
+                        setTimeout( function() { self.do_action(self.next_action, {clear_breadcrumbs: true}); }, 5000);
                     }
+                }, function () {
+                    setTimeout( function() { self.do_action(self.next_action, {clear_breadcrumbs: true}); }, 5000);
                 });
         }
     },

@@ -3,14 +3,14 @@
     'name': 'Digital Products',
     'version': '0.1',
     'summary': 'Sell digital products in your eCommerce store',
-    'category': 'Website',
+    'category': 'Website/Website',
     'description': """
 Sell e-goods in your eCommerce store (e.g. webinars, articles, e-books, video tutorials).
 To do so, create the product and attach the file to share via the *Files* button of the product form.
 Once the order is paid, the file is made available in the order confirmation page and in the customer portal.
     """,
     'depends': [
-        'document',
+        'attachment_indexation',
         'website_sale',
     ],
     'installable': True,

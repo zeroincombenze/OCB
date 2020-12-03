@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, fields, models
-from odoo import tools
+from odoo import fields, models
 
 
 class CrmPartnerReportAssign(models.Model):
@@ -18,27 +17,25 @@ class CrmPartnerReportAssign(models.Model):
     date_review = fields.Date('Latest Partner Review')
     date_partnership = fields.Date('Partnership Date')
     country_id = fields.Many2one('res.country', 'Country', readonly=True)
-    team_id = fields.Many2one('crm.team', 'Sales Team', oldname='section_id', readonly=True)
-    nbr_opportunities = fields.Integer('# of Opportunity', readonly=True, oldname='opp')
+    team_id = fields.Many2one('crm.team', 'Sales Team', readonly=True)
+    nbr_opportunities = fields.Integer('# of Opportunity', readonly=True)
     turnover = fields.Float('Turnover', readonly=True)
     date = fields.Date('Invoice Account Date', readonly=True)
 
     _depends = {
-        'account.invoice.report': ['date', 'partner_id', 'price_total', 'state', 'type'],
+        'account.invoice.report': ['invoice_date', 'partner_id', 'price_subtotal', 'state', 'move_type'],
         'crm.lead': ['partner_assigned_id'],
         'res.partner': ['activation', 'country_id', 'date_partnership', 'date_review',
                         'grade_id', 'parent_id', 'team_id', 'user_id'],
     }
 
-    @api.model_cr
-    def init(self):
+    @property
+    def _table_query(self):
         """
             CRM Lead Report
             @param cr: the current row, from the database cursor
         """
-        tools.drop_view_if_exists(self._cr, 'crm_partner_report_assign')
-        self._cr.execute("""
-            CREATE OR REPLACE VIEW crm_partner_report_assign AS (
+        return """
                 SELECT
                     coalesce(i.id, p.id - 1000000000) as id,
                     p.id as partner_id,
@@ -50,10 +47,12 @@ class CrmPartnerReportAssign(models.Model):
                     p.user_id,
                     p.team_id,
                     (SELECT count(id) FROM crm_lead WHERE partner_assigned_id=p.id) AS nbr_opportunities,
-                    i.price_total as turnover,
-                    i.date
+                    i.price_subtotal as turnover,
+                    i.invoice_date as date
                 FROM
                     res_partner p
-                    left join account_invoice_report i
-                        on (i.partner_id=p.id and i.type in ('out_invoice','out_refund') and i.state in ('open','in_payment','paid'))
-            )""")
+                    left join ({account_invoice_report}) i
+                        on (i.partner_id=p.id and i.move_type in ('out_invoice','out_refund') and i.state='open')
+            """.format(
+                account_invoice_report=self.env['account.invoice.report']._table_query
+            )

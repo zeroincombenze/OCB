@@ -18,46 +18,36 @@ var _t = core._t;
 var SwitchCompanyMenu = Widget.extend({
     template: 'SwitchCompanyMenu',
     events: {
-        'click .dropdown-item[data-menu]': '_onClick',
+        'click .dropdown-item[data-menu] div.log_into': '_onSwitchCompanyClick',
+        'keydown .dropdown-item[data-menu] div.log_into': '_onSwitchCompanyClick',
+        'click .dropdown-item[data-menu] div.toggle_company': '_onToggleCompanyClick',
+        'keydown .dropdown-item[data-menu] div.toggle_company': '_onToggleCompanyClick',
     },
+    // force this item to be the first one to the left of the UserMenu in the systray
+    sequence: 1,
     /**
      * @override
      */
     init: function () {
         this._super.apply(this, arguments);
         this.isMobile = config.device.isMobile;
-        this._onClick = _.debounce(this._onClick, 1500, true);
+        this._onSwitchCompanyClick = _.debounce(this._onSwitchCompanyClick, 1500, true);
     },
+
     /**
      * @override
      */
     willStart: function () {
-        return session.user_companies ? this._super() : $.Deferred().reject();
-    },
-    /**
-     * @override
-     */
-    start: function () {
-        var companiesList = '';
-        if (this.isMobile) {
-            companiesList = '<li class="bg-info">' +
-                _t('Tap on the list to change company') + '</li>';
-        }
-        else {
-            this.$('.oe_topbar_name').text(session.user_companies.current_company[1]);
-        }
-        _.each(session.user_companies.allowed_companies, function(company) {
-            var a = '';
-            if (company[0] === session.user_companies.current_company[0]) {
-                a = '<i class="fa fa-check mr8"></i>';
-            } else {
-                a = '<span style="margin-right: 24px;"/>';
-            }
-            companiesList += '<a href="#" class="dropdown-item" data-menu="company" data-company-id="' +
-                            company[0] + '">' + a + company[1] + '</a>';
-        });
-        this.$('.dropdown-menu').html(companiesList);
-        return this._super();
+        var self = this;
+        this.allowed_company_ids = String(session.user_context.allowed_company_ids)
+                                    .split(',')
+                                    .map(function (id) {return parseInt(id);});
+        this.user_companies = session.user_companies.allowed_companies;
+        this.current_company = this.allowed_company_ids[0];
+        this.current_company_name = _.find(session.user_companies.allowed_companies, function (company) {
+            return company[0] === self.current_company;
+        })[1];
+        return this._super.apply(this, arguments);
     },
 
     //--------------------------------------------------------------------------
@@ -66,23 +56,71 @@ var SwitchCompanyMenu = Widget.extend({
 
     /**
      * @private
-     * @param {MouseEvent} ev
+     * @param {MouseEvent|KeyEvent} ev
      */
-    _onClick: function (ev) {
+    _onSwitchCompanyClick: function (ev) {
+        if (ev.type == 'keydown' && ev.which != $.ui.keyCode.ENTER && ev.which != $.ui.keyCode.SPACE) {
+            return;
+        }
         ev.preventDefault();
-        var companyID = $(ev.currentTarget).data('company-id');
-        this._rpc({
-            model: 'res.users',
-            method: 'write',
-            args: [[session.uid], {'company_id': companyID}],
-        })
-        .then(function() {
-            location.reload();
-        });
+        ev.stopPropagation();
+        var dropdownItem = $(ev.currentTarget).parent();
+        var dropdownMenu = dropdownItem.parent();
+        var companyID = dropdownItem.data('company-id');
+        var allowed_company_ids = this.allowed_company_ids;
+        if (dropdownItem.find('.fa-square-o').length) {
+            // 1 enabled company: Stay in single company mode
+            if (this.allowed_company_ids.length === 1) {
+                if (this.isMobile) {
+                    dropdownMenu = dropdownMenu.parent();
+                }
+                dropdownMenu.find('.fa-check-square').removeClass('fa-check-square').addClass('fa-square-o');
+                dropdownItem.find('.fa-square-o').removeClass('fa-square-o').addClass('fa-check-square');
+                allowed_company_ids = [companyID];
+            } else { // Multi company mode
+                allowed_company_ids.push(companyID);
+                dropdownItem.find('.fa-square-o').removeClass('fa-square-o').addClass('fa-check-square');
+            }
+        }
+        $(ev.currentTarget).attr('aria-pressed', 'true');
+        session.setCompanies(companyID, allowed_company_ids);
     },
+
+    //--------------------------------------------------------------------------
+    // Handlers
+    //--------------------------------------------------------------------------
+
+    /**
+     * @private
+     * @param {MouseEvent|KeyEvent} ev
+     */
+    _onToggleCompanyClick: function (ev) {
+        if (ev.type == 'keydown' && ev.which != $.ui.keyCode.ENTER && ev.which != $.ui.keyCode.SPACE) {
+            return;
+        }
+        ev.preventDefault();
+        ev.stopPropagation();
+        var dropdownItem = $(ev.currentTarget).parent();
+        var companyID = dropdownItem.data('company-id');
+        var allowed_company_ids = this.allowed_company_ids;
+        var current_company_id = allowed_company_ids[0];
+        if (dropdownItem.find('.fa-square-o').length) {
+            allowed_company_ids.push(companyID);
+            dropdownItem.find('.fa-square-o').removeClass('fa-square-o').addClass('fa-check-square');
+            $(ev.currentTarget).attr('aria-checked', 'true');
+        } else {
+            allowed_company_ids.splice(allowed_company_ids.indexOf(companyID), 1);
+            dropdownItem.find('.fa-check-square').addClass('fa-square-o').removeClass('fa-check-square');
+            $(ev.currentTarget).attr('aria-checked', 'false');
+        }
+        session.setCompanies(current_company_id, allowed_company_ids);
+    },
+
 });
 
-SystrayMenu.Items.push(SwitchCompanyMenu);
+if (session.display_switch_company_menu) {
+    SystrayMenu.Items.push(SwitchCompanyMenu);
+}
 
 return SwitchCompanyMenu;
 

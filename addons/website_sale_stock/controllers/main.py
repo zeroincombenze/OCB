@@ -1,35 +1,30 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-
 from odoo.addons.website_sale.controllers.main import WebsiteSale
+
+from odoo import http,_
 from odoo.http import request
+from odoo.exceptions import ValidationError
 
-class WebsiteSale(WebsiteSale):
-    def _get_combination_info(self, product_template_id, product_id, combination, add_qty, pricelist, **kw):
-        res = super(WebsiteSale, self)._get_combination_info(product_template_id, product_id, combination, add_qty, pricelist, **kw)
 
-        if res['product_id']:
-            product = request.env['product.product'].sudo().browse(res['product_id'])
-            res.update({
-                'virtual_available': product.virtual_available,
-                'product_type': product.type,
-                'inventory_availability': product.inventory_availability,
-                'available_threshold': product.available_threshold,
-                'custom_message': product.custom_message,
-                'product_template': product.product_tmpl_id.id,
-                'cart_qty': product.cart_qty,
-                'uom_name': product.uom_id.name,
-            })
-        else:
-            product_template = request.env['product.template'].sudo().browse(product_template_id)
-            res.update({
-                'virtual_available': 0,
-                'product_type': product_template.type,
-                'inventory_availability': product_template.inventory_availability,
-                'available_threshold': product_template.available_threshold,
-                'custom_message': product_template.custom_message,
-                'product_template': product_template.id,
-                'cart_qty': 0
-            })
-
-        return res
+class WebsiteSaleStock(WebsiteSale):
+    @http.route()
+    def payment_transaction(self, *args, **kwargs):
+        """ Payment transaction override to double check cart quantities before
+        placing the order
+        """
+        order = request.website.sale_get_order()
+        values = []
+        for line in order.order_line:
+            if line.product_id.type == 'product' and line.product_id.inventory_availability in ['always', 'threshold']:
+                cart_qty = sum(order.order_line.filtered(lambda p: p.product_id.id == line.product_id.id).mapped('product_uom_qty'))
+                avl_qty = line.product_id.with_context(warehouse=order.warehouse_id.id).virtual_available
+                if cart_qty > avl_qty:
+                    values.append(_(
+                        'You ask for %(quantity)s products but only %(available_qty)s is available',
+                        quantity=cart_qty,
+                        available_qty=avl_qty if avl_qty > 0 else 0
+                    ))
+        if values:
+            raise ValidationError('. '.join(values) + '.')
+        return super(WebsiteSaleStock, self).payment_transaction(*args, **kwargs)

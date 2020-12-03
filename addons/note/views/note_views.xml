@@ -64,7 +64,6 @@
     <record id="note_tag_action" model="ir.actions.act_window">
       <field name="name">Tags</field>
       <field name="res_model">note.tag</field>
-      <field name="view_type">form</field>
       <field name="view_mode">tree,form</field>
       <field name="help" type="html">
         <p class="o_view_nocontent_smiling_face">
@@ -89,15 +88,16 @@
           <field name="message_partner_ids"/>
           <field name="activity_ids" />
           <field name="activity_state" />
+          <progressbar field="activity_state" colors='{"planned": "success", "today": "warning", "overdue": "danger"}'/>
           <templates>
             <t t-name="kanban-box">
 
-              <div t-attf-class="#{kanban_color(record.color.raw_value)} oe_kanban_global_click_edit oe_semantic_html_override oe_kanban_card">
+              <div t-attf-class="#{!selection_mode ? kanban_color(record.color.raw_value) : ''} oe_kanban_global_click_edit oe_semantic_html_override oe_kanban_card">
 
                 <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
 
                 <div class="o_dropdown_kanban dropdown">
-                    <a role="button" class="dropdown-toggle o-no-caret btn" data-toggle="dropdown" href="#" aria-label="Dropdown menu" title="Dropdown menu">
+                    <a role="button" class="dropdown-toggle o-no-caret btn" data-toggle="dropdown" data-display="static" href="#" aria-label="Dropdown menu" title="Dropdown menu">
                         <span class="fa fa-ellipsis-v"/>
                     </a>
                     <div class="dropdown-menu" role="menu">
@@ -113,16 +113,14 @@
                 <span t-attf-class="oe_kanban_content #{record.open.raw_value ? '' : 'note_text_line_through'}">
                   <!-- title -->
                   <field name="name"/>
-                  <div class="oe_kanban_bottom_right">
-                    <div class="o_kanban_inline_block mr4">
-                        <field name="activity_ids" widget="kanban_activity" />
-                    </div>
+                  <div class="o_kanban_inline_block float-right mr4">
+                    <field name="activity_ids" widget="kanban_activity" />
                   </div>
                 </span>
                 <t t-if="record.message_partner_ids.raw_value.length &gt; 1">
                     <div class="clearfix"></div>
                       <t t-foreach="record.message_partner_ids.raw_value" t-as="follower">
-                        <img t-att-src="kanban_image('res.partner', 'image_small', follower)" width="24" height="24" class="oe_kanban_avatar float-right" t-att-data-member_id="follower" alt="Follower"/>
+                        <img t-att-src="kanban_image('res.partner', 'image_128', follower)" class="oe_kanban_avatar o_image_24_cover float-right mt-2" t-att-data-member_id="follower" alt="Follower"/>
                       </t>
                     <div class="clearfix"></div>
                 </t>
@@ -143,6 +141,7 @@
           <field name="open"/>
           <field name="stage_id"/>
           <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+          <field name="activity_ids" widget="list_activity" optional="show"/>
         </tree>
       </field>
     </record>
@@ -161,9 +160,9 @@
                   <field name="memo" type="html" class="oe_memo"/>
                 </sheet>
                 <div class="oe_chatter">
-                    <field name="message_follower_ids" widget="mail_followers"/>
-                    <field name="activity_ids" widget="mail_activity"/>
-                    <field name="message_ids" widget="mail_thread"/>
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
                 </div>
             </form>
         </field>
@@ -179,16 +178,12 @@
           <field name="tag_ids"/>
           <filter name="open_true" string="Active" domain="[('open', '=', True)]"/>
           <filter name="open_false" string="Archive" domain="[('open', '=', False)]"/>
-          <separator/>
-          <filter string="My Activities" name="activities_my"
-                  domain="[('activity_ids.user_id', '=', uid)]"/>
-          <separator/>
-          <filter string="Late Activities" name="activities_overdue"
+          <filter invisible="1" string="Late Activities" name="activities_overdue"
                   domain="[('activity_ids.date_deadline', '&lt;', context_today().strftime('%Y-%m-%d'))]"
                   help="Show all records which has next action date is before today"/>
-          <filter string="Today Activities" name="activities_today"
+          <filter invisible="1" string="Today Activities" name="activities_today"
                   domain="[('activity_ids.date_deadline', '=', context_today().strftime('%Y-%m-%d'))]"/>
-          <filter string="Future Activities" name="activities_upcoming_all"
+          <filter invisible="1" string="Future Activities" name="activities_upcoming_all"
                         domain="[('activity_ids.date_deadline', '&gt;', context_today().strftime('%Y-%m-%d'))
                         ]"/>
           <group expand="0" string="Group By">
@@ -202,7 +197,6 @@
     <record id="action_note_note" model="ir.actions.act_window">
       <field name="name">Notes</field>
       <field name="res_model">note.note</field>
-      <field name="view_type">form</field>
       <field name="view_mode">kanban,tree,form,activity</field>
       <field name="search_view_id" ref="view_note_note_filter"/>
       <field name="context">{}</field>
@@ -221,26 +215,22 @@
       name="Notes"
       sequence="3"
       action="note.action_note_note"
-      web_icon="note,static/description/icon.png"/>
-
-    <menuitem
-      id="menu_note_configuration"
-      name="Configuration"
-      sequence="100"
-      parent="menu_note_notes"
-      groups="base.group_no_one"/>
-
-    <menuitem
-      id="menu_notes_stage"
-      name="Stages"
-      parent="menu_note_configuration"
-      action="note.action_note_stage"
-      sequence="21"/>
-
-    <menuitem
-      id="notes_tag_menu"
-      parent="menu_note_configuration"
-      action="note_tag_action"
-      sequence="22"/>
+      web_icon="note,static/description/icon.png">
+        <menuitem
+          id="menu_note_configuration"
+          name="Configuration"
+          sequence="100"
+          groups="base.group_no_one">
+            <menuitem
+              id="menu_notes_stage"
+              name="Stages"
+              action="note.action_note_stage"
+              sequence="21"/>
+            <menuitem
+              id="notes_tag_menu"
+              action="note_tag_action"
+              sequence="22"/>
+        </menuitem>
+    </menuitem>
 
 </odoo>

@@ -13,13 +13,13 @@ class OnboardingController(http.Controller):
             It can be empty if the user has closed it or if he doesn't have
             the permission to see it. """
 
-        company = request.env.user.company_id
-        if not request.env.user._is_admin() or \
+        company = request.env.company
+        if not request.env.is_admin() or \
            company.sale_quotation_onboarding_state == 'closed':
             return {}
 
         return {
-            'html': request.env.ref('sale.sale_quotation_onboarding_panel').render({
+            'html': request.env.ref('sale.sale_quotation_onboarding_panel')._render({
                 'company': company,
                 'state': company.get_and_update_sale_quotation_onboarding_state()
             })

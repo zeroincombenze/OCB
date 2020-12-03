@@ -2,46 +2,111 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 import re
 import base64
-import datetime
 
-from odoo import fields, models, api, _, tools
-from odoo.addons.iap import jsonrpc
-from odoo.exceptions import UserError
+from odoo import fields, models, api, _
+from odoo.addons.iap.tools import iap_tools
 from odoo.tools.safe_eval import safe_eval
 
 DEFAULT_ENDPOINT = 'https://iap-snailmail.odoo.com'
-ESTIMATE_ENDPOINT = '/iap/snailmail/1/estimate'
 PRINT_ENDPOINT = '/iap/snailmail/1/print'
+DEFAULT_TIMEOUT = 30
+
+ERROR_CODES = [
+    'MISSING_REQUIRED_FIELDS',
+    'CREDIT_ERROR',
+    'TRIAL_ERROR',
+    'NO_PRICE_AVAILABLE',
+    'FORMAT_ERROR',
+    'UNKNOWN_ERROR',
+]
 
 
 class SnailmailLetter(models.Model):
     _name = 'snailmail.letter'
     _description = 'Snailmail Letter'
 
-    user_id = fields.Many2one('res.users', 'User sending the letter')
+    user_id = fields.Many2one('res.users', 'Sent by')
     model = fields.Char('Model', required=True)
     res_id = fields.Integer('Document ID', required=True)
     partner_id = fields.Many2one('res.partner', string='Recipient', required=True)
     company_id = fields.Many2one('res.company', string='Company', required=True, readonly=True,
-        default=lambda self: self.env.user.company_id.id)
+        default=lambda self: self.env.company.id)
     report_template = fields.Many2one('ir.actions.report', 'Optional report to print and attach')
 
     attachment_id = fields.Many2one('ir.attachment', string='Attachment', ondelete='cascade')
-    color = fields.Boolean(string='Color', default=lambda self: self.env.user.company_id.snailmail_color)
-    duplex = fields.Boolean(string='Both side', default=lambda self: self.env.user.company_id.snailmail_duplex)
+    attachment_datas = fields.Binary('Document', related='attachment_id.datas')
+    attachment_fname = fields.Char('Attachment Filename', related='attachment_id.name')
+    color = fields.Boolean(string='Color', default=lambda self: self.env.company.snailmail_color)
+    cover = fields.Boolean(string='Cover Page', default=lambda self: self.env.company.snailmail_cover)
+    duplex = fields.Boolean(string='Both side', default=lambda self: self.env.company.snailmail_duplex)
     state = fields.Selection([
-        ('draft', 'Draft'),
         ('pending', 'In Queue'),
         ('sent', 'Sent'),
         ('error', 'Error'),
         ('canceled', 'Canceled')
-        ], 'Status', readonly=True, copy=False, default='draft',
-        help="When a letter is created, the status is 'Draft'.\n"
+        ], 'Status', readonly=True, copy=False, default='pending', required=True,
+        help="When a letter is created, the status is 'Pending'.\n"
              "If the letter is correctly sent, the status goes in 'Sent',\n"
              "If not, it will got in state 'Error' and the error message will be displayed in the field 'Error Message'.")
+    error_code = fields.Selection([(err_code, err_code) for err_code in ERROR_CODES], string="Error")
     info_msg = fields.Char('Information')
+    display_name = fields.Char('Display Name', compute="_compute_display_name")
 
-    @api.multi
+    reference = fields.Char(string='Related Record', compute='_compute_reference', readonly=True, store=False)
+
+    message_id = fields.Many2one('mail.message', string="Snailmail Status Message")
+    notification_ids = fields.One2many('mail.notification', 'letter_id', "Notifications")
+
+    street = fields.Char('Street')
+    street2 = fields.Char('Street2')
+    zip = fields.Char('Zip')
+    city = fields.Char('City')
+    state_id = fields.Many2one("res.country.state", string='State')
+    country_id = fields.Many2one('res.country', string='Country')
+
+    @api.depends('reference', 'partner_id')
+    def _compute_display_name(self):
+        for letter in self:
+            if letter.attachment_id:
+                letter.display_name = "%s - %s" % (letter.attachment_id.name, letter.partner_id.name)
+            else:
+                letter.display_name = letter.partner_id.name
+
+    @api.depends('model', 'res_id')
+    def _compute_reference(self):
+        for res in self:
+            res.reference = "%s,%s" % (res.model, res.res_id)
+
+    @api.model
+    def create(self, vals):
+        msg_id = self.env[vals['model']].browse(vals['res_id']).message_post(
+            body=_("Letter sent by post with Snailmail"),
+            message_type='snailmail'
+        )
+
+        partner_id = self.env['res.partner'].browse(vals['partner_id'])
+        vals.update({
+            'message_id': msg_id.id,
+            'street': partner_id.street,
+            'street2': partner_id.street2,
+            'zip': partner_id.zip,
+            'city': partner_id.city,
+            'state_id': partner_id.state_id.id,
+            'country_id': partner_id.country_id.id,
+        })
+        letter = super(SnailmailLetter, self).create(vals)
+
+        self.env['mail.notification'].sudo().create({
+            'mail_message_id': msg_id.id,
+            'res_partner_id': partner_id.id,
+            'notification_type': 'snail',
+            'letter_id': letter.id,
+            'is_read': True,  # discard Inbox notification
+            'notification_status': 'ready',
+        })
+
+        return letter
+
     def _fetch_attachment(self):
         """
         This method will check if we have any existent attachement matching the model
@@ -66,11 +131,10 @@ class SnailmailLetter(models.Model):
             else:
                 report_name = 'Document'
             filename = "%s.%s" % (report_name, "pdf")
-            pdf_bin, _ = report.with_context(snailmail_layout=True).render_qweb_pdf(self.res_id)
+            pdf_bin, _ = report.with_context(snailmail_layout=not self.cover)._render_qweb_pdf(self.res_id)
             attachment = self.env['ir.attachment'].create({
                 'name': filename,
                 'datas': base64.b64encode(pdf_bin),
-                'datas_fname': filename,
                 'res_model': 'snailmail.letter',
                 'res_id': self.id,
                 'type': 'binary',  # override default_type from context, possibly meant for another model!
@@ -88,7 +152,6 @@ class SnailmailLetter(models.Model):
             pages = int(match.group(1))
         return pages
 
-    @api.multi
     def _snailmail_create(self, route):
         """
         Create a dictionnary object to send to snailmail server.
@@ -138,6 +201,7 @@ class SnailmailLetter(models.Model):
                 'letter_id': letter.id,
                 'res_model': letter.model,
                 'res_id': letter.res_id,
+                'contact_address': letter.partner_id.with_context(snailmail_layout=True, show_address=True).name_get()[0][1],
                 'address': {
                     'name': letter.partner_id.name,
                     'street': letter.partner_id.street,
@@ -165,19 +229,20 @@ class SnailmailLetter(models.Model):
             else:
                 # adding the web logo from the company for future possible customization
                 document.update({
-                    'company_logo': letter.company_id.logo_web,
+                    'company_logo': letter.company_id.logo_web and letter.company_id.logo_web.decode('utf-8') or False,
                 })
                 attachment = letter._fetch_attachment()
                 if attachment:
                     document.update({
-                        'pdf_bin': route == 'print' and attachment.datas,
+                        'pdf_bin': route == 'print' and attachment.datas.decode('utf-8'),
                         'pages': route == 'estimate' and self._count_pages_pdf(base64.b64decode(attachment.datas)),
                     })
                 else:
                     letter.write({
                         'info_msg': 'The attachment could not be generated.',
                         'state': 'error',
-                        })
+                        'error_code': 'ATTACHMENT_ERROR'
+                    })
                     continue
                 if letter.company_id.external_report_layout_id == self.env.ref('l10n_de.external_layout_din5008', False):
                     document.update({
@@ -191,8 +256,9 @@ class SnailmailLetter(models.Model):
             'documents': documents,
             'options': {
                 'color': self and self[0].color,
+                'cover': self and self[0].cover,
                 'duplex': self and self[0].duplex,
-                'currency_name': self and self[0].company_id.currency_id.name,
+                'currency_name': 'EUR',
             },
             # this will not raise the InsufficientCreditError which is the behaviour we want for now
             'batch': True,
@@ -201,20 +267,58 @@ class SnailmailLetter(models.Model):
     def _get_error_message(self, error):
         if error == 'CREDIT_ERROR':
             link = self.env['iap.account'].get_credits_url(service_name='snailmail')
-            return _('You don\'t have enough credits to perform this operation.<br>Please go to your <a href=%s target="new">iap account</a>.' % link)
+            return _('You don\'t have enough credits to perform this operation.<br>Please go to your <a href=%s target="new">iap account</a>.', link)
         if error == 'TRIAL_ERROR':
             link = self.env['iap.account'].get_credits_url(service_name='snailmail', trial=True)
-            return _('You don\'t have an IAP account registered for this service.<br>Please go to <a href=%s target="new">iap.odoo.com</a> to claim your free credits.' % link)
+            return _('You don\'t have an IAP account registered for this service.<br>Please go to <a href=%s target="new">iap.odoo.com</a> to claim your free credits.', link)
         if error == 'NO_PRICE_AVAILABLE':
             return _('The country of the partner is not covered by Snailmail.')
         if error == 'MISSING_REQUIRED_FIELDS':
             return _('One or more required fields are empty.')
-        if error == 'SOMETHING_IS_WRONG':
+        if error == 'FORMAT_ERROR':
+            return _('The attachment of the letter could not be sent. Please check its content and contact the support if the problem persists.')
+        else:
             return _('An unknown error happened. Please contact the support.')
         return error
 
-    @api.multi
-    def _snailmail_print(self):
+    def _get_failure_type(self, error):
+        if error == 'CREDIT_ERROR':
+            return 'sn_credit'
+        if error == 'TRIAL_ERROR':
+            return 'sn_trial'
+        if error == 'NO_PRICE_AVAILABLE':
+            return 'sn_price'
+        if error == 'MISSING_REQUIRED_FIELDS':
+            return 'sn_fields'
+        if error == 'FORMAT_ERROR':
+            return 'sn_format'
+        else:
+            return 'sn_error'
+
+    def _snailmail_print(self, immediate=True):
+        valid_address_letters = self.filtered(lambda l: l._is_valid_address(l))
+        invalid_address_letters = self - valid_address_letters
+        invalid_address_letters._snailmail_print_invalid_address()
+        if valid_address_letters and immediate:
+            valid_address_letters._snailmail_print_valid_address()
+        self.env.cr.commit()
+
+    def _snailmail_print_invalid_address(self):
+        error = 'MISSING_REQUIRED_FIELDS'
+        error_message = _("The address of the recipient is not complete")
+        self.write({
+            'state': 'error',
+            'error_code': error,
+            'info_msg': error_message,
+        })
+        self.notification_ids.sudo().write({
+            'notification_status': 'exception',
+            'failure_type': self._get_failure_type(error),
+            'failure_reason': error_message,
+        })
+        self.message_id._notify_message_notification_update()
+
+    def _snailmail_print_valid_address(self):
         """
         get response
         {
@@ -228,105 +332,74 @@ class SnailmailLetter(models.Model):
             }
         }
         """
-        self.write({'state': 'pending'})
         endpoint = self.env['ir.config_parameter'].sudo().get_param('snailmail.endpoint', DEFAULT_ENDPOINT)
+        timeout = int(self.env['ir.config_parameter'].sudo().get_param('snailmail.timeout', DEFAULT_TIMEOUT))
         params = self._snailmail_create('print')
-        response = jsonrpc(endpoint + PRINT_ENDPOINT, params=params)
+        response = iap_tools.iap_jsonrpc(endpoint + PRINT_ENDPOINT, params=params, timeout=timeout)
         for doc in response['request']['documents']:
-            letter = self.browse(doc['letter_id'])
-            record = self.env[doc['res_model']].browse(doc['res_id'])
             if doc.get('sent') and response['request_code'] == 200:
-                if hasattr(record, '_message_log'):
-                    message = _('The document was correctly sent by post.<br>The tracking id is %s' % doc['send_id'])
-                    record._message_log(body=message)
-                    letter.write({'info_msg': message, 'state': 'sent'})
+                note = _('The document was correctly sent by post.<br>The tracking id is %s', doc['send_id'])
+                letter_data = {'info_msg': note, 'state': 'sent', 'error_code': False}
+                notification_data = {
+                    'notification_status': 'sent',
+                    'failure_type': False,
+                    'failure_reason': False,
+                }
             else:
-                # look for existing activities related to snailmail to update or create a new one.
-                # TODO: in following versions, Add a link to a specifc activity on the letter
-                note = _('An error occured when sending the document by post.<br>Error: %s' % \
-                    self._get_error_message(doc['error'] if response['request_code'] == 200 else response['reason']))
+                error = doc['error'] if response['request_code'] == 200 else response['reason']
 
-                domain = [
-                    ('summary', 'ilike', '[SNAILMAIL]'),
-                    ('res_id', '=', letter.res_id),
-                    ('res_model_id', '=', self.env['ir.model']._get(letter.model).id),
-                    ('activity_type_id', '=', self.env.ref('mail.mail_activity_data_warning').id),
-                ]
-                MailActivity = self.env['mail.activity']
-                activity = MailActivity.search(domain, limit=1)
-
-                activity_data = {
-                    'res_id': letter.res_id,
-                    'res_model_id': self.env['ir.model']._get(letter.model).id,
-                    'activity_type_id': self.env.ref('mail.mail_activity_data_warning').id,
-                    'summary': '[SNAILMAIL] ' + _('Post letter: an error occured.'),
-                    'note': note,
-                    'user_id': letter.user_id.id,
-                    'date_deadline': fields.Date.today()
+                note = _('An error occured when sending the document by post.<br>Error: %s', self._get_error_message(error))
+                letter_data = {
+                    'info_msg': note,
+                    'state': 'error',
+                    'error_code': error if error in ERROR_CODES else 'UNKNOWN_ERROR'
                 }
-                if activity:
-                    activity.update(activity_data)
-                else:
-                    MailActivity.create(activity_data)
+                notification_data = {
+                    'notification_status': 'exception',
+                    'failure_type': self._get_failure_type(error),
+                    'failure_reason': note,
+                }
 
-                letter.write({'info_msg': note})
+            letter = self.browse(doc['letter_id'])
+            letter.write(letter_data)
+            letter.notification_ids.sudo().write(notification_data)
+        self.message_id._notify_message_notification_update()
 
-        self.env.cr.commit()
-
-    @api.multi
     def snailmail_print(self):
-        self._snailmail_print()
+        self.write({'state': 'pending'})
+        self.notification_ids.sudo().write({
+            'notification_status': 'ready',
+            'failure_type': False,
+            'failure_reason': False,
+        })
+        self.message_id._notify_message_notification_update()
+        if len(self) == 1:
+            self._snailmail_print()
 
-    @api.multi
     def cancel(self):
-        self.write({'state': 'canceled'})
-
-    @api.multi
-    def _snailmail_estimate(self):
-        """
-        Send a request to estimate the cost of sending all the documents with
-        the differents options.
-
-        The JSON object sent is the one generated from self._snailmail_create()
-
-        arguments sent:
-        {
-            "documents":[{
-                pages: int,
-                res_id: int (client_side, optional),
-                res_model: int (client_side, optional),
-                address: {
-                    country_code: char (country name)
-                }
-            }],
-            'color': # color on the letter,
-            'duplex': # one/two side printing,
-        }
-
-        The answer of the server is the same JSON object with some additionnal fields:
-        {
-            "total_cost": integer,      //The cost of sending ALL the documents
-            body: JSON object (same as body param except new param 'cost' in each documents)
-        }
-        """
-        endpoint = self.env['ir.config_parameter'].sudo().get_param('snailmail.endpoint', DEFAULT_ENDPOINT)
-        params = self._snailmail_create('estimate')
-        req = jsonrpc(endpoint + '/iap/snailmail/1/estimate', params=params)
-
-        return req['total_cost']
+        self.write({'state': 'canceled', 'error_code': False})
+        self.notification_ids.sudo().write({
+            'notification_status': 'canceled',
+        })
+        self.message_id._notify_message_notification_update()
 
     @api.model
-    def _snailmail_cron(self):
-        letters_send = self.search([('state', 'in', ['pending', 'error'])])
-        if letters_send:
-            letters_send._snailmail_print()
-        limit_date = datetime.datetime.utcnow() - datetime.timedelta(days=1)
-        limit_date_str = datetime.datetime.strftime(limit_date, tools.DEFAULT_SERVER_DATETIME_FORMAT)
-        letters_canceled = self.search([
+    def _snailmail_cron(self, autocommit=True):
+        letters_send = self.search([
             '|',
-                ('state', '=', 'canceled'),
-                '&',
-                    ('state' ,'=', 'draft'),
-                    ('write_date', '<', limit_date_str),
+            ('state', '=', 'pending'),
+            '&',
+            ('state', '=', 'error'),
+            ('error_code', 'in', ['TRIAL_ERROR', 'CREDIT_ERROR', 'ATTACHMENT_ERROR', 'MISSING_REQUIRED_FIELDS'])
         ])
-        letters_canceled.unlink()
+        for letter in letters_send:
+            letter._snailmail_print()
+            # Commit after every letter sent to avoid to send it again in case of a rollback
+            if autocommit:
+                self.env.cr.commit()
+
+    @api.model
+    def _is_valid_address(self, record):
+        record.ensure_one()
+        required_keys = ['street', 'city', 'zip', 'country_id']
+        return all(record[key] for key in required_keys)

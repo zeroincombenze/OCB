@@ -75,6 +75,8 @@ ActivityMenu.include({
                     name: data.model_name,
                     res_model:  data.res_model,
                     views: [[false, 'kanban'], [false, 'form'], [false, 'list']]
+                }, {
+                    clear_breadcrumbs: true,
                 });
             } else {
                 this._super.apply(this, arguments);
@@ -89,14 +91,17 @@ ActivityMenu.include({
      * @param {MouseEvent} ev
      */
     _onAddNoteClick: function (ev) {
+        var self = this;
         ev.stopPropagation();
         if (!this.noteDateTimeWidget){
             this.noteDateTimeWidget = new datepicker.DateWidget(this, {useCurrent: true});
         }
-        this.noteDateTimeWidget.appendTo(this.$('.o_note_datetime'));
-        this.noteDateTimeWidget.$input.attr('placeholder', _t("Today"));
-        this.$('.o_note_show, .o_note').toggleClass('d-none');
-        this.$('.o_note_input').val('').focus();
+        this.noteDateTimeWidget.appendTo(this.$('.o_note_datetime')).then(function() {
+            self.noteDateTimeWidget.$input.attr('placeholder', _t("Today"));
+            self.noteDateTimeWidget.setValue(false);
+            self.$('.o_note_show, .o_note').toggleClass('d-none');
+            self.$('.o_note_input').val('').focus();
+        });
     },
     /**
      * When focusing on input for new quick note systerm tray must be open.

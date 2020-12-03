@@ -2,7 +2,6 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models
-from odoo.tools import pycompat
 
 
 def selection_fn(model):
@@ -26,7 +25,7 @@ MODELS = [
     ('date', fields.Date()),
     ('datetime', fields.Datetime()),
     ('text', fields.Text()),
-    ('selection', fields.Selection([(1, "Foo"), (2, "Bar"), (3, "Qux"), (4, '')])),
+    ('selection', fields.Selection([('1', "Foo"), ('2', "Bar"), ('3', "Qux"), ('4', '')])),
     ('selection.function', fields.Selection(selection_fn)),
     # just relate to an integer
     ('many2one', fields.Many2one('export.integer')),
@@ -45,15 +44,13 @@ for name, field in MODELS:
         const = fields.Integer(default=4)
         value = field
 
-        @api.multi
         def name_get(self):
             return [(record.id, "%s:%s" % (self._name, record.value)) for record in self]
 
         @api.model
         def _name_search(self, name, args=None, operator='ilike', limit=100, name_get_uid=None):
-            if isinstance(name, pycompat.string_types) and name.split(':')[0] == self._name:
-                record_ids = self._search([('value', operator, int(name.split(':')[1]))], access_rights_uid=name_get_uid)
-                return self.browse(record_ids).name_get()
+            if isinstance(name, str) and name.split(':')[0] == self._name:
+                return self._search([('value', operator, int(name.split(':')[1]))], access_rights_uid=name_get_uid)
             else:
                 return []
 
@@ -65,17 +62,16 @@ class One2ManyChild(models.Model):
 
     parent_id = fields.Many2one('export.one2many')
     str = fields.Char()
+    m2o = fields.Many2one('export.integer')
     value = fields.Integer()
 
-    @api.multi
     def name_get(self):
         return [(record.id, "%s:%s" % (self._name, record.value)) for record in self]
 
     @api.model
     def _name_search(self, name, args=None, operator='ilike', limit=100, name_get_uid=None):
-        if isinstance(name, pycompat.string_types) and name.split(':')[0] == self._name:
-            record_ids = self._search([('value', operator, int(name.split(':')[1]))], access_rights_uid=name_get_uid)
-            return self.browse(record_ids).name_get()
+        if isinstance(name, str) and name.split(':')[0] == self._name:
+            return self._search([('value', operator, int(name.split(':')[1]))], access_rights_uid=name_get_uid)
         else:
             return []
 
@@ -83,6 +79,7 @@ class One2ManyChild(models.Model):
 class One2ManyMultiple(models.Model):
     _name = 'export.one2many.multiple'
     _description = 'Export One To Many Multiple'
+    _rec_name = 'parent_id'
 
     parent_id = fields.Many2one('export.one2many.recursive')
     const = fields.Integer(default=36)
@@ -100,7 +97,6 @@ class One2ManyChildMultiple(models.Model):
     str = fields.Char()
     value = fields.Integer()
 
-    @api.multi
     def name_get(self):
         return [(record.id, "%s:%s" % (self._name, record.value)) for record in self]
 
@@ -126,15 +122,13 @@ class Many2ManyChild(models.Model):
     str = fields.Char()
     value = fields.Integer()
 
-    @api.multi
     def name_get(self):
         return [(record.id, "%s:%s" % (self._name, record.value)) for record in self]
 
     @api.model
     def _name_search(self, name, args=None, operator='ilike', limit=100, name_get_uid=None):
-        if isinstance(name, pycompat.string_types) and name.split(':')[0] == self._name:
-            record_ids = self._search([('value', operator, int(name.split(':')[1]))], access_rights_uid=name_get_uid)
-            return self.browse(record_ids).name_get()
+        if isinstance(name, str) and name.split(':')[0] == self._name:
+            return self._search([('value', operator, int(name.split(':')[1]))], access_rights_uid=name_get_uid)
         else:
             return []
 
@@ -144,12 +138,13 @@ class SelectionWithDefault(models.Model):
     _description = 'Export Selection With Default'
 
     const = fields.Integer(default=4)
-    value = fields.Selection([(1, "Foo"), (2, "Bar")], default=2)
+    value = fields.Selection([('1', "Foo"), ('2', "Bar")], default='2')
 
 
 class RecO2M(models.Model):
     _name = 'export.one2many.recursive'
     _description = 'Export One To Many Recursive'
+    _rec_name = 'value'
 
     value = fields.Integer()
     child = fields.One2many('export.one2many.multiple', 'parent_id')
@@ -167,3 +162,15 @@ class OnlyOne(models.Model):
         ('value_unique', 'unique (value)', "The value must be unique"),
         ('pair_unique', 'unique (value2, value3)', "The values must be unique"),
     ]
+
+class InheritsParent(models.Model):
+    _name = _description = 'export.inherits.parent'
+
+    value_parent = fields.Integer()
+
+class InheritsChild(models.Model):
+    _name = _description = 'export.inherits.child'
+    _inherits = {'export.inherits.parent': 'parent_id'}
+
+    parent_id = fields.Many2one('export.inherits.parent', required=True, ondelete='cascade')
+    value = fields.Integer()

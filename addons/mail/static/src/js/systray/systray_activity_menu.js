@@ -7,6 +7,8 @@ var SystrayMenu = require('web.SystrayMenu');
 var Widget = require('web.Widget');
 var QWeb = core.qweb;
 
+const { Component } = owl;
+
 /**
  * Menu item appended in the systray part of the navbar, redirects to the next
  * activities of all app
@@ -18,13 +20,11 @@ var ActivityMenu = Widget.extend({
         'click .o_mail_activity_action': '_onActivityActionClick',
         'click .o_mail_preview': '_onActivityFilterClick',
         'show.bs.dropdown': '_onActivityMenuShow',
-    },
-    willStart: function () {
-        return $.when(this.call('mail_service', 'isReady'));
+        'hide.bs.dropdown': '_onActivityMenuHide',
     },
     start: function () {
         this._$activitiesPreview = this.$('.o_mail_systray_dropdown_items');
-        this.call('mail_service', 'getMailBus').on('activity_updated', this, this._updateCounter);
+        Component.env.bus.on('activity_updated', this, this._updateCounter);
         this._updateCounter();
         this._updateActivityPreview();
         return this._super();
@@ -46,7 +46,7 @@ var ActivityMenu = Widget.extend({
             kwargs: {context: session.user_context},
         }).then(function (data) {
             self._activities = data;
-            self.activityCounter = _.reduce(data, function (total_count, p_data) { return total_count + p_data.total_count; }, 0);
+            self.activityCounter = _.reduce(data, function (total_count, p_data) { return total_count + p_data.total_count || 0; }, 0);
             self.$('.o_notification_counter').text(self.activityCounter);
             self.$el.toggleClass('o_no_notification', !self.activityCounter);
         });
@@ -63,6 +63,16 @@ var ActivityMenu = Widget.extend({
         });
     },
     /**
+     * Return views to display when coming from systray depending on the model.
+     *
+     * @private
+     * @param {string} model
+     * @returns {Array[]} output the list of views to display.
+     */
+    _getViewsList(model) {
+        return [[false, 'kanban'], [false, 'list'], [false, 'form']];
+    },
+    /**
      * Update(render) activity system tray view on activity updation.
      * @private
      */
@@ -70,7 +80,7 @@ var ActivityMenu = Widget.extend({
         var self = this;
         self._getActivityData().then(function (){
             self._$activitiesPreview.html(QWeb.render('mail.systray.ActivityMenu.Previews', {
-                activities : self._activities
+                widget: self
             }));
         });
     },
@@ -100,14 +110,36 @@ var ActivityMenu = Widget.extend({
     //------------------------------------------------------------
 
     /**
-     * Redirect to specific action given its xml id
+     * Redirect to specific action given its xml id or to the activity
+     * view of the current model if no xml id is provided
+     *
      * @private
      * @param {MouseEvent} ev
      */
     _onActivityActionClick: function (ev) {
         ev.stopPropagation();
-        var actionXmlid = $(ev.currentTarget).data('action_xmlid');
-        this.do_action(actionXmlid);
+        this.$('.dropdown-toggle').dropdown('toggle');
+        var targetAction = $(ev.currentTarget);
+        var actionXmlid = targetAction.data('action_xmlid');
+        if (actionXmlid) {
+            this.do_action(actionXmlid);
+        } else {
+            var domain = [['activity_ids.user_id', '=', session.uid]]
+            if (targetAction.data('domain')) {
+                domain = domain.concat(targetAction.data('domain'))
+            }
+            
+            this.do_action({
+                type: 'ir.actions.act_window',
+                name: targetAction.data('model_name'),
+                views: [[false, 'activity'], [false, 'kanban'], [false, 'list'], [false, 'form']],
+                view_mode: 'activity',
+                res_model: targetAction.data('res_model'),
+                domain: domain,
+            }, {
+                clear_breadcrumbs: true,
+            });
+        }
     },
 
     /**
@@ -125,21 +157,39 @@ var ActivityMenu = Widget.extend({
         } else {
             context['search_default_activities_' + data.filter] = 1;
         }
+        // Necessary because activity_ids of mail.activity.mixin has auto_join
+        // So, duplicates are faking the count and "Load more" doesn't show up
+        context['force_search_count'] = 1;
+        
+        var domain = [['activity_ids.user_id', '=', session.uid]]
+        if (data.domain) {
+            domain = domain.concat(data.domain)
+        }
+        
         this.do_action({
             type: 'ir.actions.act_window',
             name: data.model_name,
             res_model:  data.res_model,
-            views: [[false, 'kanban'], [false, 'form']],
+            views: this._getViewsList(data.res_model),
             search_view_id: [false],
-            domain: [['activity_user_id', '=', session.uid]],
+            domain: domain,
             context:context,
+        }, {
+            clear_breadcrumbs: true,
         });
     },
     /**
      * @private
      */
     _onActivityMenuShow: function () {
+        document.body.classList.add('modal-open');
          this._updateActivityPreview();
+    },
+    /**
+     * @private
+     */
+    _onActivityMenuHide: function () {
+        document.body.classList.remove('modal-open');
     },
 });
 

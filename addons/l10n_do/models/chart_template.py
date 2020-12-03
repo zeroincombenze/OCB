@@ -9,7 +9,7 @@ class AccountChartTemplate(models.Model):
 
     @api.model
     def _get_default_bank_journals_data(self):
-        if self.env.user.company_id.country_id and self.env.user.company_id.country_id.code.upper() == 'DO':
+        if self.env.company.country_id and self.env.company.country_id.code.upper() == 'DO':
             return [
                 {'acc_name': _('Cash'), 'account_type': 'cash'},
                 {'acc_name': _('Caja Chica'), 'account_type': 'cash'},
@@ -18,7 +18,6 @@ class AccountChartTemplate(models.Model):
             ]
         return super(AccountChartTemplate, self)._get_default_bank_journals_data()
 
-    @api.multi
     def _prepare_all_journals(self, acc_template_ref, company, journals_dict=None):
         """Create fiscal journals for buys"""
         res = super(AccountChartTemplate, self)._prepare_all_journals(
@@ -30,26 +29,20 @@ class AccountChartTemplate(models.Model):
                 journal['name'] = _('Compras Fiscales')
         res += [{
             'type': 'purchase',
-            'name': _('Compras Informales'),
-            'code': 'CINF',
-            'company_id': company.id,
-            'show_on_dashboard': True
-        }, {
-            'type': 'purchase',
-            'name': _('Gastos Menores'),
-            'code': 'GASM',
-            'company_id': company.id,
-            'show_on_dashboard': True
-        }, {
-            'type': 'purchase',
-            'name': _('Compras al Exterior'),
-            'code': 'CEXT',
-            'company_id': company.id,
-            'show_on_dashboard': True
-        }, {
-            'type': 'purchase',
             'name': _('Gastos No Deducibles'),
             'code': 'GASTO',
+            'company_id': company.id,
+            'show_on_dashboard': True
+        }, {
+            'type': 'purchase',
+            'name': _('Migración CxP'),
+            'code': 'CXP',
+            'company_id': company.id,
+            'show_on_dashboard': True
+        }, {
+            'type': 'sale',
+            'name': _('Migración CxC'),
+            'code': 'CXC',
             'company_id': company.id,
             'show_on_dashboard': True
         }]

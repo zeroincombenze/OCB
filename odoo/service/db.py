@@ -10,6 +10,8 @@ import traceback
 from xml.etree import ElementTree as ET
 import zipfile
 
+from psycopg2 import sql
+from pytz import country_timezones
 from functools import wraps
 from contextlib import closing
 from decorator import decorator
@@ -24,7 +26,6 @@ import odoo.sql_db
 import odoo.tools
 from odoo.sql_db import db_connect
 from odoo.release import version_info
-from odoo.tools import pycompat
 
 _logger = logging.getLogger(__name__)
 
@@ -71,6 +72,9 @@ def _initialize_db(id, db_name, demo, lang, user_password, login='admin', countr
             if country_code:
                 country = env['res.country'].search([('code', 'ilike', country_code)])[0]
                 env['res.company'].browse(1).write({'country_id': country_code and country.id, 'currency_id': country_code and country.currency_id.id})
+                if len(country_timezones.get(country_code, [])) == 1:
+                    users = env['res.users'].search([])
+                    users.write({'tz': country_timezones[country_code][0]})
             if phone:
                 env['res.company'].browse(1).write({'phone': phone})
             if '@' in login:
@@ -102,11 +106,20 @@ def _create_empty_database(name):
             cr.autocommit(True)     # avoid transaction block
 
             # 'C' collate is only safe with template0, but provides more useful indexes
-            collate = "LC_COLLATE 'C'" if chosen_template == 'template0' else ""
+            collate = sql.SQL("LC_COLLATE 'C'" if chosen_template == 'template0' else "")
             cr.execute(
-                """CREATE DATABASE "%s" ENCODING 'unicode' %s TEMPLATE "%s" """ %
-                (name, collate, chosen_template)
-            )
+                sql.SQL("CREATE DATABASE {} ENCODING 'unicode' {} TEMPLATE {}").format(
+                sql.Identifier(name), collate, sql.Identifier(chosen_template)
+            ))
+
+    if odoo.tools.config['unaccent']:
+        try:
+            db = odoo.sql_db.db_connect(name)
+            with closing(db.cursor()) as cr:
+                cr.execute("CREATE EXTENSION IF NOT EXISTS unaccent")
+                cr.commit()
+        except psycopg2.Error:
+            pass
 
 @check_db_management_enabled
 def exp_create_database(db_name, demo, lang, user_password='admin', login='admin', country_code=None, phone=None):
@@ -124,7 +137,10 @@ def exp_duplicate_database(db_original_name, db_name):
     with closing(db.cursor()) as cr:
         cr.autocommit(True)     # avoid transaction block
         _drop_conn(cr, db_original_name)
-        cr.execute("""CREATE DATABASE "%s" ENCODING 'unicode' TEMPLATE "%s" """ % (db_name, db_original_name))
+        cr.execute(sql.SQL("CREATE DATABASE {} ENCODING 'unicode' TEMPLATE {}").format(
+            sql.Identifier(db_name),
+            sql.Identifier(db_original_name)
+        ))
 
     registry = odoo.modules.registry.Registry.new(db_name)
     with registry.cursor() as cr:
@@ -167,7 +183,7 @@ def exp_drop(db_name):
         _drop_conn(cr, db_name)
 
         try:
-            cr.execute('DROP DATABASE "%s"' % db_name)
+            cr.execute(sql.SQL('DROP DATABASE {}').format(sql.Identifier(db_name)))
         except Exception as e:
             _logger.info('DROP DB: %s failed:\n%s', db_name, e)
             raise Exception("Couldn't drop database %s: %s" % (db_name, e))
@@ -213,7 +229,7 @@ def dump_db(db_name, stream, backup_format='zip'):
     cmd.append(db_name)
 
     if backup_format == 'zip':
-        with odoo.tools.osutil.tempdir() as dump_dir:
+        with tempfile.TemporaryDirectory() as dump_dir:
             filestore = odoo.tools.config.filestore(db_name)
             if os.path.exists(filestore):
                 shutil.copytree(filestore, os.path.join(dump_dir, 'filestore'))
@@ -255,7 +271,7 @@ def exp_restore(db_name, data, copy=False):
 
 @check_db_management_enabled
 def restore_db(db, dump_file, copy=False):
-    assert isinstance(db, pycompat.string_types)
+    assert isinstance(db, str)
     if exp_db_exist(db):
         _logger.info('RESTORE DB: %s already exists', db)
         raise Exception("Database already exists")
@@ -263,7 +279,7 @@ def restore_db(db, dump_file, copy=False):
     _create_empty_database(db)
 
     filestore_path = None
-    with odoo.tools.osutil.tempdir() as dump_dir:
+    with tempfile.TemporaryDirectory() as dump_dir:
         if zipfile.is_zipfile(dump_file):
             # v8 format
             with zipfile.ZipFile(dump_file, 'r') as z:
@@ -299,13 +315,6 @@ def restore_db(db, dump_file, copy=False):
                 filestore_dest = env['ir.attachment']._filestore()
                 shutil.move(filestore_path, filestore_dest)
 
-            if odoo.tools.config['unaccent']:
-                try:
-                    with cr.savepoint():
-                        cr.execute("CREATE EXTENSION unaccent")
-                except psycopg2.Error:
-                    pass
-
     _logger.info('RESTORE DB: %s', db)
 
 @check_db_management_enabled
@@ -318,7 +327,7 @@ def exp_rename(old_name, new_name):
         cr.autocommit(True)     # avoid transaction block
         _drop_conn(cr, old_name)
         try:
-            cr.execute('ALTER DATABASE "%s" RENAME TO "%s"' % (old_name, new_name))
+            cr.execute(sql.SQL('ALTER DATABASE {} RENAME TO {}').format(sql.Identifier(old_name), sql.Identifier(new_name)))
             _logger.info('RENAME DB: %s -> %s', old_name, new_name)
         except Exception as e:
             _logger.info('RENAME DB: %s -> %s failed:\n%s', old_name, new_name, e)

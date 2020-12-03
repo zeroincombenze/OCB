@@ -27,33 +27,19 @@ var UnsplashCore = Class.extend(Mixins.EventDispatcherMixin, ServicesMixin, {
      *
      * @param {String} query search terms
      * @param {Integer} pageSize number of image to display per page
-     * @param {Integer} pageNumber page number to retrieve
+     * @returns {Promise}
      */
-    getImages: function (query, pageSize, pageNumber) {
-        var self = this;
-        var to = pageSize * pageNumber;
-        var from = to - pageSize;
+    getImages: function (query, pageSize) {
+        var from = 0;
+        var to = pageSize;
         var cachedData = this._cache[query];
 
         if (cachedData && (cachedData.images.length >= to || (cachedData.totalImages !== 0 && cachedData.totalImages < to))) {
-            return $.when({ images: cachedData.images.slice(from, to), isMaxed: to > cachedData.totalImages });
+            return Promise.resolve({ images: cachedData.images.slice(from, to), isMaxed: to > cachedData.totalImages });
         }
-        return this._getAPIKey().then(function (clientID) {
-            if (!clientID) {
-                return $.Deferred().reject({ key_not_found: true });
-            }
-            return self._fetchImages(query).then(function (cachedData) {
-                return { images: cachedData.images.slice(from, to), isMaxed: to > cachedData.totalImages };
-            });
+        return this._fetchImages(query).then(function (cachedData) {
+            return { images: cachedData.images.slice(from, to), isMaxed: to > cachedData.totalImages };
         });
-    },
-    /**
-     * Notifies Unsplash from an image download. (API requirement)
-     *
-     * @param {String} url url of the image to notify
-     */
-    notifyDownload: function (url) {
-        $.get(url, { client_id: this.clientId });
     },
 
     //--------------------------------------------------------------------------
@@ -61,26 +47,10 @@ var UnsplashCore = Class.extend(Mixins.EventDispatcherMixin, ServicesMixin, {
     //--------------------------------------------------------------------------
 
     /**
-     * Checks and retrieves the unsplash API key
-     *
-     * @private
-     */
-    _getAPIKey: function () {
-        var self = this;
-        if (this.clientId) {
-            return $.Deferred().resolve(self.clientId);
-        }
-        return this._rpc({
-            route: '/web_unsplash/get_client_id',
-        }).then(function (res) {
-            self.clientId = res;
-            return res;
-        });
-    },
-    /**
      * Fetches images from unsplash and stores it in cache
      *
      * @param {String} query search terms
+     * @returns {Promise}
      * @private
      */
     _fetchImages: function (query) {
@@ -96,10 +66,15 @@ var UnsplashCore = Class.extend(Mixins.EventDispatcherMixin, ServicesMixin, {
         var payload = {
             query: query,
             page: cachedData.pageCached + 1,
-            client_id: this.clientId,
             per_page: 30, // max size from unsplash API
         };
-        return $.get('https://api.unsplash.com/search/photos/', payload).then(function (result) {
+        return this._rpc({
+            route: '/web_unsplash/fetch_images',
+            params: payload,
+        }).then(function (result) {
+            if (result.error) {
+                return Promise.reject(result.error);
+            }
             cachedData.pageCached++;
             cachedData.images.push.apply(cachedData.images, result.results);
             cachedData.maxPages = result.total_pages;

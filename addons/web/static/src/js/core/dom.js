@@ -1,11 +1,10 @@
 odoo.define('web.dom_ready', function (require) {
 'use strict';
 
-var def = $.Deferred();
-$(def.resolve.bind(def));
-return def;
+    return new Promise(function (resolve, reject) {
+        $(resolve);
+    });
 });
-
 //==============================================================================
 
 odoo.define('web.dom', function (require) {
@@ -20,6 +19,7 @@ odoo.define('web.dom', function (require) {
  * something happens in the DOM.
  */
 
+var concurrency = require('web.concurrency');
 var config = require('web.config');
 var core = require('web.core');
 var _t = core._t;
@@ -32,7 +32,7 @@ var _t = core._t;
  * that on_attach_callback() will be called on each w with arguments args
  */
 function _notify(content, callbacks) {
-    _.each(callbacks, function (c) {
+    callbacks.forEach(function (c) {
         if (c.widget && c.widget.on_attach_callback) {
             c.widget.on_attach_callback(c.callback_args);
         }
@@ -40,7 +40,9 @@ function _notify(content, callbacks) {
     core.bus.trigger('DOM_updated', content);
 }
 
-return {
+var dom = {
+    DEBOUNCE: 400,
+
     /**
      * Appends content in a jQuery object and optionnally triggers an event
      *
@@ -100,7 +102,7 @@ return {
         }
 
         options = options || {};
-        minHeight = (options && options.min_height) || 50;
+        minHeight = 'min_height' in options ? options.min_height : 50;
 
         $fixedTextarea = $('<textarea disabled>', {
             class: $textarea[0].className,
@@ -114,6 +116,7 @@ return {
             borderTopWidth: 0,
             borderBottomWidth: 0,
             padding: 0,
+            overflow: 'hidden',
             top: -10000,
         }).css(direction, -10000);
         $fixedTextarea.data("auto_resize", true);
@@ -139,6 +142,19 @@ return {
         }
     },
     /**
+     * @return {HTMLElement}
+     */
+    closestScrollable(el) {
+        return $(el).closestScrollable()[0];
+    },
+    /**
+     * @param {HTMLElement} el
+     * @see $.compensateScrollbar
+     */
+    compensateScrollbar(el, ...rest) {
+        $(el).compensateScrollbar(...rest);
+    },
+    /**
      * jQuery find function behavior is::
      *
      *      $('A').find('A B') <=> $('A A B')
@@ -151,10 +167,27 @@ return {
      *
      * @param {jQuery} $from - the jQuery element(s) from which to search
      * @param {string} selector - the CSS selector to match
+     * @param {boolean} [addBack=false] - whether or not the $from element
+     *                                  should be considered in the results
      * @returns {jQuery}
      */
-    cssFind: function ($from, selector) {
-        return $from.find('*').filter(selector);
+    cssFind: function ($from, selector, addBack) {
+        var $results;
+
+        // No way to correctly parse a complex jQuery selector but having no
+        // spaces should be a good-enough condition to use a simple find
+        var multiParts = selector.indexOf(' ') >= 0;
+        if (multiParts) {
+            $results = $from.find('*').filter(selector);
+        } else {
+            $results = $from.find(selector);
+        }
+
+        if (addBack && $from.is(selector)) {
+            $results = $results.add($from);
+        }
+
+        return $results;
     },
     /**
      * Detaches widgets from the DOM and performs their on_detach_callback()
@@ -167,14 +200,14 @@ return {
      * @return {jQuery} the detached elements
      */
     detach: function (to_detach, options) {
-        _.each(to_detach, function (d) {
+        to_detach.forEach( function (d) {
             if (d.widget.on_detach_callback) {
                 d.widget.on_detach_callback(d.callback_args);
             }
         });
         var $to_detach = options && options.$to_detach;
         if (!$to_detach) {
-            $to_detach = $(_.map(to_detach, function (d) {
+            $to_detach = $(to_detach.map(function (d) {
                 return d.widget.el;
             }));
         }
@@ -207,6 +240,121 @@ return {
             e = e.offsetParent;
         }
         return position;
+    },
+    /**
+     * @returns {HTMLElement}
+     */
+    getScrollingElement() {
+        return $().getScrollingElement()[0];
+    },
+    /**
+     * @param {HTMLElement} el
+     * @returns {boolean}
+     */
+    hasScrollableContent(el) {
+        return $(el).hasScrollableContent();
+    },
+    /**
+     * @param {HTMLElement} el
+     * @returns {boolean}
+     */
+    isScrollable(el) {
+        return $(el).isScrollable();
+    },
+    /**
+     * Protects a function which is to be used as a handler by preventing its
+     * execution for the duration of a previous call to it (including async
+     * parts of that call).
+     *
+     * Limitation: as the handler is ignored during async actions,
+     * the 'preventDefault' or 'stopPropagation' calls it may want to do
+     * will be ignored too. Using the 'preventDefault' and 'stopPropagation'
+     * arguments solves that problem.
+     *
+     * @param {function} fct
+     *      The function which is to be used as a handler. If a promise
+     *      is returned, it is used to determine when the handler's action is
+     *      finished. Otherwise, the return is used as jQuery uses it.
+     * @param {function|boolean} preventDefault
+     * @param {function|boolean} stopPropagation
+     */
+    makeAsyncHandler: function (fct, preventDefault, stopPropagation) {
+        var pending = false;
+        function _isLocked() {
+            return pending;
+        }
+        function _lock() {
+            pending = true;
+        }
+        function _unlock() {
+            pending = false;
+        }
+        return function (ev) {
+            if (preventDefault === true || preventDefault && preventDefault()) {
+                ev.preventDefault();
+            }
+            if (stopPropagation === true || stopPropagation && stopPropagation()) {
+                ev.stopPropagation();
+            }
+
+            if (_isLocked()) {
+                // If a previous call to this handler is still pending, ignore
+                // the new call.
+                return;
+            }
+
+            _lock();
+            var result = fct.apply(this, arguments);
+            Promise.resolve(result).then(_unlock).guardedCatch(_unlock);
+            return result;
+        };
+    },
+    /**
+     * Creates a debounced version of a function to be used as a button click
+     * handler. Also improves the handler to disable the button for the time of
+     * the debounce and/or the time of the async actions it performs.
+     *
+     * Limitation: if two handlers are put on the same button, the button will
+     * become enabled again once any handler's action finishes (multiple click
+     * handlers should however not be binded to the same button).
+     *
+     * @param {function} fct
+     *      The function which is to be used as a button click handler. If a
+     *      promise is returned, it is used to determine when the button can be
+     *      re-enabled. Otherwise, the return is used as jQuery uses it.
+     */
+    makeButtonHandler: function (fct) {
+        // Fallback: if the final handler is not binded to a button, at least
+        // make it an async handler (also handles the case where some events
+        // might ignore the disabled state of the button).
+        fct = dom.makeAsyncHandler(fct);
+
+        return function (ev) {
+            var result = fct.apply(this, arguments);
+
+            var $button = $(ev.target).closest('.btn');
+            if (!$button.length) {
+                return result;
+            }
+
+            // Disable the button for the duration of the handler's action
+            // or at least for the duration of the click debounce. This makes
+            // a 'real' debounce creation useless. Also, during the debouncing
+            // part, the button is disabled without any visual effect.
+            $button.addClass('o_debounce_disabled');
+            Promise.resolve(dom.DEBOUNCE && concurrency.delay(dom.DEBOUNCE)).then(function () {
+                $button.addClass('disabled').prop('disabled', true);
+                $button.removeClass('o_debounce_disabled');
+
+                return Promise.resolve(result).then(function () {
+                    $button.removeClass('disabled').prop('disabled', false);
+                }).guardedCatch(function () {
+                    $button.removeClass('disabled').prop('disabled', false);
+                });
+            });
+
+            return result;
+        };
     },
     /**
      * Prepends content in a jQuery object and optionnally triggers an event
@@ -340,6 +488,87 @@ return {
         }
     },
     /**
+     * Computes the size by which a scrolling point should be decreased so that
+     * the top fixed elements of the page appear above that scrolling point.
+     *
+     * @returns {number}
+     */
+    scrollFixedOffset() {
+        let size = 0;
+        for (const el of $('.o_top_fixed_element')) {
+            size += $(el).outerHeight();
+        }
+        return size;
+    },
+    /**
+     * @param {HTMLElement} el - the element to stroll to
+     * @param {number} [options] - same as animate of jQuery
+     * @param {number} [options.extraOffset=0]
+     *      extra offset to add on top of the automatic one (the automatic one
+     *      being computed based on fixed header sizes)
+     * @param {number} [options.forcedOffset]
+     *      offset used instead of the automatic one (extraOffset will be
+     *      ignored too)
+     * @return {Promise}
+     */
+    scrollTo(el, options = {}) {
+        const $el = $(el);
+        const $scrollable = $el.parent().closestScrollable();
+        const $topLevelScrollable = $().getScrollingElement();
+        const isTopScroll = $scrollable.is($topLevelScrollable);
+
+        function _computeScrollTop() {
+            let offsetTop = $el.offset().top;
+            if (el.classList.contains('d-none')) {
+                el.classList.remove('d-none');
+                offsetTop = $el.offset().top;
+                el.classList.add('d-none');
+            }
+            const elPosition = $scrollable[0].scrollTop + (offsetTop - $scrollable.offset().top);
+            let offset = options.forcedOffset;
+            if (offset === undefined) {
+                offset = (isTopScroll ? dom.scrollFixedOffset() : 0) + (options.extraOffset || 0);
+            }
+            return Math.max(0, elPosition - offset);
+        }
+
+        const originalScrollTop = _computeScrollTop();
+
+        return new Promise(resolve => {
+            const clonedOptions = Object.assign({}, options);
+
+            // During the animation, detect any change needed for the scroll
+            // offset. If any occurs, stop the animation and continuing it to
+            // the new scroll point for the remaining time.
+            // Note: limitation, the animation won't be as fluid as possible if
+            // the easing mode is different of 'linear'.
+            clonedOptions.progress = function (a, b, remainingMs) {
+                if (options.progress) {
+                    options.progress.apply(this, ...arguments);
+                }
+                const newScrollTop = _computeScrollTop();
+                if (Math.abs(newScrollTop - originalScrollTop) <= 1.0) {
+                    return;
+                }
+                $scrollable.stop();
+                dom.scrollTo(el, Object.assign({}, options, {
+                    duration: remainingMs,
+                })).then(() => resolve());
+            };
+
+            // Detect the end of the animation to be able to indicate it to
+            // the caller via the returned Promise.
+            clonedOptions.complete = function () {
+                if (options.complete) {
+                    options.complete.apply(this, ...arguments);
+                }
+                resolve();
+            };
+
+            $scrollable.animate({scrollTop: originalScrollTop}, clonedOptions);
+        });
+    },
+    /**
      * Creates an automatic 'more' dropdown-menu for a set of navbar items.
      *
      * @param {jQuery} $el
@@ -354,6 +583,9 @@ return {
             maxWidth: false,
             sizeClass: 'SM',
         }, options || {});
+
+        var autoMarginLeftRegex = /\bm[lx]?(?:-(?:sm|md|lg|xl))?-auto\b/;
+        var autoMarginRightRegex = /\bm[rx]?(?:-(?:sm|md|lg|xl))?-auto\b/;
 
         var $extraItemsToggle = null;
 
@@ -380,11 +612,13 @@ return {
         }
 
         function _adapt() {
-            if (!$el.is(':visible')) {
+            _restore();
+
+            if (!$el.is(':visible') || $el.closest('.show').length) {
+                // Never transform the menu when it is not visible yet or if
+                // it is a toggleable one.
                 return;
             }
-
-            _restore();
             if (config.device.size_class <= config.device.SIZES[options.sizeClass]) {
                 return;
             }
@@ -397,18 +631,17 @@ return {
             if (options.maxWidth) {
                 maxWidth = options.maxWidth();
             } else {
-                var rect = $el[0].getBoundingClientRect();
+                maxWidth = computeFloatOuterWidthWithMargins($el[0], true, true, true);
                 var style = window.getComputedStyle($el[0]);
-                maxWidth = (rect.right - rect.left);
                 maxWidth -= (parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth));
                 maxWidth -= _.reduce($unfoldableItems, function (sum, el) {
-                    return sum + computeFloatOuterWidthWithMargins(el);
+                    return sum + computeFloatOuterWidthWithMargins(el, true, true, false);
                 }, 0);
             }
 
             var nbItems = $items.length;
             var menuItemsWidth = _.reduce($items, function (sum, el) {
-                return sum + computeFloatOuterWidthWithMargins(el);
+                return sum + computeFloatOuterWidthWithMargins(el, true, true, false);
             }, 0);
 
             if (maxWidth - menuItemsWidth >= -0.001) {
@@ -417,15 +650,15 @@ return {
 
             var $dropdownMenu = $('<ul/>', {class: 'dropdown-menu'});
             $extraItemsToggle = $('<li/>', {class: 'nav-item dropdown o_extra_menu_items'})
-                .append($('<a/>', {href: '#', class: 'nav-link dropdown-toggle o-no-caret', 'data-toggle': 'dropdown'})
+                .append($('<a/>', {role: 'button', href: '#', class: 'nav-link dropdown-toggle o-no-caret', 'data-toggle': 'dropdown', 'aria-expanded': false})
                     .append($('<i/>', {class: 'fa fa-plus'})))
                 .append($dropdownMenu);
             $extraItemsToggle.insertAfter($items.last());
 
-            menuItemsWidth += computeFloatOuterWidthWithMargins($extraItemsToggle[0]);
+            menuItemsWidth += computeFloatOuterWidthWithMargins($extraItemsToggle[0], true, true, false);
             do {
-                menuItemsWidth -= computeFloatOuterWidthWithMargins($items.eq(--nbItems)[0]);
-            } while (!(maxWidth - menuItemsWidth >= -0.001));
+                menuItemsWidth -= computeFloatOuterWidthWithMargins($items.eq(--nbItems)[0], true, true, false);
+            } while (!(maxWidth - menuItemsWidth >= -0.001) && (nbItems > 0));
 
             var $extraItems = $items.slice(nbItems).detach();
             $extraItems.removeClass('nav-item');
@@ -434,10 +667,18 @@ return {
             $extraItemsToggle.find('.nav-link').toggleClass('active', $extraItems.children().hasClass('active'));
         }
 
-        function computeFloatOuterWidthWithMargins(el) {
+        function computeFloatOuterWidthWithMargins(el, mLeft, mRight, considerAutoMargins) {
             var rect = el.getBoundingClientRect();
             var style = window.getComputedStyle(el);
-            return rect.right - rect.left + parseFloat(style.marginLeft) + parseFloat(style.marginRight);
+            var outerWidth = rect.right - rect.left;
+            if (mLeft !== false && (considerAutoMargins || !autoMarginLeftRegex.test(el.getAttribute('class')))) {
+                outerWidth += parseFloat(style.marginLeft);
+            }
+            if (mRight !== false && (considerAutoMargins || !autoMarginRightRegex.test(el.getAttribute('class')))) {
+                outerWidth += parseFloat(style.marginRight);
+            }
+            // Would be NaN for invisible elements for example
+            return isNaN(outerWidth) ? 0 : outerWidth;
         }
     },
     /**
@@ -452,4 +693,5 @@ return {
         }
     },
 };
+return dom;
 });

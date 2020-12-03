@@ -4,9 +4,9 @@
 import logging
 import json
 from odoo import api, fields, models, exceptions, _
-from odoo.addons.iap import jsonrpc
+from odoo.addons.iap.tools import iap_tools
+# TDE FIXME: check those errors at iap level ?
 from requests.exceptions import ConnectionError, HTTPError
-from odoo.addons.iap.models.iap import InsufficientCreditError
 
 _logger = logging.getLogger(__name__)
 
@@ -50,8 +50,8 @@ class ResPartner(models.Model):
         if not country:
             country = self.env['res.country'].search([['name', '=ilike', country_name]])
 
-        state_id = {}
-        country_id = {}
+        state_id = False
+        country_id = False
         if country:
             country_id = {
                 'id': country.id,
@@ -83,20 +83,24 @@ class ResPartner(models.Model):
 
     @api.model
     def _rpc_remote_api(self, action, params, timeout=15):
+        if self.env.registry.in_test_mode() :
+            return False, 'Insufficient Credit'
         url = '%s/%s' % (self.get_endpoint(), action)
         account = self.env['iap.account'].get('partner_autocomplete')
+        if not account.account_token:
+            return False, 'No Account Token'
         params.update({
             'db_uuid': self.env['ir.config_parameter'].sudo().get_param('database.uuid'),
             'account_token': account.account_token,
-            'country_code': self.env.user.company_id.country_id.code,
-            'zip': self.env.user.company_id.zip,
+            'country_code': self.env.company.country_id.code,
+            'zip': self.env.company.zip,
         })
         try:
-            return jsonrpc(url=url, params=params, timeout=timeout), False
-        except (ConnectionError, HTTPError, exceptions.AccessError) as exception:
+            return iap_tools.iap_jsonrpc(url=url, params=params, timeout=timeout), False
+        except (ConnectionError, HTTPError, exceptions.AccessError, exceptions.UserError) as exception:
             _logger.error('Autocomplete API error: %s' % str(exception))
             return False, str(exception)
-        except InsufficientCreditError as exception:
+        except iap_tools.InsufficientCreditError as exception:
             _logger.warning('Insufficient Credits for Autocomplete Service: %s' % str(exception))
             return False, 'Insufficient Credit'
 
@@ -108,7 +112,7 @@ class ResPartner(models.Model):
         if suggestions:
             results = []
             for suggestion in suggestions:
-                results.append(suggestion)
+                results.append(self._format_data_company(suggestion))
             return results
         else:
             return []
@@ -121,9 +125,22 @@ class ResPartner(models.Model):
             'vat': vat,
         })
         if response and response.get('company_data'):
-            return self._format_data_company(response.get('company_data'))
+            result = self._format_data_company(response.get('company_data'))
         else:
-            return {}
+            result = {}
+
+        if response and response.get('credit_error'):
+            result.update({
+                'error': True,
+                'error_message': 'Insufficient Credit'
+            })
+        elif error:
+            result.update({
+                'error': True,
+                'error_message': error
+            })
+
+        return result
 
     @api.model
     def read_by_vat(self, vat):
@@ -149,7 +166,7 @@ class ResPartner(models.Model):
 
     def _is_vat_syncable(self, vat):
         vat_country_code = vat[:2]
-        partner_country_code = self.country_id and self.country_id.code
+        partner_country_code = self.country_id.code if self.country_id else ''
         return self._is_company_in_europe(vat_country_code) and (partner_country_code == vat_country_code or not partner_country_code)
 
     def _is_synchable(self):
@@ -167,16 +184,17 @@ class ResPartner(models.Model):
         if len(vals_list) == 1:
             partners._update_autocomplete_data(vals_list[0].get('vat', False))
             if partners.additional_info:
+                template_values = json.loads(partners.additional_info)
+                template_values['flavor_text'] = _("Partner created by Odoo Partner Autocomplete Service")
                 partners.message_post_with_view(
-                    'partner_autocomplete.additional_info_template',
-                    values=json.loads(partners.additional_info),
+                    'iap_mail.enrich_company',
+                    values=template_values,
                     subtype_id=self.env.ref('mail.mt_note').id,
                 )
                 partners.write({'additional_info': False})
 
         return partners
 
-    @api.multi
     def write(self, values):
         res = super(ResPartner, self).write(values)
         if len(self) == 1:

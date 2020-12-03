@@ -10,6 +10,9 @@ class Partner(models.Model):
 
     website_tag_ids = fields.Many2many('res.partner.tag', 'res_partner_res_partner_tag_rel', 'partner_id', 'tag_id', string='Website tags')
 
+    def get_backend_menu_id(self):
+        return self.env.ref('contacts.menu_contacts').id
+
 
 class Tags(models.Model):
 
@@ -26,4 +29,6 @@ class Tags(models.Model):
     partner_ids = fields.Many2many('res.partner', 'res_partner_res_partner_tag_rel', 'tag_id', 'partner_id', string='Partners')
     classname = fields.Selection(get_selection_class, 'Class', default='default', help="Bootstrap class to customize the color", required=True)
     active = fields.Boolean('Active', default=True)
-    website_published = fields.Boolean(default=True)
+
+    def _default_is_published(self):
+        return True

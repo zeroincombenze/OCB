@@ -20,10 +20,6 @@
             <t t-set="domainClass" t-value="'o_stock_reports_domain_line_1'"/>
         </t>
 
-        <t t-set="span_color" t-value="'color: #666666;'"/>
-        <t t-if="l.usage == 'in'"><t t-set="span_color" t-value="'color: #3c763d;'"/></t>
-        <t t-if="l.usage == 'out'"><t t-set="span_color" t-value="'color: #a94442;'"/></t>
-
         <tr t-att-data-unfold="l.unfoldable" t-att-data-parent_id="l.parent_id" t-att-data-id="l.id"  t-att-data-model_id="l.model_id" t-att-data-model="l.model" t-att-class="trclass" t-att-data-lot_name="l.lot_name" t-att-data-lot_id="l.lot_id">
             <t t-if="l.unfoldable == true"><t t-set="tdclass" t-value="'o_stock_reports_unfoldable'" /></t>
             <t t-set="column" t-value="0" />
@@ -38,20 +34,19 @@
                     </t>
                     <t t-if="l.reference == c">
                         <span t-if="c" t-att-class="spanclass">
-                            <a t-att-data-active-id="l.res_id" t-att-data-res-model="l.res_model" class="o_stock_reports_web_action" href="#"><t t-raw="c" /></a>
+                            <a t-att-data-active-id="l.res_id" t-att-data-res-model="l.res_model" class="o_stock_reports_web_action" href="#"><t t-esc="c"/></a>
+                        </span>
+                    </t><t t-elif="l.lot_name == c and l.lot_name != false">
+                        <span>
+                            <a class="o_stock_report_lot_action" href="#"><t t-esc="c"/></a>
                         </span>
                     </t>
-                    <t t-elif="l.lot_name == c and l.lot_name != false">
-                            <span>
-                                <a class="o_stock_report_lot_action" href="#"><t t-raw="c"/></a>
-                            </span>
-                        </t>
                     <t t-if="l.reference != c and l.lot_name != c">
-                        <t t-if="typeof c == 'string' || typeof c == 'number'"><span t-att-style="span_color">
-                            <t t-raw="c"/>
-                        </span></t>
+                        <t t-if="typeof c == 'string' || typeof c == 'number'">
+                            <t t-esc="c"/>
+                        </t>
                         <t t-if="typeof c != 'string' &amp; typeof c != 'number'"><span t-att-style="c[1]">
-                            <t t-raw="c[0]"/>
+                            <t t-esc="c[0]"/>
                         </span></t>
                     </t>
                 </td>

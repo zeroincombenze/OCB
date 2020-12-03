@@ -6,7 +6,7 @@
 {
     'name': 'Maroc - Accounting',
     'author': 'kazacube',
-    'category': 'Localization',
+    'category': 'Accounting/Localizations/Account Charts',
     'description': """
 This is the base module to manage the accounting chart for Maroc.
 =================================================================
@@ -21,6 +21,7 @@ Seddik au cours du troisième trimestre 2010.""",
     'data': [
         'data/l10n_ma_chart_data.xml',
         'data/account_data.xml',
+        'data/account_tax_report_data.xml',
         'data/account_tax_data.xml',
         'data/account_chart_template_data.xml',
     ],

@@ -4,11 +4,11 @@
 {
     'name': 'Notes',
     'version': '1.0',
-    'category': 'Tools',
+    'category': 'Productivity/Notes',
     'description': "",
     'website': 'https://www.odoo.com/page/notes',
     'summary': 'Organize your work with memos',
-    'sequence': 45,
+    'sequence': 260,
     'depends': [
         'mail',
     ],
@@ -20,7 +20,6 @@
         'data/res_users_data.xml',
         'views/note_views.xml',
         'views/note_templates.xml',
-        'views/mail_activity_views.xml',
     ],
     'demo': [
         'data/note_demo.xml',

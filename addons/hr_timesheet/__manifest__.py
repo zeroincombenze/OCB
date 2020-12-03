@@ -5,7 +5,7 @@
 {
     'name': 'Task Logs',
     'version': '1.0',
-    'category': 'Human Resources',
+    'category': 'Services/Timesheets',
     'sequence': 23,
     'summary': 'Track employee time on tasks',
     'description': """
@@ -29,10 +29,15 @@ up a management by affair.
         'views/res_config_settings_views.xml',
         'views/project_views.xml',
         'views/project_portal_templates.xml',
+        'views/hr_timesheet_portal_templates.xml',
         'report/hr_timesheet_report_view.xml',
         'report/report_timesheet_templates.xml',
         'views/hr_views.xml',
         'data/hr_timesheet_data.xml',
+        'wizard/project_task_create_timesheet_views.xml',
+    ],
+    'qweb': [
+        "static/src/xml/qr_modal_template.xml",
     ],
     'demo': [
         'data/hr_timesheet_demo.xml',
@@ -40,4 +45,5 @@ up a management by affair.
     'installable': True,
     'application': False,
     'auto_install': False,
+    'post_init_hook': 'create_internal_project',
 }

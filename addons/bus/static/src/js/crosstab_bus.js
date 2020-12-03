@@ -80,6 +80,12 @@ var CrossTabBus = Longpolling.extend({
         this._callLocalStorage('setItem', 'channels', this._channels);
     },
     /**
+     * @return {string}
+     */
+    getTabId: function () {
+        return this._id;
+    },
+    /**
      * Tells whether this bus is related to the master tab.
      *
      * @returns {boolean}
@@ -103,9 +109,9 @@ var CrossTabBus = Longpolling.extend({
             peers[this._id] = new Date().getTime();
             this._callLocalStorage('setItem', 'peers', peers);
 
-            $(window).on('unload.' + this._id, this._onUnload.bind(this));
+            this._registerWindowUnload();
 
-            if (!this._callLocalStorage('getItem', 'peers')) {
+            if (!this._callLocalStorage('getItem', 'master')) {
                 this._startElection();
             }
 
@@ -222,7 +228,13 @@ var CrossTabBus = Longpolling.extend({
             this._callLocalStorage('setItem', 'lastPresence', this._lastPresenceTime);
         }
 
-        this._heartbeatTimeout = setTimeout(this._heartbeat, hbPeriod);
+        this._heartbeatTimeout = setTimeout(this._heartbeat.bind(this), hbPeriod);
+    },
+    /**
+     * @private
+     */
+    _registerWindowUnload: function () {
+        $(window).on('unload.' + this._id, this._onUnload.bind(this));
     },
     /**
      * Check with the local storage if the current tab is the master tab.
@@ -252,6 +264,7 @@ var CrossTabBus = Longpolling.extend({
             //we're next in queue. Electing as master
             this.lastHeartbeat = now;
             this._callLocalStorage('setItem', 'heartbeat', this.lastHeartbeat);
+            this._callLocalStorage('setItem', 'master', true);
             this._isMasterTab = true;
             this.startPolling();
             this.trigger('become_master');
@@ -297,7 +310,7 @@ var CrossTabBus = Longpolling.extend({
         var value = JSON.parse(e.newValue);
         var key = e.key;
 
-        if (this._isRegistered && key === this._generateKey('peers') && !value) {
+        if (this._isRegistered && key === this._generateKey('master') && !value) {
             //master was unloaded
             this._startElection();
         }
@@ -335,13 +348,13 @@ var CrossTabBus = Longpolling.extend({
      */
     _onUnload: function () {
         // unload peer
-        var peers = this._callLocalStorage('getItem', 'peers', {});
+        var peers = this._callLocalStorage('getItem', 'peers') || {};
         delete peers[this._id];
         this._callLocalStorage('setItem', 'peers', peers);
 
         // unload master
         if (this._isMasterTab) {
-            this._callLocalStorage('removeItem', 'peers');
+            this._callLocalStorage('removeItem', 'master');
         }
     },
 });
