@@ -13,6 +13,7 @@ class MailTestSimple(models.Model):
 
     name = fields.Char()
     email_from = fields.Char()
+    message_bounce = fields.Integer(default=0)
 
 
 class MailTestStandard(models.Model):
@@ -26,6 +27,7 @@ class MailTestStandard(models.Model):
     email_from = fields.Char()
     user_id = fields.Many2one('res.users', 'Responsible', track_visibility='onchange')
     umbrella_id = fields.Many2one('mail.test', track_visibility='onchange')
+    company_id = fields.Many2one('res.company')
 
 
 class MailTestActivity(models.Model):

@@ -257,7 +257,7 @@ var KanbanModel = BasicModel.extend({
         new_group.res_ids.push(resID);
         new_group.count++;
 
-        return this.notifyChanges(recordID, changes).then(function () {
+        return this.notifyChanges(recordID, changes, {force_fail: true}).then(function () {
             return self.save(recordID);
         }).then(function () {
             record.parentID = new_group.id;
@@ -305,7 +305,7 @@ var KanbanModel = BasicModel.extend({
      * @override
      */
     _load: function (dataPoint, options) {
-        if (dataPoint.progressBar) {
+        if (dataPoint.groupedBy.length && dataPoint.progressBar) {
             return this._readProgressBarGroup(dataPoint, options);
         }
         return this._super.apply(this, arguments);

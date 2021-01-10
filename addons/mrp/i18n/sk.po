@@ -3,19 +3,25 @@
 # * mrp
 # 
 # Translators:
+# Pavol Krnáč <pavol.krnac@ekoenergo.sk>, 2018
+# Stefan Stieranka <stieranka@itec.sk>, 2018
 # Martin Trigaux, 2018
 # Matus Krnac <matus.krnac@gmail.com>, 2018
-# Pavol Krnáč <pavol.krnac@ekoenergo.sk>, 2018
-# Jaroslav Bosansky <jaro.bosansky@ekoenergo.sk>, 2018
 # gebri <gebri@inmail.sk>, 2018
-# Stefan Stieranka <stieranka@itec.sk>, 2018
+# Jaroslav Bosansky <jaro.bosansky@ekoenergo.sk>, 2018
+# Alexandra Brencicova <alexandra.brencicova@gmail.com>, 2020
+# Jan Prokop, 2020
+# Rastislav Brencic <rastislav.brencic@azet.sk>, 2020
+# Damian Brencic <brencicdamian12313@gmail.com>, 2020
+# karolína schusterová <karolina.schusterova@vdp.sk>, 2020
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 12.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-10-08 06:48+0000\n"
-"PO-Revision-Date: 2018-10-08 06:48+0000\n"
-"Last-Translator: Stefan Stieranka <stieranka@itec.sk>, 2018\n"
+"POT-Creation-Date: 2019-11-14 07:33+0000\n"
+"PO-Revision-Date: 2018-08-24 09:21+0000\n"
+"Last-Translator: karolína schusterová <karolina.schusterova@vdp.sk>, 2020\n"
 "Language-Team: Slovak (https://www.transifex.com/odoo/teams/41243/sk/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -73,6 +79,8 @@ msgid ""
 ".\n"
 "            Manual actions may be needed."
 msgstr ""
+".\n"
+"            Môže byť potrebný ručný zásah ."
 
 #. module: mrp
 #: model:product.product,description:mrp.product_product_computer_desk_leg
@@ -81,7 +89,28 @@ msgid "18″ x 2½″ Square Leg"
 msgstr ""
 
 #. module: mrp
-#: code:addons/mrp/models/mrp_bom.py:339
+#: model_terms:ir.ui.view,arch_db:mrp.mrp_workcenter_kanban
+#: model_terms:ir.ui.view,arch_db:mrp.stock_production_type_kanban
+msgid "<i class=\"fa fa-ellipsis-v\" role=\"img\" aria-label=\"Manage\" title=\"Manage\"/>"
+msgstr "<i class=\"fa fa-ellipsis-v\" role=\"img\" aria-label=\"Manage\" title=\"Spravuj\"/>"
+
+#. module: mrp
+#: model_terms:ir.ui.view,arch_db:mrp.workcenter_line_kanban
+msgid "<i class=\"fa fa-pause\" role=\"img\" aria-label=\"Pause\" title=\"Pause\"/>"
+msgstr ""
+
+#. module: mrp
+#: model_terms:ir.ui.view,arch_db:mrp.workcenter_line_kanban
+msgid "<i class=\"fa fa-play\" role=\"img\" aria-label=\"Run\" title=\"Run\"/>"
+msgstr ""
+
+#. module: mrp
+#: model_terms:ir.ui.view,arch_db:mrp.workcenter_line_kanban
+msgid "<i class=\"fa fa-stop\" role=\"img\" aria-label=\"Stop\" title=\"Stop\"/>"
+msgstr ""
+
+#. module: mrp
+#: code:addons/mrp/models/mrp_bom.py:332
 #, python-format
 msgid ""
 "<p class=\"o_view_nocontent_smiling_face\">\n"
@@ -98,6 +127,24 @@ msgid ""
 "['|',('availability', 'in', ('assigned', 'none')), ('state', 'not in', "
 "('confirmed','progress'))]}\">Raw materials not available!</span>"
 msgstr ""
+
+#. module: mrp
+#: model_terms:ir.ui.view,arch_db:mrp.report_mrp_bom_line
+msgid ""
+"<span class=\"fa fa-dropbox\" title=\"This is a BoM of type Kit!\" "
+"role=\"img\" aria-label=\"This is a BoM of type Kit!\"/>"
+msgstr ""
+
+#. module: mrp
+#: model_terms:ir.ui.view,arch_db:mrp.res_config_settings_view_form
+msgid ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\" role=\"img\" aria-label=\"Values set here are company-"
+"specific.\" groups=\"base.group_multi_company\"/>"
+msgstr ""
+"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
+"specific.\" role=\"img\" aria-label=\"Uložené hodnoty sú špecifické pre "
+"spoločnosť.\" groups=\"base.group_multi_company\"/>"
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_workcenter_view
@@ -142,6 +189,11 @@ msgid "<span class=\"o_stat_text\">Work Orders</span>"
 msgstr ""
 
 #. module: mrp
+#: model_terms:ir.ui.view,arch_db:mrp.label_production_view_pdf
+msgid "<span>1.0</span>"
+msgstr ""
+
+#. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.report_mrp_bom
 msgid "<span><strong>Unit Cost</strong></span>"
 msgstr ""
@@ -170,7 +222,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_workcenter_kanban
 msgid "<span>Reporting</span>"
-msgstr ""
+msgstr "<span>Výkazy</span>"
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.stock_production_type_kanban
@@ -289,7 +341,7 @@ msgstr "Aktívne"
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_workorder__active_move_line_ids
 msgid "Active Move Line"
-msgstr ""
+msgstr "Linka aktívneho pohybu"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__activity_ids
@@ -301,7 +353,7 @@ msgstr "Aktivity"
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__activity_state
 #: model:ir.model.fields,field_description:mrp.field_mrp_unbuild__activity_state
 msgid "Activity State"
-msgstr ""
+msgstr "Stav aktivity"
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_workcenter_block_wizard_form
@@ -386,7 +438,7 @@ msgstr "Archivovaný"
 #: model:ir.model.fields,field_description:mrp.field_mrp_unbuild__message_attachment_count
 #: model:ir.model.fields,field_description:mrp.field_mrp_workorder__message_attachment_count
 msgid "Attachment Count"
-msgstr ""
+msgstr "Počet príloh"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_document__local_url
@@ -425,6 +477,7 @@ msgid "Avatar"
 msgstr "Avatar"
 
 #. module: mrp
+#: model:ir.model.fields,help:mrp.field_product_product__produce_delay
 #: model:ir.model.fields,help:mrp.field_product_template__produce_delay
 msgid ""
 "Average lead time in days to manufacture this product. In the case of multi-"
@@ -453,6 +506,7 @@ msgid "BOM lines of the referred bom"
 msgstr "Riadku Kusovníka referovaného kusovníka"
 
 #. module: mrp
+#: model_terms:ir.ui.view,arch_db:mrp.label_production_view_pdf
 #: model_terms:ir.ui.view,arch_db:mrp.report_mrporder
 msgid "Barcode"
 msgstr "Čiarový kód"
@@ -483,6 +537,7 @@ msgstr ""
 #. module: mrp
 #: model:ir.actions.act_window,name:mrp.product_open_bom
 #: model:ir.actions.act_window,name:mrp.template_open_bom
+#: model:ir.model.fields,field_description:mrp.field_product_product__bom_ids
 #: model:ir.model.fields,field_description:mrp.field_product_template__bom_ids
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_bom_tree_view
 #: model_terms:ir.ui.view,arch_db:mrp.product_product_form_view_bom_button
@@ -517,7 +572,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_workorder_form_view_inherit
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_workcenter_block_wizard_form
 msgid "Block"
-msgstr ""
+msgstr "Blok"
 
 #. module: mrp
 #: model:ir.actions.act_window,name:mrp.act_mrp_block_workcenter
@@ -745,7 +800,7 @@ msgstr ""
 #. module: mrp
 #: model:ir.model,name:mrp.model_res_config_settings
 msgid "Config Settings"
-msgstr ""
+msgstr "Nastavenie konfigurácie"
 
 #. module: mrp
 #: model:ir.ui.menu,name:mrp.menu_mrp_configuration
@@ -1045,7 +1100,7 @@ msgstr "Návrh"
 #: model:product.product,name:mrp.product_product_drawer_drawer
 #: model:product.template,name:mrp.product_product_drawer_drawer_product_template
 msgid "Drawer Black"
-msgstr ""
+msgstr "Šuplík čierny"
 
 #. module: mrp
 #: model:product.product,name:mrp.product_product_drawer_case
@@ -1118,7 +1173,7 @@ msgstr "Dátum ukončenia"
 #: model:ir.model.fields,help:mrp.field_mrp_product_produce_line__product_tracking
 #: model:ir.model.fields,help:mrp.field_mrp_unbuild__has_tracking
 msgid "Ensure the traceability of a storable product in your warehouse."
-msgstr ""
+msgstr "Zabezpečte sledovateľnosť skladovateľného produktu vo vašom sklade."
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.exception_on_mo
@@ -1128,7 +1183,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.exception_on_mo
 msgid "Exception(s):"
-msgstr ""
+msgstr "Výnimka(y)"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_workorder__duration_expected
@@ -1193,6 +1248,11 @@ msgid "Finished Product"
 msgstr ""
 
 #. module: mrp
+#: model:ir.actions.report,name:mrp.action_report_finished_product
+msgid "Finished Product Label (PDF)"
+msgstr ""
+
+#. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__move_finished_ids
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_form_view
 msgid "Finished Products"
@@ -1245,7 +1305,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.view_mrp_production_filter
 msgid "Future Activities"
-msgstr ""
+msgstr "Budúce aktivity"
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_workcenter_view
@@ -1369,7 +1429,7 @@ msgstr "Ak zaškrtnuté, nové správy vyžadujú vašu pozornosť."
 #: model:ir.model.fields,help:mrp.field_mrp_unbuild__message_has_error
 #: model:ir.model.fields,help:mrp.field_mrp_workorder__message_has_error
 msgid "If checked, some messages have a delivery error."
-msgstr ""
+msgstr "Ak zaškrtnuté, niektoré správy majú chybu dodania."
 
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_production__propagate
@@ -1429,7 +1489,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.exception_on_mo
 msgid "Impacted Transfer(s):"
-msgstr ""
+msgstr "Ovplyvnený prenos(y):"
 
 #. module: mrp
 #: code:addons/mrp/models/mrp_bom.py:200
@@ -1462,7 +1522,7 @@ msgstr ""
 #: code:addons/mrp/models/mrp_unbuild.py:219
 #, python-format
 msgid "Insufficient Quantity"
-msgstr ""
+msgstr "Nedostatočné množstvo"
 
 #. module: mrp
 #: selection:stock.picking.type,code:0
@@ -1492,7 +1552,7 @@ msgstr "Je odberateľ"
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__is_locked
 msgid "Is Locked"
-msgstr ""
+msgstr "Uzamknutý"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_workcenter_productivity_loss__manual
@@ -1502,7 +1562,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.view_mrp_workcenter_productivity_loss_kanban
 msgid "Is a Blocking Reason?"
-msgstr ""
+msgstr "Je dôvod blokovania?"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_document__public
@@ -1512,6 +1572,11 @@ msgstr "Je verejný dokument"
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_workorder__is_user_working
 msgid "Is the Current User Working"
+msgstr ""
+
+#. module: mrp
+#: model:ir.model.fields,field_description:mrp.field_mrp_workorder__is_first_wo
+msgid "Is the first WO to produce"
 msgstr ""
 
 #. module: mrp
@@ -1618,7 +1683,7 @@ msgstr "Mešká"
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_unbuild_search_view
 #: model_terms:ir.ui.view,arch_db:mrp.view_mrp_production_filter
 msgid "Late Activities"
-msgstr ""
+msgstr "Neskoršie aktivity"
 
 #. module: mrp
 #: model:product.product,description:mrp.product_product_wood_ply
@@ -1653,13 +1718,13 @@ msgstr "Lokácie kde systém uskladní hotové výrobky."
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_form_view
 msgid "Lock"
-msgstr ""
+msgstr "Zamknúť"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_workcenter_productivity__loss_id
 #: model_terms:ir.ui.view,arch_db:mrp.oee_search_view
 msgid "Loss Reason"
-msgstr ""
+msgstr "Dôvod straty"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_unbuild__lot_id
@@ -1697,7 +1762,7 @@ msgstr "Šarže"
 #. module: mrp
 #: model:ir.ui.menu,name:mrp.menu_mrp_traceability
 msgid "Lots/Serial Numbers"
-msgstr ""
+msgstr "Šarže / Sériové čísla"
 
 #. module: mrp
 #: selection:mrp.document,priority:0
@@ -1720,7 +1785,14 @@ msgstr ""
 #: model:ir.model.fields,field_description:mrp.field_mrp_unbuild__message_main_attachment_id
 #: model:ir.model.fields,field_description:mrp.field_mrp_workorder__message_main_attachment_id
 msgid "Main Attachment"
-msgstr ""
+msgstr "Hlavná príloha"
+
+#. module: mrp
+#: code:addons/mrp/models/mrp_production.py:465
+#: code:addons/mrp/models/stock_warehouse.py:130
+#, python-format
+msgid "Make To Order"
+msgstr "Vyrobiť na zákazku"
 
 #. module: mrp
 #: model:res.groups,name:mrp.group_mrp_routings
@@ -1738,10 +1810,13 @@ msgid "Manual Duration"
 msgstr ""
 
 #. module: mrp
+#: code:addons/mrp/models/stock_warehouse.py:114
+#: code:addons/mrp/models/stock_warehouse.py:154
 #: model:ir.model.fields,field_description:mrp.field_stock_warehouse__manufacture_steps
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_report_stock_rule
 #: model:stock.location.route,name:mrp.route_warehouse0_manufacture
 #: selection:stock.rule,action:0
+#, python-format
 msgid "Manufacture"
 msgstr "Výroba"
 
@@ -1794,6 +1869,7 @@ msgid "Manufacturing"
 msgstr "Výroba"
 
 #. module: mrp
+#: model:ir.model.fields,field_description:mrp.field_product_product__produce_delay
 #: model:ir.model.fields,field_description:mrp.field_product_template__produce_delay
 #: model:ir.model.fields,field_description:mrp.field_res_company__manufacturing_lead
 #: model:ir.model.fields,field_description:mrp.field_res_config_settings__manufacturing_lead
@@ -1803,7 +1879,7 @@ msgstr "Výrobná dodacia lehota"
 #. module: mrp
 #: selection:stock.picking.type,code:0
 msgid "Manufacturing Operation"
-msgstr ""
+msgstr "Výrobná operácia"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_stock_warehouse__manu_type_id
@@ -1877,7 +1953,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_form_view
 msgid "Mark as Done"
-msgstr ""
+msgstr "Označiť ako hotovo"
 
 #. module: mrp
 #: model:ir.ui.menu,name:mrp.menu_mrp_bom
@@ -1887,7 +1963,7 @@ msgstr "Hlavné dáta"
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_res_config_settings__module_mrp_mps
 msgid "Master Production Schedule"
-msgstr ""
+msgstr "Hlavný harmonogram výroby"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__availability
@@ -1901,7 +1977,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:mrp.field_mrp_unbuild__message_has_error
 #: model:ir.model.fields,field_description:mrp.field_mrp_workorder__message_has_error
 msgid "Message Delivery error"
-msgstr ""
+msgstr "Chyba zobrazovania správ"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_bom__message_ids
@@ -1962,7 +2038,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_unbuild_search_view
 #: model_terms:ir.ui.view,arch_db:mrp.view_mrp_production_filter
 msgid "My Activities"
-msgstr ""
+msgstr "Moje aktivity"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_document__name
@@ -1987,7 +2063,7 @@ msgstr "Nové"
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__activity_date_deadline
 #: model:ir.model.fields,field_description:mrp.field_mrp_unbuild__activity_date_deadline
 msgid "Next Activity Deadline"
-msgstr ""
+msgstr "Ďalšia lehota aktivity"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__activity_summary
@@ -1999,7 +2075,7 @@ msgstr "Zhrnutie ďalšej aktivity"
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__activity_type_id
 #: model:ir.model.fields,field_description:mrp.field_mrp_unbuild__activity_type_id
 msgid "Next Activity Type"
-msgstr ""
+msgstr "Typ ďalšej aktivity"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_routing_workcenter__batch
@@ -2104,7 +2180,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:mrp.field_mrp_unbuild__message_has_error_counter
 #: model:ir.model.fields,field_description:mrp.field_mrp_workorder__message_has_error_counter
 msgid "Number of error"
-msgstr ""
+msgstr "Číslo chyby"
 
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_bom__message_needaction_counter
@@ -2120,7 +2196,7 @@ msgstr "Počet správ ktoré vyžadujú akciu"
 #: model:ir.model.fields,help:mrp.field_mrp_unbuild__message_has_error_counter
 #: model:ir.model.fields,help:mrp.field_mrp_workorder__message_has_error_counter
 msgid "Number of messages with delivery error"
-msgstr ""
+msgstr "Počet chýb zobrazovania správ"
 
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_workcenter__capacity
@@ -2182,7 +2258,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:mrp.field_mrp_bom__picking_type_id
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__picking_type_id
 msgid "Operation Type"
-msgstr ""
+msgstr "Typ operácie"
 
 #. module: mrp
 #: code:addons/mrp/report/mrp_report_bom_structure.py:221
@@ -2236,7 +2312,7 @@ msgstr ""
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_workcenter__oee
 msgid "Overall Equipment Effectiveness, based on the last month"
-msgstr ""
+msgstr "Celková účinnosť zariadenia, založená na poslednom mesiaci"
 
 #. module: mrp
 #: model_terms:ir.actions.act_window,help:mrp.mrp_workcenter_productivity_report
@@ -2253,7 +2329,7 @@ msgstr "Oneskorené"
 #. module: mrp
 #: model:ir.ui.menu,name:mrp.menu_mrp_dashboard
 msgid "Overview"
-msgstr ""
+msgstr "Prehľad"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_bom_line__bom_id
@@ -2302,7 +2378,7 @@ msgstr ""
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_workcenter__performance
 msgid "Performance over the last month"
-msgstr ""
+msgstr "Výkonnosť za posledný mesiac"
 
 #. module: mrp
 #: code:addons/mrp/models/stock_warehouse.py:191
@@ -2379,7 +2455,7 @@ msgstr ""
 #: selection:mrp.production,activity_state:0 selection:mrp.production,state:0
 #: selection:mrp.unbuild,activity_state:0
 msgid "Planned"
-msgstr ""
+msgstr "Plánované"
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_workorder_form_view_inherit
@@ -2458,6 +2534,7 @@ msgid "Processed Disassembly Lines"
 msgstr ""
 
 #. module: mrp
+#: model:ir.model,name:mrp.model_procurement_group
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__procurement_group_id
 msgid "Procurement Group"
 msgstr "Skupina obstarávania"
@@ -2512,18 +2589,18 @@ msgstr ""
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_res_config_settings__module_mrp_plm
 msgid "Product Lifecycle Management (PLM)"
-msgstr ""
+msgstr "Správa životného cyklu produktu (PLM)"
 
 #. module: mrp
 #: model:ir.actions.act_window,name:mrp.action_mrp_unbuild_move_line
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_unbuild_form_view
 msgid "Product Moves"
-msgstr ""
+msgstr "Pohyby produktu"
 
 #. module: mrp
 #: model:ir.model,name:mrp.model_stock_move_line
 msgid "Product Moves (Stock Move Line)"
-msgstr ""
+msgstr "Pohyby produktu (riadok skladového pohybu)"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_product_produce_line__product_produce_id
@@ -2580,7 +2657,6 @@ msgstr ""
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__production_location_id
-#: model:ir.model.fields,field_description:mrp.field_mrp_routing__location_id
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_routing_search_view
 msgid "Production Location"
 msgstr "Lokácia produktu"
@@ -2636,7 +2712,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_workorder_form_view_inherit
 msgid "Productivity"
-msgstr ""
+msgstr "Produktivita"
 
 #. module: mrp
 #: model:ir.actions.act_window,name:mrp.mrp_workcenter_productivity_loss_action
@@ -2665,17 +2741,17 @@ msgstr "Propagovať zrušenie a rozdelenie"
 #. module: mrp
 #: selection:stock.rule,action:0
 msgid "Pull & Push"
-msgstr ""
+msgstr "Pull & Push"
 
 #. module: mrp
 #: selection:stock.rule,action:0
 msgid "Pull From"
-msgstr ""
+msgstr "Ťahať od"
 
 #. module: mrp
 #: selection:stock.rule,action:0
 msgid "Push To"
-msgstr ""
+msgstr "Tlačiť do"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_res_config_settings__module_quality_control
@@ -2691,7 +2767,7 @@ msgstr ""
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_stock_warn_insufficient_qty_unbuild__quant_ids
 msgid "Quant"
-msgstr ""
+msgstr "Kvant"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_bom__product_qty
@@ -2738,9 +2814,10 @@ msgstr ""
 #. module: mrp
 #. openerp-web
 #: code:addons/mrp/static/src/xml/mrp.xml:10
+#: model_terms:ir.ui.view,arch_db:mrp.label_production_view_pdf
 #, python-format
 msgid "Quantity:"
-msgstr ""
+msgstr "Množstvo:"
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.view_mrp_production_filter
@@ -2754,6 +2831,7 @@ msgstr "Suroviny"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__location_src_id
+#: model:ir.model.fields,field_description:mrp.field_mrp_routing__location_id
 msgid "Raw Materials Location"
 msgstr "Umiestnenie surových materiálov"
 
@@ -2823,7 +2901,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.report_mrp_bom
 msgid "Reference:"
-msgstr ""
+msgstr "Referencia:"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_document__ir_attachment_id
@@ -2850,7 +2928,7 @@ msgstr ""
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_document__res_model_name
 msgid "Res Model Name"
-msgstr ""
+msgstr "Názov Modelu Res"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_product_produce_line__qty_reserved
@@ -2938,7 +3016,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.res_config_settings_view_form
 msgid "Schedule manufacturing orders earlier to avoid delays"
-msgstr ""
+msgstr "Naplánujte si výrobné objednávky skôr, aby ste predišli oneskoreniu"
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.view_mrp_production_filter
@@ -2981,12 +3059,12 @@ msgstr "Vyraďovací pohyb"
 #. module: mrp
 #: model:ir.ui.menu,name:mrp.menu_mrp_scrap
 msgid "Scrap Orders"
-msgstr ""
+msgstr "Vyraďovacia objednávka"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_production__scrap_ids
 msgid "Scraps"
-msgstr ""
+msgstr "Vyradenia"
 
 #. module: mrp
 #: model:product.product,name:mrp.product_product_computer_desk_screw
@@ -3022,7 +3100,7 @@ msgstr "Vyhľadať mrp pracovisko"
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.res_config_settings_view_form
 msgid "Security Lead Time"
-msgstr ""
+msgstr "Bezpečnostný čas"
 
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_res_company__manufacturing_lead
@@ -3087,7 +3165,7 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_unbuild_search_view
 #: model_terms:ir.ui.view,arch_db:mrp.view_mrp_production_filter
 msgid "Show all records which has next action date is before today"
-msgstr ""
+msgstr "Zobraz všetky záznamy ktorých následná aktivita je pred dnešným dňom"
 
 #. module: mrp
 #: model:product.product,description:mrp.product_product_computer_desk_head
@@ -3182,6 +3260,10 @@ msgid ""
 "Today: Activity date is today\n"
 "Planned: Future activities."
 msgstr ""
+"Status založený na aktivitách\n"
+"Zmeškané: dátum už vypršal\n"
+"Dnes: dátum aktivity je dnes\n"
+"Plán: budúce aktivity"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_stock_warehouse__sam_type_id
@@ -3211,7 +3293,7 @@ msgstr "Skladové pohyby"
 #. module: mrp
 #: model:ir.model,name:mrp.model_stock_rule
 msgid "Stock Rule"
-msgstr ""
+msgstr "Skladové pravidlo"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_stock_warehouse__sam_loc_id
@@ -3221,7 +3303,7 @@ msgstr ""
 #. module: mrp
 #: model:ir.model,name:mrp.model_report_stock_report_stock_rule
 msgid "Stock rule report"
-msgstr ""
+msgstr "Report skladového pravidla"
 
 #. module: mrp
 #: code:addons/mrp/models/stock_warehouse.py:200
@@ -3292,6 +3374,11 @@ msgid ""
 msgstr ""
 
 #. module: mrp
+#: model:ir.model.fields,help:mrp.field_mrp_bom_line__valid_product_attribute_value_ids
+msgid "Technical compute"
+msgstr "Technický prepočet"
+
+#. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_workorder__is_user_working
 msgid "Technical field indicating whether the current user is working. "
 msgstr ""
@@ -3312,6 +3399,8 @@ msgid ""
 "Technical field used to resolve multiple attachments in a multi-website "
 "environment."
 msgstr ""
+"Technická oblasť použitá na riešenie viacerých príloh v prostredí viacerých "
+"webových stránok."
 
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_production__consumed_less_than_planned
@@ -3362,7 +3451,7 @@ msgstr ""
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_document__res_model
 msgid "The database object this attachment will be attached to."
-msgstr ""
+msgstr "Databázový objekt, ku ktorému bude pripojená táto príloha."
 
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_production__routing_id
@@ -3383,6 +3472,9 @@ msgid ""
 "mainly used to compute work center costs during operations and to plan "
 "future loads on work centers based on production planning."
 msgstr ""
+"Zoznam operácií na výrobu hotového výrobku. Smerovanie sa používa hlavne na "
+"výpočet nákladov na pracovisku počas operácií a na plánovanie budúcich "
+"nákladov na pracoviskách na základe plánovania výroby."
 
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_workorder__qty_produced
@@ -3418,7 +3510,7 @@ msgstr ""
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_document__res_id
 msgid "The record id this is attached to."
-msgstr ""
+msgstr "ID záznamu, ku ktorému je pripojený."
 
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_routing_workcenter__routing_id
@@ -3439,22 +3531,14 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.actions.act_window,help:mrp.action_mrp_unbuild_move_line
 msgid "There's no product move yet"
-msgstr ""
-
-#. module: mrp
-#: code:addons/mrp/models/mrp_bom.py:78
-#, python-format
-msgid ""
-"This BoM is used in some Manufacturing Orders that are still open. You "
-"should rather archive this BoM and create a new one."
-msgstr ""
+msgstr "Zatiaľ neexistuje pohyb produktu"
 
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_workcenter__tz
 msgid ""
 "This field is used in order to define in which timezone the resources will "
 "work."
-msgstr ""
+msgstr "Toto pole spravidla definuje časovú zónu zdrojov."
 
 #. module: mrp
 #: model:ir.model.fields,help:mrp.field_mrp_workcenter__time_efficiency
@@ -3465,6 +3549,10 @@ msgid ""
 "the efficiency factor is 200%, however the expected duration will be 30 "
 "minutes."
 msgstr ""
+"Toto pole sa používa na výpočet očakávaného trvania pracovného výkonu v "
+"tomto stredisku. Napríklad, ak pracovný výkon trvá jednu hodinu a faktor "
+"efektivity je 100%, potom očakávané trvanie je jedna hodina. Ak faktor "
+"efektivity je 200%, očakávané trvanie bude 30 minút."
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.report_mrp_bom
@@ -3575,7 +3663,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.stock_production_type_kanban
 msgid "To Process"
-msgstr ""
+msgstr "Na spracovanie"
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_workorder_form_view_inherit
@@ -3649,7 +3737,7 @@ msgstr ""
 #: model:ir.model,name:mrp.model_stock_traceability_report
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_form_view
 msgid "Traceability Report"
-msgstr ""
+msgstr "Report sledovateľnosti"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_product_produce__product_tracking
@@ -3659,6 +3747,11 @@ msgstr ""
 #: model:ir.model.fields,field_description:mrp.field_stock_move__needs_lots
 msgid "Tracking"
 msgstr "Sledovanie"
+
+#. module: mrp
+#: model:ir.model,name:mrp.model_stock_picking
+msgid "Transfer"
+msgstr "Prevod"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_document__type
@@ -3703,7 +3796,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.report_mrp_bom_line
 msgid "Unfold"
-msgstr ""
+msgstr "Rozvinúť"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_stock_move__unit_factor
@@ -3762,7 +3855,7 @@ msgstr "ks"
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_form_view
 msgid "Unlock"
-msgstr ""
+msgstr "Odomkni"
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_form_view
@@ -3834,6 +3927,14 @@ msgid ""
 "is useful if you have long lead time and if you produce based on sales "
 "forecasts."
 msgstr ""
+"Použitie prehľadu MPS na naplánovanie vašich objednávacích a výrobných "
+"operácií je užitočné, ak máte dlhý čas na dodanie a ak vyrábate na základe "
+"prognóz predaja."
+
+#. module: mrp
+#: model:ir.model.fields,field_description:mrp.field_mrp_bom_line__valid_product_attribute_value_ids
+msgid "Valid Product Attribute Values"
+msgstr "Platné hodnoty atribútu produktu"
 
 #. module: mrp
 #. openerp-web
@@ -4172,7 +4273,7 @@ msgstr "Pracovné hodiny"
 #. module: mrp
 #: model:ir.ui.menu,name:mrp.menu_view_resource_calendar_search_mrp
 msgid "Working Times"
-msgstr ""
+msgstr "Pracovné časy"
 
 #. module: mrp
 #: model:ir.model.fields,field_description:mrp.field_mrp_workorder__working_user_ids
@@ -4190,6 +4291,8 @@ msgid ""
 "You can either upload a file from your computer or copy/paste an internet "
 "link to your file."
 msgstr ""
+"Môžete nahrať súbor z počítača alebo kopírovať/vložiť internetový link k "
+"súboru."
 
 #. module: mrp
 #: code:addons/mrp/models/mrp_production.py:605
@@ -4224,7 +4327,7 @@ msgstr ""
 #: code:addons/mrp/wizard/mrp_product_produce.py:201
 #, python-format
 msgid "You can only process 1.0 %s of products with unique serial number."
-msgstr ""
+msgstr "Môžete spracovať 1.0 %s produktov s jednoznačným sériovým číslom."
 
 #. module: mrp
 #: code:addons/mrp/models/stock_move.py:143
@@ -4244,9 +4347,21 @@ msgid ""
 msgstr ""
 
 #. module: mrp
+#: code:addons/mrp/models/mrp_bom.py:109
+#, python-format
+msgid "You cannot create a new Bill of Material from here."
+msgstr ""
+
+#. module: mrp
 #: code:addons/mrp/models/mrp_unbuild.py:88
 #, python-format
 msgid "You cannot delete an unbuild order if the state is 'Done'."
+msgstr ""
+
+#. module: mrp
+#: code:addons/mrp/models/mrp_production.py:533
+#, python-format
+msgid "You cannot produce a MO with a bom kit product."
 msgstr ""
 
 #. module: mrp
@@ -4336,7 +4451,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.exception_on_mo
 msgid "cancelled"
-msgstr ""
+msgstr "zrušené"
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.res_config_settings_view_form
@@ -4347,7 +4462,7 @@ msgstr "dni"
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_workcenter_view
 msgid "hour(s)"
-msgstr ""
+msgstr "hodiny"
 
 #. module: mrp
 #: model:product.product,weight_uom_name:mrp.product_product_computer_desk
@@ -4396,8 +4511,8 @@ msgid "minute(s)"
 msgstr ""
 
 #. module: mrp
-#: code:addons/mrp/report/mrp_report_bom_structure.py:224
 #: code:addons/mrp/report/mrp_report_bom_structure.py:234
+#: code:addons/mrp/report/mrp_report_bom_structure.py:244
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_production_workorder_form_view_inherit
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_routing_workcenter_form_view
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_workcenter_view
@@ -4413,7 +4528,7 @@ msgstr "z"
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.exception_on_mo
 msgid "ordered instead of"
-msgstr ""
+msgstr "objednané namiesto"
 
 #. module: mrp
 #. openerp-web
@@ -4432,7 +4547,7 @@ msgstr ""
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.production_message
 msgid "quantity has been updated."
-msgstr ""
+msgstr "množstvo bolo aktualizované."
 
 #. module: mrp
 #: model_terms:ir.ui.view,arch_db:mrp.mrp_routing_workcenter_form_view

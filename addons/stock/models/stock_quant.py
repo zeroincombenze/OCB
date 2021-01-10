@@ -20,7 +20,7 @@ class StockQuant(models.Model):
 
     product_id = fields.Many2one(
         'product.product', 'Product',
-        ondelete='restrict', readonly=True, required=True)
+        ondelete='restrict', readonly=True, required=True, index=True)
     # so user can filter on template in webclient
     product_tmpl_id = fields.Many2one(
         'product.template', string='Product Template',
@@ -32,7 +32,7 @@ class StockQuant(models.Model):
         string='Company', store=True, readonly=True)
     location_id = fields.Many2one(
         'stock.location', 'Location',
-        auto_join=True, ondelete='restrict', readonly=True, required=True)
+        auto_join=True, ondelete='restrict', readonly=True, required=True, index=True)
     lot_id = fields.Many2one(
         'stock.production.lot', 'Lot/Serial Number',
         ondelete='restrict', readonly=True)
@@ -77,7 +77,10 @@ class StockQuant(models.Model):
     def check_quantity(self):
         for quant in self:
             if float_compare(quant.quantity, 1, precision_rounding=quant.product_uom_id.rounding) > 0 and quant.lot_id and quant.product_id.tracking == 'serial':
-                raise ValidationError(_('A serial number should only be linked to a single product.'))
+                message_base = _('A serial number should only be linked to a single product.')
+                message_quant = _('Please check the following serial number (name, id): ')
+                message_sn = '(%s, %s)' % (quant.lot_id.name, quant.lot_id.id)
+                raise ValidationError("\n".join([message_base, message_quant, message_sn]))
 
     @api.constrains('location_id')
     def check_location_id(self):
@@ -360,7 +363,7 @@ class QuantPackage(models.Model):
         'res.partner', 'Owner', compute='_compute_package_info', search='_search_owner',
         index=True, readonly=True)
 
-    @api.depends('quant_ids.package_id', 'quant_ids.location_id', 'quant_ids.company_id', 'quant_ids.owner_id')
+    @api.depends('quant_ids.package_id', 'quant_ids.location_id', 'quant_ids.company_id', 'quant_ids.owner_id', 'quant_ids.quantity', 'quant_ids.reserved_quantity')
     def _compute_package_info(self):
         for package in self:
             values = {'location_id': False, 'company_id': self.env.user.company_id.id, 'owner_id': False}
@@ -405,6 +408,11 @@ class QuantPackage(models.Model):
             move_line_to_modify.write({'package_id': False})
             package.mapped('quant_ids').sudo().write({'package_id': False})
 
+        # Quant clean-up, mostly to avoid multiple quants of the same product. For example, unpack
+        # 2 packages of 50, then reserve 100 => a quant of -50 is created at transfer validation.
+        self.env['stock.quant']._merge_quants()
+        self.env['stock.quant']._unlink_zero_quants()
+
     def action_view_picking(self):
         action = self.env.ref('stock.action_picking_tree_all').read()[0]
         domain = ['|', ('result_package_id', 'in', self.ids), ('package_id', 'in', self.ids)]
@@ -428,5 +436,5 @@ class QuantPackage(models.Model):
         for quant in self._get_contained_quants():
             if quant.product_id not in res:
                 res[quant.product_id] = 0
-            res[quant.product_id] += quant.qty
+            res[quant.product_id] += quant.quantity
         return res

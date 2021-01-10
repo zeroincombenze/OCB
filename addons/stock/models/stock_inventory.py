@@ -3,7 +3,7 @@
 
 from odoo import api, fields, models, _
 from odoo.addons import decimal_precision as dp
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_utils, float_compare
 
 
@@ -135,6 +135,8 @@ class Inventory(models.Model):
             self.package_id = False
         if self.filter != 'category':
             self.category_id = False
+        if self.filter != 'product':
+            self.exhausted = False
         if self.filter == 'product':
             self.exhausted = True
             if self.product_id:
@@ -151,13 +153,13 @@ class Inventory(models.Model):
         if self.filter == 'none' and self.product_id and self.location_id and self.lot_id:
             return
         if self.filter not in ('product', 'product_owner') and self.product_id:
-            raise UserError(_('The selected product doesn\'t belong to that owner..'))
+            raise ValidationError(_('The selected product doesn\'t belong to that owner..'))
         if self.filter != 'lot' and self.lot_id:
-            raise UserError(_('The selected lot number doesn\'t exist.'))
+            raise ValidationError(_('The selected lot number doesn\'t exist.'))
         if self.filter not in ('owner', 'product_owner') and self.partner_id:
-            raise UserError(_('The selected owner doesn\'t have the proprietary of that product.'))
+            raise ValidationError(_('The selected owner doesn\'t have the proprietary of that product.'))
         if self.filter != 'pack' and self.package_id:
-            raise UserError(_('The selected inventory options are not coherent, the package doesn\'t exist.'))
+            raise ValidationError(_('The selected inventory options are not coherent, the package doesn\'t exist.'))
 
     def action_reset_product_qty(self):
         self.mapped('line_ids').write({'product_qty': 0})
@@ -185,7 +187,7 @@ class Inventory(models.Model):
         if negative:
             raise UserError(_('You cannot set a negative product quantity in an inventory line:\n\t%s - qty: %s') % (negative.product_id.name, negative.product_qty))
         self.action_check()
-        self.write({'state': 'done'})
+        self.write({'state': 'done', 'date': fields.Datetime.now()})
         self.post_inventory()
         return True
 
@@ -194,13 +196,14 @@ class Inventory(models.Model):
         # as they will be moved to inventory loss, and other quants will be created to the encoded quant location. This is a normal behavior
         # as quants cannot be reuse from inventory location (users can still manually move the products before/after the inventory if they want).
         self.mapped('move_ids').filtered(lambda move: move.state != 'done')._action_done()
+        return True
 
     def action_check(self):
         """ Checks the inventory and computes the stock move to do """
         # tde todo: clean after _generate_moves
         for inventory in self.filtered(lambda x: x.state not in ('done','cancel')):
             # first remove the existing stock moves linked to this inventory
-            inventory.mapped('move_ids').unlink()
+            inventory.with_context(prefetch_fields=False).mapped('move_ids').unlink()
             inventory.line_ids._generate_moves()
 
     def action_cancel_draft(self):
@@ -233,7 +236,7 @@ class Inventory(models.Model):
     def _get_inventory_lines_values(self):
         # TDE CLEANME: is sql really necessary ? I don't think so
         locations = self.env['stock.location'].search([('id', 'child_of', [self.location_id.id])])
-        domain = ' location_id in %s AND quantity != 0 AND active = TRUE'
+        domain = ' sq.location_id in %s AND sq.quantity != 0 AND pp.active'
         args = (tuple(locations.ids),)
 
         vals = []
@@ -245,39 +248,41 @@ class Inventory(models.Model):
 
         # case 0: Filter on company
         if self.company_id:
-            domain += ' AND company_id = %s'
+            domain += ' AND sq.company_id = %s'
             args += (self.company_id.id,)
 
         #case 1: Filter on One owner only or One product for a specific owner
         if self.partner_id:
-            domain += ' AND owner_id = %s'
+            domain += ' AND sq.owner_id = %s'
             args += (self.partner_id.id,)
         #case 2: Filter on One Lot/Serial Number
         if self.lot_id:
-            domain += ' AND lot_id = %s'
+            domain += ' AND sq.lot_id = %s'
             args += (self.lot_id.id,)
         #case 3: Filter on One product
         if self.product_id:
-            domain += ' AND product_id = %s'
+            domain += ' AND sq.product_id = %s'
             args += (self.product_id.id,)
             products_to_filter |= self.product_id
         #case 4: Filter on A Pack
         if self.package_id:
-            domain += ' AND package_id = %s'
+            domain += ' AND sq.package_id = %s'
             args += (self.package_id.id,)
         #case 5: Filter on One product category + Exahausted Products
         if self.category_id:
-            categ_products = Product.search([('categ_id', '=', self.category_id.id)])
-            domain += ' AND product_id = ANY (%s)'
+            categ_products = Product.search([('categ_id', 'child_of', self.category_id.id)])
+            domain += ' AND sq.product_id = ANY (%s)'
             args += (categ_products.ids,)
             products_to_filter |= categ_products
 
-        self.env.cr.execute("""SELECT product_id, sum(quantity) as product_qty, location_id, lot_id as prod_lot_id, package_id, owner_id as partner_id
-            FROM stock_quant
-            LEFT JOIN product_product
-            ON product_product.id = stock_quant.product_id
+        self.env.cr.execute("""SELECT sq.product_id as product_id, sum(sq.quantity) as product_qty,
+            sq.location_id as location_id, sq.lot_id as prod_lot_id, sq.package_id as package_id,
+            sq.owner_id as partner_id
+            FROM stock_quant sq
+            LEFT JOIN product_product pp
+            ON pp.id = sq.product_id
             WHERE %s
-            GROUP BY product_id, location_id, lot_id, package_id, partner_id """ % domain, args)
+            GROUP BY sq.product_id, sq.location_id, sq.lot_id, sq.package_id, sq.owner_id """ % domain, args)
 
         for product_data in self.env.cr.dictfetchall():
             # replace the None the dictionary by False, because falsy values are tested later on
@@ -331,8 +336,8 @@ class InventoryLine(models.Model):
         index=True, required=True)
     product_uom_id = fields.Many2one(
         'uom.uom', 'Product Unit of Measure',
-        required=True,
-        default=lambda self: self.env.ref('uom.product_uom_unit', raise_if_not_found=True))
+        required=True)
+    product_uom_category_id = fields.Many2one(string='Uom category', related='product_uom_id.category_id', readonly=True)
     product_qty = fields.Float(
         'Checked Quantity',
         digits=dp.get_precision('Product Unit of Measure'), default=0)
@@ -425,7 +430,7 @@ class InventoryLine(models.Model):
         """
         for line in self:
             if line.product_id.type != 'product':
-                raise UserError(_("You can only adjust storable products."))
+                raise ValidationError(_("You can only adjust storable products.") + '\n\n%s -> %s' % (line.product_id.display_name, line.product_id.type))
 
     def _get_move_values(self, qty, location_id, location_dest_id, out):
         self.ensure_one()
