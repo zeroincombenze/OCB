@@ -188,6 +188,8 @@ class MailThread(models.AbstractModel):
     @api.multi
     def _get_message_needaction(self):
         res = dict((res_id, 0) for res_id in self.ids)
+        if not res:
+            return
 
         # search for unread messages, directly in SQL to improve performances
         self._cr.execute(""" SELECT msg.res_id FROM mail_message msg
@@ -1199,7 +1201,7 @@ class MailThread(models.AbstractModel):
 
                 # disabled subscriptions during message_new/update to avoid having the system user running the
                 # email gateway become a follower of all inbound messages
-                MessageModel = Model.sudo(user_id).with_context(mail_create_nosubscribe=True, mail_create_nolog=True)
+                MessageModel = Model.sudo(user_id if self.env.user._is_admin() else None).with_context(mail_create_nosubscribe=True, mail_create_nolog=True)
                 if thread_id and hasattr(MessageModel, 'message_update'):
                     MessageModel.browse(thread_id).message_update(message_dict)
                 else:
@@ -1506,7 +1508,7 @@ class MailThread(models.AbstractModel):
             # Very unusual situation, be we should be fault-tolerant here
             message_id = "<%s@localhost>" % time.time()
             _logger.debug('Parsing Message without message-id, generating a random one: %s', message_id)
-        msg_dict['message_id'] = message_id
+        msg_dict['message_id'] = message_id.strip()
 
         if message.get('Subject'):
             msg_dict['subject'] = tools.decode_smtp_header(message.get('Subject'))

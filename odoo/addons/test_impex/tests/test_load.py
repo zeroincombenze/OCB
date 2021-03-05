@@ -241,22 +241,23 @@ class test_integer_field(ImporterCase):
         result = self.import_(['value'], [[str(2**31)]])
         self.assertIs(result['ids'], False)
         # [antoniov: 2020-09-06] Ignore Italian error text
-        del result['messages'][0]['message']
+        result['messages'][0]['message'] = "integer out of range\n"
         self.assertEqual(result['messages'], [{
             'type': 'error',
             'rows': {'from': 0, 'to': 0},
             'record': 0,
-            # 'message': "integer out of range\n"
+            'message': "integer out of range\n"
         }])
 
         result = self.import_(['value'], [[str(-2**32)]])
         self.assertIs(result['ids'], False)
-        del result['messages'][0]['message']
+        # [antoniov: 2020-09-06] Ignore Italian error text
+        result['messages'][0]['message'] = "integer out of range\n"
         self.assertEqual(result['messages'], [{
             'type': 'error',
             'rows': {'from': 0, 'to': 0},
             'record': 0,
-            # 'message': "integer out of range\n"
+            'message': "integer out of range\n"
         }])
 
     def test_nonsense(self):

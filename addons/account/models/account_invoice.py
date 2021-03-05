@@ -70,6 +70,7 @@ class AccountInvoice(models.Model):
             ('type', 'in', filter(None, map(TYPE2JOURNAL.get, inv_types))),
             ('company_id', '=', company_id),
         ]
+        # [antoniov: 2020-02-26] journal sequence order
         return self.env['account.journal'].search(domain, order='sequence', limit=1)
 
     @api.model
@@ -1076,6 +1077,8 @@ class AccountInvoice(models.Model):
 
         values['type'] = TYPE2REFUND[invoice['type']]
         values['date_invoice'] = date_invoice or fields.Date.context_today(invoice)
+        if values.get('date_due', False) and values['date_invoice'] > values['date_due']:
+            values['date_due'] = values['date_invoice']
         values['state'] = 'draft'
         values['number'] = False
         values['origin'] = invoice.number
