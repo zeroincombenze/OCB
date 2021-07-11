@@ -203,7 +203,7 @@ class hr_analytic_timesheet(osv.osv):
         ename = ''
         if emp_id:
             ename = emp_obj.browse(cr, uid, emp_id[0], context=context).name
-        res = self.on_change_unit_amount(cr, uid, id, vals.get('product_id'), vals.get('unit_amount'), False, False, vals.get('journal_id'), context)
+        res = self.on_change_unit_amount(cr, uid, [], vals.get('product_id'), vals.get('unit_amount'), False, False, vals.get('journal_id'), context)
         if res['value'].get('amount'):
             vals.update(amount=res['value']['amount'])
         if not vals.get('journal_id',False):

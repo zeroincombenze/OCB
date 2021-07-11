@@ -160,7 +160,6 @@ def module_topological_sort(modules):
 
     visited = set()
     # function visit(node n)
-
     def visit(n):
         # if n has not been visited yet then
         if n not in visited:
