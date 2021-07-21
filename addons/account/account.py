@@ -33,7 +33,7 @@ from openerp.tools.translate import _
 from openerp.tools.float_utils import float_round as round
 from openerp.tools.safe_eval import safe_eval as eval
 
-import decimal_precision as dp
+import openerp.addons.decimal_precision as dp
 
 _logger = logging.getLogger(__name__)
 
@@ -1061,8 +1061,7 @@ class account_period(osv.osv):
             result = self.search(cr, uid, args + [('special', '=', False)], context=context)
         if not result:
             result = self.search(cr, uid, args, context=context)
-        # [antoniov: 2019-07-24] Avoid login error!
-        if not result and not context.get('login'):
+        if not result:
             raise osv.except_osv(_('Error!'), _('There is no period defined for this date: %s.\nPlease create one.')%dt)
         return result
 

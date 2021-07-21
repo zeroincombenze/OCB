@@ -23,7 +23,7 @@ import time
 
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
-import decimal_precision as dp
+import openerp.addons.decimal_precision as dp
 
 class account_bank_statement(osv.osv):
     def create(self, cr, uid, vals, context=None):
@@ -61,10 +61,7 @@ class account_bank_statement(osv.osv):
         return res
 
     def _get_period(self, cr, uid, context=None):
-        # [antoniov: 2019-07-24] Avoid login error!
-        ctx = dict(context or {},
-                   account_period_prefer_normal=True,
-                   login=True)
+        ctx = dict(context or {}, account_period_prefer_normal=True)
         periods = self.pool.get('account.period').find(cr, uid, context=ctx)
         if periods:
             return periods[0]

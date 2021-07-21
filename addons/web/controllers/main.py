@@ -38,7 +38,7 @@ from .. import http
 openerpweb = http
 
 #----------------------------------------------------------
-# Odoo Web helpers
+# OpenERP Web helpers
 #----------------------------------------------------------
 
 def rjsmin(script):
@@ -152,30 +152,30 @@ def module_topological_sort(modules):
     # outgoing edge: other module depending on this one
 
     # [Tarjan 1976], http://en.wikipedia.org/wiki/Topological_sorting#Algorithms
-    # L ← Empty list that will contain the sorted nodes
+    #L ← Empty list that will contain the sorted nodes
     L = []
-    # S ← Set of all nodes with no outgoing edges (modules on which no other
+    #S ← Set of all nodes with no outgoing edges (modules on which no other
     #    module depends)
     S = set(module for module in modules if module not in dependencies)
 
     visited = set()
-    # function visit(node n)
+    #function visit(node n)
     def visit(n):
-        # if n has not been visited yet then
+        #if n has not been visited yet then
         if n not in visited:
-            # mark n as visited
+            #mark n as visited
             visited.add(n)
-            # change: n not web module, can not be resolved, ignore
+            #change: n not web module, can not be resolved, ignore
             if n not in modules: return
-            # for each node m with an edge from m to n do (dependencies of n)
+            #for each node m with an edge from m to n do (dependencies of n)
             for m in modules[n]:
-                # visit(m)
+                #visit(m)
                 visit(m)
-            # add n to L
+            #add n to L
             L.append(n)
-    # for each node n in S do
+    #for each node n in S do
     for n in S:
-        # visit(n)
+        #visit(n)
         visit(n)
     return L
 
@@ -256,7 +256,7 @@ def concat_xml(file_list):
 
         if root is None:
             root = ElementTree.Element(xml.tag)
-        # elif root.tag != xml.tag:
+        #elif root.tag != xml.tag:
         #    raise ValueError("Root tags missmatch: %r != %r" % (root.tag, xml.tag))
 
         for child in xml.getchildren():
@@ -360,7 +360,7 @@ def make_conditional(req, response, last_modified=None, etag=None):
     Uses Werkzeug's own :meth:`ETagResponseMixin.make_conditional`, after
     setting ``last_modified`` and ``etag`` correctly on the response object
 
-    :param req: Odoo request
+    :param req: OpenERP request
     :type req: web.common.http.WebRequest
     :param response: Werkzeug response
     :type response: werkzeug.wrappers.Response
@@ -447,7 +447,7 @@ def generate_views(action):
     action['views'] = [(view_id, view_modes[0])]
 
 def fix_view_modes(action):
-    """ For historical reasons, Odoo has weird dealings in relation to
+    """ For historical reasons, OpenERP has weird dealings in relation to
     view_mode and the view_type attribute (on window actions):
 
     * one of the view modes is ``tree``, which stands for both list views
@@ -533,7 +533,7 @@ def content_disposition(filename, req):
 
 
 #----------------------------------------------------------
-# Odoo Web web Controllers
+# OpenERP Web web Controllers
 #----------------------------------------------------------
 
 html_template = """<!DOCTYPE html>
@@ -541,7 +541,7 @@ html_template = """<!DOCTYPE html>
     <head>
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <title>Odoo</title>
+        <title>OpenERP</title>
         <link rel="shortcut icon" href="/web/static/src/img/favicon.ico" type="image/x-icon"/>
         <link rel="stylesheet" href="/web/static/src/css/full.css" />
         %(css)s
@@ -742,7 +742,7 @@ class Proxy(openerpweb.Controller):
         It is strongly recommended to not request binary files through this,
         as the result will be a binary data blob as well.
 
-        :param req: Odoo request
+        :param req: OpenERP request
         :param path: actual request path
         :return: file content
         """
@@ -790,7 +790,7 @@ class Database(openerpweb.Controller):
         password, db = operator.itemgetter(
             'drop_pwd', 'drop_db')(
                 dict(map(operator.itemgetter('name', 'value'), fields)))
-
+        
         try:
             if req.session.proxy("db").drop(password, db):return True
         except xmlrpclib.Fault, e:
@@ -956,7 +956,7 @@ class Menu(openerpweb.Controller):
     def get_user_roots(self, req):
         """ Return all root menu ids visible for the session user.
 
-        :param req: A request object, with an Odoo session attribute
+        :param req: A request object, with an OpenERP session attribute
         :type req: < session -> OpenERPSession >
         :return: the root menu ids
         :rtype: list(int)
@@ -980,7 +980,7 @@ class Menu(openerpweb.Controller):
     def load(self, req):
         """ Loads all menu items (all applications and their sub-menus).
 
-        :param req: A request object, with an Odoo session attribute
+        :param req: A request object, with an OpenERP session attribute
         :type req: < session -> OpenERPSession >
         :return: the menu root
         :rtype: dict('children': menu_nodes)
@@ -1051,9 +1051,8 @@ class DataSet(openerpweb.Controller):
     @openerpweb.jsonrequest
     def search_read(self, req, model, fields=False, offset=0, limit=False, domain=None, sort=None):
         return self.do_search_read(req, model, fields, offset, limit, domain, sort)
-
-    def do_search_read(self, req, model,
-                       fields=False, offset=0, limit=False, domain=None, sort=None):
+    def do_search_read(self, req, model, fields=False, offset=0, limit=False, domain=None
+                       , sort=None):
         """ Performs a search() followed by a read() (if needed) using the
         provided search criteria
 
@@ -1183,7 +1182,7 @@ class View(openerpweb.Controller):
     @openerpweb.jsonrequest
     def undo_custom(self, req, view_id, reset=False):
         CustomView = req.session.model('ir.ui.view.custom')
-        vcustom = CustomView.search([('user_id', '=', req.session._uid), ('ref_id', '=', view_id)],
+        vcustom = CustomView.search([('user_id', '=', req.session._uid), ('ref_id' ,'=', view_id)],
                                     0, False, False, req.context)
         if vcustom:
             if reset:
@@ -1268,7 +1267,7 @@ class Binary(openerpweb.Controller):
         binary field (via ``default_get``), otherwise fetches the field for
         that precise record.
 
-        :param req: Odoo request
+        :param req: OpenERP request
         :type req: :class:`web.common.http.HttpRequest`
         :param str model: name of the model to fetch the binary from
         :param str field: binary field
@@ -1373,7 +1372,7 @@ class Binary(openerpweb.Controller):
                 'id':  attachment_id
             }
         except xmlrpclib.Fault, e:
-            args = {'error':e.faultCode}
+            args = {'error':e.faultCode }
         return out % (simplejson.dumps(callback), simplejson.dumps(args))
 
     @openerpweb.httprequest
@@ -1477,7 +1476,7 @@ class Export(openerpweb.Controller):
         return fields
 
     @openerpweb.jsonrequest
-    def get_fields(self, req, model, prefix='', parent_name='',
+    def get_fields(self, req, model, prefix='', parent_name= '',
                    import_compat=True, parent_field_type=None,
                    exclude=None):
 
@@ -1528,7 +1527,7 @@ class Export(openerpweb.Controller):
         return records
 
     @openerpweb.jsonrequest
-    def namelist(self, req,  model, export_id):
+    def namelist(self,req,  model, export_id):
         # TODO: namelist really has no reason to be in Python (although itertools.groupby helps)
         export = req.session.model("ir.exports").read([export_id])[0]
         export_fields_list = req.session.model("ir.exports.line").read(
@@ -1610,7 +1609,7 @@ class ExportFormat(object):
         raise NotImplementedError()
 
     def from_data(self, fields, rows):
-        """ Conversion method from Odoo's export data to whatever the
+        """ Conversion method from OpenERP's export data to whatever the
         current export class outputs
 
         :params list fields: a list of fields to export
@@ -1639,6 +1638,7 @@ class ExportFormat(object):
             columns_headers = field_names
         else:
             columns_headers = [val['label'].strip() for val in fields]
+
 
         return req.make_response(self.from_data(columns_headers, import_data),
             headers=[('Content-Disposition',
@@ -1772,15 +1772,15 @@ class Reports(openerpweb.Controller):
         # Try to get current object model and their ids from context
         if 'context' in action:
             action_context = action['context']
-            if (action_context.get('active_model') and
-                    action_context['active_ids']):
+            if (action_context.get('active_model')
+                    and action_context['active_ids']):
                 # Use built-in ORM method to get data from DB
                 m = req.session.model(action_context['active_model'])
                 r = []
                 try:
                     r = m.name_get(action_context['active_ids'], context)
                 except xmlrpclib.Fault:
-                    # we assume this went wrong because of incorrect/missing
+                    #we assume this went wrong because of incorrect/missing
                     #_rec_name. We don't have access to _columns here to do
                     # a proper check
                     pass
