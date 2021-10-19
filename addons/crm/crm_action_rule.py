@@ -65,12 +65,12 @@ class base_action_rule(osv.osv):
     def do_check(self, cr, uid, action, obj, context=None):
         ok = super(base_action_rule, self).do_check(cr, uid, action, obj, context=context)
 
-        if hasattr(obj, 'section_id'):
+        if 'section_id' in obj._model._all_columns:
             ok = ok and (not action.trg_section_id or action.trg_section_id.id == obj.section_id.id)
-        if hasattr(obj, 'categ_id'):
+        if 'categ_id' in obj._model._all_columns:
             ok = ok and (not action.trg_categ_id or action.trg_categ_id.id == obj.categ_id.id)
 
-        #Cheking for history
+        # Cheking for history
         regex = action.regex_history
         if regex:
             res = False
@@ -92,6 +92,9 @@ class base_action_rule(osv.osv):
 
     def do_action(self, cr, uid, action, model_obj, obj, context=None):
         write = {}
+        if model_obj._name != 'crm.lead':
+            return super(base_action_rule, self).do_action(cr, uid, action, model_obj, obj, context=context)
+
         if hasattr(action, 'act_section_id') and action.act_section_id:
             obj.section_id = action.act_section_id
             write['section_id'] = action.act_section_id.id
@@ -99,7 +102,7 @@ class base_action_rule(osv.osv):
         if hasattr(obj, 'email_cc') and action.act_email_cc:
             if '@' in (obj.email_cc or ''):
                 emails = obj.email_cc.split(",")
-                if  action.act_email_cc not in emails:# and '<'+str(action.act_email_cc)+">" not in emails:
+                if action.act_email_cc not in emails:  # and '<'+str(action.act_email_cc)+">" not in emails:
                     write['email_cc'] = obj.email_cc+','+action.act_email_cc
             else:
                 write['email_cc'] = action.act_email_cc
@@ -108,7 +111,9 @@ class base_action_rule(osv.osv):
         if hasattr(obj, 'state') and hasattr(obj, 'message_append') and action.act_state:
             model_obj.message_append(cr, uid, [obj], _(action.act_state))
 
+        save_context = context.copy()
         model_obj.write(cr, uid, [obj.id], write, context)
+        context.update(save_context)
         super(base_action_rule, self).do_action(cr, uid, action, model_obj, obj, context=context)
         emails = []
 
@@ -118,8 +123,8 @@ class base_action_rule(osv.osv):
         if len(emails) and action.act_mail_body:
             emails = list(set(emails))
             self.email_send(cr, uid, obj, emails, action.act_mail_body)
+        context.update(save_context)
         return True
-
 
     def state_get(self, cr, uid, context=None):
         """Gets available states for crm"""

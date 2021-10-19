@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
+# -*- encoding: utf-8 -*-
 ##############################################################################
 #
 #    Author: Nicolas Bessi. Copyright Camptocamp SA
-#    Financial contributors: Hasa SA, Open Net SA,
-#                            Prisme Solutions Informatique SA, Quod SA
+#    Donors: Hasa Sàrl, Open Net Sàrl and Prisme Solutions Informatique SA
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -19,25 +18,29 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from openerp.osv.orm import TransientModel
+import tools
+from osv import  osv
+import addons
+import os
 
-class WizardMultiChartsAccounts(TransientModel):
+class WizardMultiChartsAccounts(osv.osv_memory):
 
     _inherit ='wizard.multi.charts.accounts'
+    _defaults = {
+        'bank_accounts_id': False,
+        'code_digits': 0,
+        'sale_tax': False,
+        'purchase_tax':False
+    }
 
-    def onchange_chart_template_id(self, cursor, uid, ids, chart_template_id=False, context=None):
-        if context is None: context = {}
-        res = super(WizardMultiChartsAccounts, self).onchange_chart_template_id(cursor, uid, ids,
-                                                                                chart_template_id=chart_template_id,
-                                                                                context=context)
-        # 0 is evaluated as False in python so we have to do this
-        # because original wizard test code_digits value on a float widget
-        if chart_template_id:
-            chart = self.pool['account.chart.template'].browse(cursor, uid,
-                                                               chart_template_id, context=context)
-            if chart.name == "Plan comptable STERCHI":
-                res['value']['code_digits'] = 0
+    def execute(self, cr, uid, ids, context=None):
+        """Override of code in order to be able to link journal with account in XML"""
+        res = super(WizardMultiChartsAccounts, self).execute(cr, uid, ids, context)
+        path = addons.get_module_resource(os.path.join('l10n_ch','sterchi_chart','account_journal_rel.xml'))
+        tools.convert_xml_import(cr, 'l10n_ch', path, idref=None, mode='init', noupdate=True, report=None)
         return res
+
+WizardMultiChartsAccounts()
 
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

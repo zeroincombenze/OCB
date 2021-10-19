@@ -38,12 +38,9 @@ def get_journal(self, cr, uid, context=None):
     statement_obj = self.pool.get('account.bank.statement')
     pos_open_statement_obj = self.pool['pos.open.statement']
 
-    j_ids = journal_obj.search(cr, uid, [('journal_user','=',1), ('user_id', '=', uid)], context=context)
+    j_ids = journal_obj.search(cr, uid, [('journal_user', '=', 1), ('user_id', '=', uid), ('type', 'in', ('bank', 'cash'))], context=context)
     obj_ids = statement_obj.search(cr, uid, [('state', '=', 'open'), ('user_id', '=', uid), ('journal_id', 'in', j_ids)], context=context)
     if len(j_ids) != len(obj_ids):
-        #here i have to create statement_obj (open)
-        print len(j_ids)
-        print len(obj_ids)
         pos_open_statement_id = pos_open_statement_obj.create(cr, uid, {}, context=context)
         res = pos_open_statement_obj.open_statement(cr, uid, pos_open_statement_id, context=None)
     
@@ -54,6 +51,7 @@ def get_journal(self, cr, uid, context=None):
     if not len(res):
         raise osv.except_osv(_('Error !'), _('You do not have any open cash register. You must create a payment method or open a cash register.'))
     return res
+
 
 class pos_box_entries(osv.osv_memory):
     _name = 'pos.box.entries'
@@ -76,9 +74,12 @@ class pos_box_entries(osv.osv_memory):
 
         return res
 
+    def _get_journal(self, cr, uid, context=None):
+        return get_journal(self, cr, uid, context)
+
     _columns = {
         'name': fields.char('Reason', size=32, required=True),
-        'journal_id': fields.selection(get_journal, "Cash Register", required=True, size=-1),
+        'journal_id': fields.selection(_get_journal, "Cash Register", required=True, size=-1),
         'product_id': fields.selection(_get_income_product, "Operation", required=True, size=-1),
         'amount': fields.float('Amount', digits=(16, 2), required=True),
         'ref': fields.char('Ref', size=32),

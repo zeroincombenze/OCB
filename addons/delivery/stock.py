@@ -98,9 +98,7 @@ class stock_picking(osv.osv):
                     _('The carrier %s (id: %d) has no delivery grid!') \
                             % (picking.carrier_id.name,
                                 picking.carrier_id.id))
-        price = grid_obj.get_price_from_picking(cr, uid, grid_id,
-                invoice.amount_untaxed, picking.weight, picking.volume,
-                context=context)
+        price = grid_obj.get_price_from_picking(cr, uid, grid_id, invoice.amount_untaxed, picking.weight, picking.volume, context)
         account_id = picking.carrier_id.product_id.property_account_income.id
         if not account_id:
             account_id = picking.carrier_id.product_id.categ_id\
@@ -137,7 +135,7 @@ class stock_picking(osv.osv):
             invoice = invoice_obj.browse(cr, uid, result[picking.id], context=context)
             invoice_line = self._prepare_shipping_invoice_line(cr, uid, picking, invoice, context=context)
             if invoice_line:
-                invoice_line_obj.create(cr, uid, invoice_line)
+                invoice_line_obj.create(cr, uid, invoice_line, context=context)
                 invoice_obj.button_compute(cr, uid, [invoice.id], context=context)
         return result
 

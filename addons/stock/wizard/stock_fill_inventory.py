@@ -29,6 +29,7 @@ class stock_fill_inventory(osv.osv_memory):
         'location_id': fields.many2one('stock.location', 'Location', required=True),
         'recursive': fields.boolean("Include children",help="If checked, products contained in child locations of selected location will be included as well."),
         'set_stock_zero': fields.boolean("Set to zero",help="If checked, all product quantities will be set to zero to help ensure a real physical inventory is done"),
+        'date': fields.date("Date of inventory",help="Using 'Fill inventory' wizard, the inventory will be calculated at this date"),
     }
     def view_init(self, cr, uid, fields_list, context=None):
         """
@@ -92,9 +93,11 @@ class stock_fill_inventory(osv.osv_memory):
         for location in location_ids:
             datas = {}
             res[location] = {}
-            move_ids = move_obj.search(cr, uid, ['|',('location_dest_id','=',location),('location_id','=',location),('state','=','done')], context=context)
-
-            for move in move_obj.browse(cr, uid, move_ids, context=context):
+            inventory_date = fill_inventory.date or context.get('date')
+            move_ids = move_obj.search(cr, uid, ['|', ('location_dest_id', '=', location), ('location_id', '=', location),('state','=','done'), ('date', '<=', inventory_date)], context=context)
+            move_to_not_use = move_obj.search(cr, uid, [('id', 'in', move_ids), ('location_dest_id', '=', location), ('location_id', '=', location)], context=context)
+            new_move = list(set(move_ids) - set(move_to_not_use))
+            for move in move_obj.browse(cr, uid, new_move, context=context):
                 lot_id = move.prodlot_id.id
                 prod_id = move.product_id.id
                 if move.location_dest_id.id == location:
@@ -124,6 +127,8 @@ class stock_fill_inventory(osv.osv_memory):
                     stock_move_details.update({'product_qty': 0})
 
                 for field, value in stock_move_details.items():
+                    if field == 'product_qty':
+                        continue
                     domain.append((field, '=', value))
 
                 line_ids = inventory_line_obj.search(cr, uid, domain, context=context)

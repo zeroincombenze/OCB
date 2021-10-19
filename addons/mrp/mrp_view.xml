@@ -214,7 +214,7 @@
                     <field name="name"/>
                     <field name="workcenter_id"/>
                     <field name="cycle_nbr"/>
-                    <field name="hour_nbr"/>
+                    <field name="hour_nbr" widget="float_time"/>
                     <field name="company_id" widget="selection" groups="base.group_multi_company"/>
                 </tree>
             </field>
@@ -249,7 +249,7 @@
                         <field name="name"/>
                         <field name="code"/>
                         <field name="active" groups="base.group_extended"/>
-                        <field name="location_id"/>
+                        <field name="location_id" domain="[('usage','!=', 'view')]"/>
                         <field name="company_id" widget="selection" groups="base.group_multi_company"/>
                     </group>
                     <notebook colspan="4">
@@ -361,7 +361,7 @@
                                 <group groups="base.group_extended">
                                 <notebook colspan="4">
                                     <page string="Components">
-                                        <field colspan="4" name="bom_lines" nolabel="1" widget="one2many_list">
+                                        <field colspan="4" name="child_complete_ids" nolabel="1" widget="one2many_list">
                                             <tree string="Components" editable="bottom">
                                                 <field name="product_id" on_change="onchange_product_id(product_id, name)" select="1"/>
                                                 <field name="product_qty"/>
@@ -455,7 +455,7 @@
                     <field name="product_uom"/>
                     <field name="type"/>
                     <field name="method" groups="base.group_extended"/>
-                    <field name="routing_id" groups="base.group_extended"/>
+                    <field name="ext_routing_id" groups="base.group_extended"/>
                     <field name="date_start" groups="base.group_extended"/>
                     <field name="date_stop" groups="base.group_extended"/>
                 </tree>
@@ -668,7 +668,7 @@
                                         icon="gtk-go-forward" context="{'consume': True}"
                                         states="draft,waiting,confirmed,assigned" />
                                     <button
-                                           name="%(stock.track_line)d"
+                                           name="%(stock.split_line)d"
                                            string="Split in production lots"
                                            type="action" icon="gtk-justify-fill"
                                            states="draft,waiting,confirmed,assigned" />
@@ -689,7 +689,7 @@
                                        <field name="state" invisible="1"/>
                                        <field name="scrapped" invisible="1"/>
                                        <button
-                                           name="%(stock.track_line)d"
+                                           name="%(stock.split_line)d"
                                            string="Split in production lots"
                                            type="action" icon="gtk-justify-fill"/>
                                        <button
@@ -740,7 +740,7 @@
                                        <field name="prodlot_id" context="{'product_id': product_id}"/>
                                        <field name="scrapped" invisible="1"/>
                                        <field name="state" invisible="1"/>
-                                       <button name="%(stock.track_line)d"
+                                       <button name="%(stock.split_line)d"
                                             string="Split in production lots" type="action" icon="gtk-justify-fill" states="done,cancel"/>
                                        <button name="%(stock.move_scrap)d"
                                            string="Scrap Products" type="action" icon="gtk-convert"
@@ -759,14 +759,14 @@
                                     <field name="workcenter_id" widget="selection"/>
                                     <field name="sequence"/>
                                     <field name="cycle"/>
-                                    <field name="hour"/>
+                                    <field name="hour" widget="float_time"/>
                                 </form>
                                 <tree string="Production Work Centers">
                                     <field name="sequence"/>
                                     <field name="name"/>
                                     <field name="workcenter_id" widget="selection"/>
                                     <field name="cycle"/>
-                                    <field name="hour"/>
+                                    <field name="hour" widget="float_time"/>
                                 </tree>
                             </field>
                         </page>

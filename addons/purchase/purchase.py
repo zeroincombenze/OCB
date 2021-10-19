@@ -76,6 +76,10 @@ class purchase_order(osv.osv):
                         (date_planned=%s or date_planned<%s)""", (value,po.id,po.minimum_planned_date,value))
             cr.execute("""update purchase_order set
                     minimum_planned_date=%s where id=%s""", (value, po.id))
+
+            cr.execute("""update stock_picking set
+                                min_date=%s where purchase_id=%s""", (value, po.id))
+
         return True
 
     def _minimum_planned_date(self, cr, uid, ids, field_name, arg, context=None):
@@ -243,6 +247,19 @@ class purchase_order(osv.osv):
         ('name_uniq', 'unique(name, company_id)', 'Order Reference must be unique per Company!'),
     ]
 
+    def write(self, cr, uid, ids, vals, context=None):
+
+        for (id, name) in self.name_get(cr, uid, ids, context):
+            if vals.get('state', False):
+                text = u"{name}".format(name=name) + _(' has been change to ') + \
+                       dict(self.fields_get(cr, uid, allfields=['state'], context=context)['state']['selection'])[
+                           vals.get('state', False)]
+                self.log(cr, uid, id, text)
+                self.message_append(cr, uid, [id], text, body_text=text, context=context)
+
+        res = super(purchase_order, self).write(cr, uid, ids, vals, context=context)
+        return res
+
     def unlink(self, cr, uid, ids, context=None):
         purchase_orders = self.read(cr, uid, ids, ['state'], context=context)
         unlink_ids = []
@@ -384,7 +401,7 @@ class purchase_order(osv.osv):
             res = mod_obj.get_object_reference(cr, uid, 'stock', 'view_picking_in_form')
             result['views'] = [(res and res[1] or False, 'form')]
             result['res_id'] = pick_ids and pick_ids[0] or False
-        result['context'] = {'default_type': 'in', 'contact_display': 'partner_address', 'search_default_confirmed': 0, 'search_default_available': 0}
+        result['context'] = {'default_type': 'in', 'contact_display': 'partner_address', 'search_default_confirmed': 0, 'search_default_available': 0, 'type_in': 1}
         return result
 
     def action_view_invoice(self, cr, uid, ids, context=None):
@@ -410,6 +427,26 @@ class purchase_order(osv.osv):
             result['res_id'] = inv_ids and inv_ids[0] or False
 
         return result
+
+    def _get_vals_inv_data(self, cr, uid, order, pay_acc_id, journal_ids, inv_lines, context):
+
+        inv_data = {
+            'name': order.partner_ref or order.name,
+            'reference': order.partner_ref or order.name,
+            'account_id': pay_acc_id,
+            'type': 'in_invoice',
+            'partner_id': order.partner_id.id,
+            'currency_id': order.pricelist_id.currency_id.id,
+            'address_invoice_id': order.partner_address_id.id,
+            'address_contact_id': order.partner_address_id.id,
+            'journal_id': len(journal_ids) and journal_ids[0] or False,
+            'invoice_line': [(6, 0, inv_lines)],
+            'origin': order.name,
+            'fiscal_position': order.fiscal_position.id or order.partner_id.property_account_position.id,
+            'payment_term': order.partner_id.property_payment_term and order.partner_id.property_payment_term.id or False,
+            'company_id': order.company_id.id,
+        }
+        return inv_data
 
     def action_invoice_create(self, cr, uid, ids, context=None):
         """Generates invoice for given ids of purchase orders and links that invoice ID to purchase order.
@@ -442,22 +479,7 @@ class purchase_order(osv.osv):
                 po_line.write({'invoiced':True, 'invoice_lines': [(4, inv_line_id)]}, context=context)
 
             # get invoice data and create invoice
-            inv_data = {
-                'name': order.partner_ref or order.name,
-                'reference': order.partner_ref or order.name,
-                'account_id': pay_acc_id,
-                'type': 'in_invoice',
-                'partner_id': order.partner_id.id,
-                'currency_id': order.pricelist_id.currency_id.id,
-                'address_invoice_id': order.partner_address_id.id,
-                'address_contact_id': order.partner_address_id.id,
-                'journal_id': len(journal_ids) and journal_ids[0] or False,
-                'invoice_line': [(6, 0, inv_lines)], 
-                'origin': order.name,
-                'fiscal_position': order.fiscal_position.id or order.partner_id.property_account_position.id,
-                'payment_term': order.partner_id.property_payment_term and order.partner_id.property_payment_term.id or False,
-                'company_id': order.company_id.id,
-            }
+            inv_data = self._get_vals_inv_data(cr, uid, order, pay_acc_id, journal_ids, inv_lines, context)
             inv_id = inv_obj.create(cr, uid, inv_data, context=context)
 
             # compute the invoice
@@ -601,9 +623,12 @@ class purchase_order(osv.osv):
             'invoiced':False,
             'invoice_ids': [],
             'picking_ids': [],
-            'name': self.pool.get('ir.sequence').get(cr, uid, 'purchase.order'),
+            'name': default.get('name', self.pool.get('ir.sequence').get(cr, uid, 'purchase.order')),
         })
         return super(purchase_order, self).copy(cr, uid, id, default, context)
+
+    def _get_do_merge_order_line_keys(self):
+        return ['name', 'date_planned', 'taxes_id', 'price_unit', 'product_id', 'move_dest_id', 'account_analytic_id']
 
     def do_merge(self, cr, uid, ids, context=None):
         """
@@ -675,8 +700,10 @@ class purchase_order(osv.osv):
                     if not porder.origin in order_infos['origin'] and not order_infos['origin'] in porder.origin:
                         order_infos['origin'] = (order_infos['origin'] or '') + ' ' + porder.origin
 
+            order_line_keys = self._get_do_merge_order_line_keys()
+
             for order_line in porder.order_line:
-                line_key = make_key(order_line, ('name', 'date_planned', 'taxes_id', 'price_unit', 'notes', 'product_id', 'move_dest_id', 'account_analytic_id'))
+                line_key = make_key(order_line, order_line_keys)
                 o_line = order_infos['order_line'].setdefault(line_key, {})
                 if o_line:
                     # merge the line with an existing line

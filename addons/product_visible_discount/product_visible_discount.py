@@ -52,11 +52,18 @@ class sale_order_line(osv.osv):
             rule_id = res_dict.get(pricelist) and res_dict[pricelist][1] or False
             currency_id = None
             if rule_id:
-                item_base = item_obj.read(cr, uid, [rule_id], ['base'])[0]['base']
+                item_read = item_obj.read(cr, uid, [rule_id], ['base', 'base_pricelist_id'])[0]
+                item_base = item_read['base']
                 if item_base > 0:
                     price_type = price_type_obj.browse(cr, uid, item_base)
                     field_name = price_type.field
                     currency_id = price_type.currency_id
+
+                elif item_base == -1:
+                    # return get_real_price_curency(res_dict, product_id, qty, uom, item_read['base_pricelist_id'][0])
+                    base_pricelist_id = item_read['base_pricelist_id'][0]
+                    field_name = 'price'
+                    context['pricelist'] = base_pricelist_id
 
             product = product_obj.browse(cr, uid, product_id, context)
             product_read = product_obj.read(cr, uid, [product_id], [field_name], context=context)[0]
@@ -93,7 +100,7 @@ class sale_order_line(osv.osv):
                                                       product.id, qty or 1.0, partner_id, context=pricelist_context)
 
             so_pricelist = pricelist_obj.browse(cr, uid, pricelist, context=context)
-
+            result['rules'] = list_price[pricelist][1]
             new_list_price, currency_id = get_real_price_curency(list_price, product.id, qty, uom, pricelist)
             if so_pricelist.visible_discount and list_price[pricelist][0] != 0 and new_list_price != 0:
                 if product.company_id and so_pricelist.currency_id.id != product.company_id.currency_id.id:
@@ -101,7 +108,7 @@ class sale_order_line(osv.osv):
                     ctx = context.copy()
                     ctx['date'] = date_order
                     new_list_price = self.pool['res.currency'].compute(cr, uid,
-                                                                       currency_id.id, so_pricelist.currency_id.id,
+                                                                       currency_id, so_pricelist.currency_id.id,
                                                                        new_list_price, context=ctx)
                 discount = (new_list_price - price) / new_list_price * 100
                 if discount > 0:

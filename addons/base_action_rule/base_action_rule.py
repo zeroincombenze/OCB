@@ -164,7 +164,7 @@ the rule to mark CC(mail to any other person defined in actions)."),
         # Check if any rule matching with current object
         for obj_name, rule_id in res:
             if not (model == obj_name):
-                continue # TODO add this condition in the WHERE clause above.
+                continue  # TODO add this condition in the WHERE clause above.
             else:
                 obj = self.pool.get(obj_name)
                 # If the rule doesn't involve a time condition, run it immediately
@@ -290,16 +290,16 @@ the rule to mark CC(mail to any other person defined in actions)."),
     def format_mail(self, obj, body):
         data = {
             'object_id': obj.id,
-            'object_subject': hasattr(obj, 'name') and obj.name or False,
-            'object_date': hasattr(obj, 'date') and obj.date or False,
-            'object_description': hasattr(obj, 'description') and obj.description or False,
-            'object_user': hasattr(obj, 'user_id') and (obj.user_id and obj.user_id.name) or '/',
-            'object_user_email': hasattr(obj, 'user_id') and (obj.user_id and \
+            'object_subject': 'name' in obj._model._all_columns and obj.name or False,
+            'object_date': 'date' in obj._model._all_columns and obj.date or False,
+            'object_description': 'description' in obj._model._all_columns and obj.description or False,
+            'object_user': 'user_id' in obj._model._all_columns and (obj.user_id and obj.user_id.name) or '/',
+            'object_user_email': 'user_id' in obj._model._all_columns and (obj.user_id and \
                                      obj.user_id.user_email) or '/',
-            'object_user_phone': hasattr(obj, 'partner_address_id') and (obj.partner_address_id and \
+            'object_user_phone': 'partner_address_id' in obj._model._all_columns and (obj.partner_address_id and \
                                      obj.partner_address_id.phone) or '/',
-            'partner': hasattr(obj, 'partner_id') and (obj.partner_id and obj.partner_id.name) or '/',
-            'partner_email': hasattr(obj, 'partner_address_id') and (obj.partner_address_id and\
+            'partner': 'partner_id' in obj._model._all_columns and (obj.partner_id and obj.partner_id.name) or '/',
+            'partner_email': 'partner_address_id' in obj._model._all_columns and (obj.partner_address_id and\
                                          obj.partner_address_id.email) or '/',
         }
         return self.format_body(body % data)
@@ -333,7 +333,6 @@ the rule to mark CC(mail to any other person defined in actions)."),
                     _("No E-Mail ID Found for your Company address!"))
         return mail_message.schedule_with_attach(cr, uid, emailfrom, emails, name, body, model='base.action.rule', reply_to=reply_to, res_id=obj.id)
 
-
     def do_check(self, cr, uid, action, obj, context=None):
         """ check Action
             @param self: The object pointer
@@ -351,9 +350,9 @@ the rule to mark CC(mail to any other person defined in actions)."),
                     ok = False
             else:
                 ok = False
-        if getattr(obj, 'user_id', False):
+        if 'user_id' in obj._model._all_columns:
             ok = ok and (not action.trg_user_id.id or action.trg_user_id.id==obj.user_id.id)
-        if getattr(obj, 'partner_id', False):
+        if 'partner_id' in obj._model._all_columns:
             ok = ok and (not action.trg_partner_id.id or action.trg_partner_id.id==obj.partner_id.id)
             ok = ok and (
                 not action.trg_partner_categ_id.id or
@@ -363,7 +362,7 @@ the rule to mark CC(mail to any other person defined in actions)."),
                 )
             )
         state_to = context.get('state_to', False)
-        state = getattr(obj, 'state', False)
+        state = 'state' in obj._model._all_columns
         if state:
             ok = ok and (not action.trg_state_from or action.trg_state_from==state)
         if state_to:
@@ -397,30 +396,31 @@ the rule to mark CC(mail to any other person defined in actions)."),
             self.pool.get('ir.actions.server').run(cr, uid, [action.server_action_id.id], context)
         write = {}
 
-        if hasattr(obj, 'user_id') and action.act_user_id:
+        if 'user_id' in obj._model._all_columns and action.act_user_id:
             obj.user_id = action.act_user_id
             write['user_id'] = action.act_user_id.id
-        if hasattr(obj, 'date_action_last'):
+        if 'date_action_last' in obj._model._all_columns:
             write['date_action_last'] = time.strftime('%Y-%m-%d %H:%M:%S')
-        if hasattr(obj, 'state') and action.act_state:
+        if 'state' in obj._model._all_columns and action.act_state:
             obj.state = action.act_state
             write['state'] = action.act_state
 
-        if hasattr(obj, 'categ_id') and action.act_categ_id:
+        if 'categ_id' in obj._model._all_columns and action.act_categ_id:
             obj.categ_id = action.act_categ_id
             write['categ_id'] = action.act_categ_id.id
 
-        model_obj.write(cr, uid, [obj.id], write, context)
+        if write:
+            model_obj.write(cr, uid, [obj.id], write, context)
 
-        if hasattr(model_obj, 'remind_user') and action.act_remind_user:
+        if 'remind_user' in obj._model._all_columns and action.act_remind_user:
             model_obj.remind_user(cr, uid, [obj.id], context, attach=action.act_remind_attach)
-        if hasattr(model_obj, 'remind_partner') and action.act_remind_partner:
+        if 'remind_partner' in obj._model._all_columns and action.act_remind_partner:
             model_obj.remind_partner(cr, uid, [obj.id], context, attach=action.act_remind_attach)
         if action.act_method:
             getattr(model_obj, 'act_method')(cr, uid, [obj.id], action, context)
 
         emails = []
-        if hasattr(obj, 'user_id') and action.act_mail_to_user:
+        if 'user_id' in obj._model._all_columns and action.act_mail_to_user:
             if obj.user_id:
                 emails.append(obj.user_id.user_email)
 
@@ -430,8 +430,8 @@ the rule to mark CC(mail to any other person defined in actions)."),
             emails += (action.act_mail_to_email or '').split(',')
 
         locals_for_emails = {
-            'user' : self.pool.get('res.users').browse(cr, uid, uid, context=context),
-            'obj' : obj,
+            'user': self.pool.get('res.users').browse(cr, uid, uid, context=context),
+            'obj': obj,
         }
 
         if action.act_email_to:
@@ -482,12 +482,82 @@ the rule to mark CC(mail to any other person defined in actions)."),
             @param ids: List of Action Rule’s IDs
             @param context: A standard dictionary for contextual values """
 
-        empty = orm.browse_null()
+        class FakeObject(object):
+            """
+            This class represents a fake object from which to extract the information required to format the email text.
+            The class return 'False' on every attribute requested provided the name of the attribute is the name of one
+            of the columns of the model. If there is no column of the same name as the requested attribute an
+            exception will be raised.
+            """
+
+            # - - - - - - -
+            # Constructor
+            # - - - - - - -
+            def __init__(self, rule_obj=None):
+                """
+                Class constructor
+                :param rule_obj: the base_action_rile object the system is processing, this object is used to extract
+                                 the model name of the target objects to which the rule applies.
+                """
+
+                # Set a fake id field (used by format_mail method)
+                self.id = False
+
+                # Retrieve the model of the target object, the model is used to check if the requested
+                # field exists or not
+                if rule_obj is not None:
+                    self._target_obj_model_name = rule_obj.browse(cr, uid, ids[0], context).model_id.model
+                    self._target_obj_model = rule_obj.pool[self._target_obj_model_name]
+                else:
+                    self._target_obj_model_name = None
+                    self._target_obj_model = None
+                # end if
+
+            # end __init__
+
+            # - - - - - - - - -
+            # Properties
+            # - - - - - - - - -
+            @property
+            def _model(self):
+                return self._target_obj_model
+            # end _model
+
+            # - - - - - - - - -
+            # Special methods
+            # - - - - - - - - -
+            def __getattr__(self, name):
+
+                if self._model is None:
+                    return FakeObject()
+
+                elif name in self._model._all_columns:
+                    return FakeObject()
+
+                else:
+                    error_msg = 'Requested attribute is not a column of the model (attribute: %s - model: %s)' % (name, self._target_obj_model_name)
+                    raise AttributeError(error_msg)
+
+                # end if
+
+            # end __getattr__
+
+            def __str__(self):
+                return 'Fake value'
+            # end __str__
+
+            def __unicode__(self):
+                return self.__str__()
+            # end __str__
+
+        # end FakeObject
+
         rule_obj = self.pool.get('base.action.rule')
+        fake_target_obj = FakeObject(rule_obj=self)
         for rule in self.browse(cr, uid, ids, context=context):
             if rule.act_mail_body:
                 try:
-                    rule_obj.format_mail(empty, rule.act_mail_body)
+                    rule_obj.format_mail(fake_target_obj, rule.act_mail_body)
                 except (ValueError, KeyError, TypeError):
                     return False
         return True

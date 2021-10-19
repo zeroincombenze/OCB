@@ -26,6 +26,7 @@ from operator import itemgetter
 from itertools import groupby
 
 from osv import fields, osv
+from osv.orm import except_orm
 from tools.translate import _
 import netsvc
 import tools
@@ -538,6 +539,8 @@ class stock_picking(osv.osv):
     _name = "stock.picking"
     _description = "Picking List"
 
+    _inherit = ['mail.thread']
+
     def _set_maximum_date(self, cr, uid, ids, name, value, arg, context=None):
         """ Calculates planned date if it is greater than 'value'.
         @param name: Name of field
@@ -606,13 +609,36 @@ class stock_picking(osv.osv):
         return res
 
     def create(self, cr, user, vals, context=None):
-        if ('name' not in vals) or (vals.get('name')=='/'):
+        if ('name' not in vals) or (vals.get('name') == '/'):
             seq_obj_name =  'stock.picking.' + vals['type']
             vals['name'] = self.pool.get('ir.sequence').get(cr, user, seq_obj_name)
         new_id = super(stock_picking, self).create(cr, user, vals, context)
         return new_id
 
+    def write(self, cr, uid, ids, vals, context=None):
+        if vals.get('state', False) or vals.get('invoice_state', False):
+            for (id, name) in self.name_get(cr, uid, ids, context):
+                if vals.get('state', False):
+                    text = _(u'{name} has been change to {state}').format(name=name, state=dict(self.fields_get(cr, uid, allfields=['state'], context=context)['state']['selection'])[vals.get('state', False)])
+                    # self.log(cr, uid, id, text)
+                    self.message_append(cr, uid, [id], text, body_text=text, context=context)
+                if vals.get('invoice_state', False):
+                    stock = self.browse(cr, uid, id, context)
+                    if vals.get('invoice_state', False) and (stock.invoice_state != vals.get('invoice_state', False)):
+                        invoice_to = dict(self.fields_get(cr, uid, allfields=['invoice_state'], context=context)['invoice_state']['selection'])[vals.get('invoice_state', False)]
+                        invoice_from = dict(self.fields_get(cr, uid, allfields=['invoice_state'], context=context)['invoice_state']['selection'])[stock.invoice_state]
+                        text = _(u'{order} has been change invoice state {invoice_from} to {invoice_to}').format(order=name, invoice_from=invoice_from, invoice_to=invoice_to)
+                        # self.log(cr, uid, id, text)
+                        self.message_append(cr, uid, [id], text, body_text=text, context=context)
+
+        res = super(stock_picking, self).write(cr, uid, ids, vals, context=context)
+        return res
+
+    def _get_picking(self, cr, uid, ids, context):
+        return self.pool['stock.picking'].search(cr, uid, [('move_lines', 'in', ids)], context=context)
+
     _columns = {
+        'message_ids': fields.one2many('mail.message', 'res_id', 'Messages', domain=[('model', '=', _name)]),
         'name': fields.char('Reference', size=64, select=True),
         'origin': fields.char('Origin', size=64, help="Reference of the document that produced this picking.", select=True),
         'backorder_id': fields.many2one('stock.picking', 'Back Order of', help="If this picking was split this field links to the picking that contains the other part that has been processed already.", select=True),
@@ -625,12 +651,12 @@ class stock_picking(osv.osv):
         'location_dest_id': fields.many2one('stock.location', 'Dest. Location',help="Location where the system will stock the finished products.", select=True),
         'move_type': fields.selection([('direct', 'Partial Delivery'), ('one', 'All at once')], 'Delivery Method', required=True, help="It specifies goods to be delivered all at once or by direct delivery"),
         'state': fields.selection([
-            ('draft', 'New'),
+            ('draft', 'Draft'),
+            ('cancel', 'Cancelled'),
             ('auto', 'Waiting Another Operation'),
             ('confirmed', 'Waiting Availability'),
-            ('assigned', 'Ready to Process'),
-            ('done', 'Done'),
-            ('cancel', 'Cancelled'),
+            ('assigned', 'Ready to Transfer'),
+            ('done', 'Transfered'),
             ], 'State', readonly=True, select=True,
             help="* Draft: not confirmed yet and will not be scheduled until confirmed\n"\
                  "* Confirmed: still waiting for the availability of products\n"\
@@ -639,15 +665,21 @@ class stock_picking(osv.osv):
                  "* Done: has been processed, can't be modified or cancelled anymore\n"\
                  "* Cancelled: has been cancelled, can't be confirmed anymore"),
         'min_date': fields.function(get_min_max_date, fnct_inv=_set_minimum_date, multi="min_max_date",
-                 store=True, type='datetime', string='Expected Date', select=1, help="Expected date for the picking to be processed"),
-        'date': fields.datetime('Order Date', help="Date of Order", select=True),
+                type='datetime', string='Expected Date', select=1, help="Expected date for the picking to be processed", store={
+                    'stock.move': (_get_picking, ['date_expected'], 20),
+            }),
+        'date': fields.datetime('Order Date', help="Datee of Order", select=True),
         'date_done': fields.datetime('Date Done', help="Date of Completion"),
         'max_date': fields.function(get_min_max_date, fnct_inv=_set_maximum_date, multi="min_max_date",
-                 store=True, type='datetime', string='Max. Expected Date', select=2),
-        'move_lines': fields.one2many('stock.move', 'picking_id', 'Internal Moves', states={'done': [('readonly', True)], 'cancel': [('readonly', True)]}),
+                type='datetime', string='Max. Expected Date', select=2, store={
+                    'stock.move': (_get_picking, ['date_expected'], 20),
+            }),
+        'move_lines': fields.one2many('stock.move', 'picking_id', 'Internal Moves', readonly=True, states={'draft': [('readonly', False)]}),
         'auto_picking': fields.boolean('Auto-Picking'),
         'address_id': fields.many2one('res.partner.address', 'Address', help="Address of partner"),
-        'partner_id': fields.related('address_id','partner_id',type='many2one',relation='res.partner',string='Partner',store=True),
+        'partner_id': fields.related('address_id', 'partner_id', type='many2one',relation='res.partner',string='Partner', store={
+                    'stock.picking': (lambda self, cr, uid, ids, c={}: ids, ['address_id'], 20),
+        }),
         'invoice_state': fields.selection([
             ("invoiced", "Invoiced"),
             ("2binvoiced", "To Be Invoiced"),
@@ -722,6 +754,8 @@ class stock_picking(osv.osv):
             for r in picking.move_lines:
                 if r.state == 'draft':
                     todo.append(r.id)
+            message = _("The Picking '%s' has been confirmed") % (picking.name,)
+            self.log(cr, uid, picking.id, message)
 
         self.log_picking(cr, uid, ids, context=context)
 
@@ -745,25 +779,27 @@ class stock_picking(osv.osv):
             self.pool.get('stock.move').action_assign(cr, uid, move_ids)
         return True
 
-    def force_assign(self, cr, uid, ids, *args):
+    def force_assign(self, cr, uid, ids, context=None):
         """ Changes state of picking to available if moves are confirmed or waiting.
         @return: True
         """
         wf_service = netsvc.LocalService("workflow")
-        for pick in self.browse(cr, uid, ids):
-            move_ids = [x.id for x in pick.move_lines if x.state in ['confirmed','waiting']]
+        for pick in self.browse(cr, uid, ids, context):
+            move_ids = [x.id for x in pick.move_lines if x.state in ['confirmed', 'waiting']]
             self.pool.get('stock.move').force_assign(cr, uid, move_ids)
             wf_service.trg_write(uid, 'stock.picking', pick.id, cr)
+            message = _("The Picking '%s' has been forced") % (pick.name,)
+            self.log(cr, uid, pick.id, message)
         return True
 
-    def draft_force_assign(self, cr, uid, ids, *args):
+    def draft_force_assign(self, cr, uid, ids, context=None):
         """ Confirms picking directly from draft state.
         @return: True
         """
         wf_service = netsvc.LocalService("workflow")
-        for pick in self.browse(cr, uid, ids):
+        for pick in self.browse(cr, uid, ids, context):
             if not pick.move_lines:
-                raise osv.except_osv(_('Error !'),_('You can not process picking without stock moves'))
+                raise osv.except_osv(_('Error !'), _('You can not process picking without stock moves'))
             wf_service.trg_validate(uid, 'stock.picking', pick.id,
                 'button_confirm', cr)
         return True
@@ -773,13 +809,14 @@ class stock_picking(osv.osv):
         @return: True
         """
         wf_service = netsvc.LocalService("workflow")
-        self.draft_force_assign(cr, uid, ids)
+        self.draft_force_assign(cr, uid, ids, context)
         for pick in self.browse(cr, uid, ids, context=context):
             move_ids = [x.id for x in pick.move_lines]
             self.pool.get('stock.move').force_assign(cr, uid, move_ids)
             wf_service.trg_write(uid, 'stock.picking', pick.id, cr)
         return self.action_process(
             cr, uid, ids, context=context)
+
     def cancel_assign(self, cr, uid, ids, *args):
         """ Cancels picking and moves.
         @return: True
@@ -789,6 +826,8 @@ class stock_picking(osv.osv):
             move_ids = [x.id for x in pick.move_lines]
             self.pool.get('stock.move').cancel_assign(cr, uid, move_ids)
             wf_service.trg_write(uid, 'stock.picking', pick.id, cr)
+            message = _("The Picking '%s' has been cancelled") % (pick.name,)
+            self.log(cr, uid, pick.id, message)
         return True
 
     def action_assign_wkf(self, cr, uid, ids, context=None):
@@ -847,7 +886,21 @@ class stock_picking(osv.osv):
         """ Changes picking state to done.
         @return: True
         """
-        self.write(cr, uid, ids, {'state': 'done', 'date_done': time.strftime('%Y-%m-%d %H:%M:%S')})
+        pickings = self.browse(cr, uid, ids, context=context)
+        order_ids = []
+        for picking in pickings:
+            if picking.sale_id and picking.type == 'out':
+                if not self.search(cr, uid, [('sale_id', '=', picking.sale_id.id), ('type', '=', 'out'), ('state', '!=', 'done')], context=context):
+                    order_ids.append(picking.sale_id.id)
+            message = _("The Picking '%s' has been Transfert") % picking.name
+            self.log(cr, uid, picking.id, message)
+            date_done = picking.date_done or time.strftime('%Y-%m-%d %H:%M:%S')
+            picking.write({'state': 'done',
+                           'date_done': date_done})
+            for move in picking.move_lines:
+                move.write({'date': date_done})
+        if order_ids:
+            self.pool['sale.order'].write(cr, uid, order_ids, {'shipped': '1'}, context=context)
         return True
 
     def action_move(self, cr, uid, ids, context=None):
@@ -861,7 +914,7 @@ class stock_picking(osv.osv):
                     self.pool.get('stock.move').action_confirm(cr, uid, [move.id],
                         context=context)
                     todo.append(move.id)
-                elif move.state in ('assigned','confirmed'):
+                elif move.state in ('assigned', 'confirmed'):
                     todo.append(move.id)
             if len(todo):
                 self.pool.get('stock.move').action_done(cr, uid, todo,
@@ -900,7 +953,9 @@ class stock_picking(osv.osv):
             amount_unit = move_line.product_id.price_get('standard_price', context=context)[move_line.product_id.id]
             return amount_unit
         else:
-            return move_line.product_id.list_price
+            context['quantity'] = move_line.product_qty
+            price = move_line.product_id._product_price(False, False, context=context)[move_line.product_id.id]
+            return price
 
     def _get_discount_invoice(self, cr, uid, move_line):
         '''Return the discount for the move line'''
@@ -985,6 +1040,9 @@ class stock_picking(osv.osv):
             account_id = partner.property_account_receivable.id
         else:
             account_id = partner.property_account_payable.id
+        if partner.property_account_position:
+            account_id = self.pool['account.fiscal.position'].map_account(cr, uid, partner.property_account_position, account_id)
+
         address_contact_id, address_invoice_id = \
                 self.pool.get('res.partner').address_get(cr, uid, [partner.id],
                         ['contact', 'invoice']).values()
@@ -1021,6 +1079,7 @@ class stock_picking(osv.osv):
             @param: invoice_vals: dict used to created the invoice
             @return: dict that will be used to create the invoice line
         """
+
         if group:
             name = (picking.name or '') + '-' + move_line.name
         else:
@@ -1050,19 +1109,35 @@ class stock_picking(osv.osv):
         if not uos_id and invoice_vals['type'] in ('out_invoice', 'out_refund'):
             uos_id = move_line.product_uom.id
 
-        return {
+        price_unit = self._get_price_unit_invoice(cr, uid, move_line, invoice_vals['type'], context)
+        discount = self._get_discount_invoice(cr, uid, move_line)
+
+        vals = {
             'name': name,
             'origin': origin,
             'invoice_id': invoice_id,
             'uos_id': uos_id,
             'product_id': move_line.product_id.id,
             'account_id': account_id,
-            'price_unit': self._get_price_unit_invoice(cr, uid, move_line, invoice_vals['type']),
-            'discount': self._get_discount_invoice(cr, uid, move_line),
+            'price_unit': price_unit,
+            'discount': discount,
             'quantity': move_line.product_uos_qty or move_line.product_qty,
             'invoice_line_tax_id': [(6, 0, self._get_taxes_invoice(cr, uid, move_line, invoice_vals['type']))],
             'account_analytic_id': self._get_account_analytic_invoice(cr, uid, picking, move_line),
+            'move_line_id': move_line.id,
         }
+
+        if move_line.sale_line_id and move_line.sale_line_id.product_id.id != move_line.product_id.id:
+            vals['name'] = move_line.sale_line_id.name
+            vals['uos_id'] = move_line.sale_line_id.product_uom.id
+            vals['product_id'] = move_line.sale_line_id.product_id.id
+            vals['price_unit'] = move_line.sale_line_id.price_unit
+            vals['quantity'] = move_line.sale_line_id.product_uom_qty
+
+        return vals
+
+    def _get_group_keys(self, cr, uid, partner, picking, context=None):
+        return partner.id
 
     def action_invoice_create(self, cr, uid, ids, journal_id=False,
             group=False, type='out_invoice', context=None):
@@ -1084,41 +1159,50 @@ class stock_picking(osv.osv):
             if picking.invoice_state != '2binvoiced':
                 continue
             partner = self._get_partner_to_invoice(cr, uid, picking, context=context)
-            if not partner:
+            if partner:
+                if inv_type == 'out_invoice':
+                    context.update({
+                        'partner': partner.id,
+                        'pricelist': partner.property_product_pricelist.id
+                    })
+            else:
                 raise osv.except_osv(_('Error, no partner !'),
                     _('Please put a partner on the picking list if you want to generate invoice.'))
 
             if not inv_type:
                 inv_type = self._get_invoice_type(picking)
 
-            if group and partner.id in invoices_group:
-                invoice_id = invoices_group[partner.id]
-                invoice = invoice_obj.browse(cr, uid, invoice_id)
+            group_key = self._get_group_keys(cr, uid, partner, picking, context)
+
+            if group and group_key in invoices_group:
+                invoice_id = invoices_group[group_key]['id']
+                invoice = invoice_obj.browse(cr, uid, invoice_id, context)
                 invoice_vals_group = self._prepare_invoice_group(cr, uid, picking, partner, invoice, context=context)
                 invoice_obj.write(cr, uid, [invoice_id], invoice_vals_group, context=context)
             else:
                 invoice_vals = self._prepare_invoice(cr, uid, picking, partner, inv_type, journal_id, context=context)
                 invoice_id = invoice_obj.create(cr, uid, invoice_vals, context=context)
-                invoices_group[partner.id] = invoice_id
+                invoices_group[group_key] = {'id': invoice_id}
+
             res[picking.id] = invoice_id
+
             for move_line in picking.move_lines:
                 if move_line.state == 'cancel':
                     continue
                 if move_line.scrapped:
                     # do no invoice scrapped products
                     continue
-                vals = self._prepare_invoice_line(cr, uid, group, picking, move_line,
-                                invoice_id, invoice_vals, context=context)
+                vals = self._prepare_invoice_line(cr, uid, group, picking, move_line, invoice_id, invoice_vals, context=context)
                 if vals:
                     invoice_line_id = invoice_line_obj.create(cr, uid, vals, context=context)
                     self._invoice_line_hook(cr, uid, move_line, invoice_line_id)
 
-            invoice_obj.button_compute(cr, uid, [invoice_id], context=context,
-                    set_total=(inv_type in ('in_invoice', 'in_refund')))
-            self.write(cr, uid, [picking.id], {
-                'invoice_state': 'invoiced',
-                }, context=context)
             self._invoice_hook(cr, uid, picking, invoice_id)
+            # message = _("The Picking '%s' has been Invoiced") % (picking.name,)
+            # self.log(cr, uid, picking.id, message)
+
+        invoice_obj.button_compute(cr, uid, list(set([res[invoice_id] for invoice_id in res.keys()])), context=context, set_total=(inv_type in ('in_invoice', 'in_refund')))
+
         self.write(cr, uid, res.keys(), {
             'invoice_state': 'invoiced',
             }, context=context)
@@ -1268,7 +1352,7 @@ class stock_picking(osv.osv):
                             'product_uos_qty': product_qty, #TODO: put correct uos_qty
                             'picking_id' : new_picking,
                             'state': 'assigned',
-                            'move_dest_id': False,
+                            'move_dest_id': move.move_dest_id.id,
                             'price_unit': move.price_unit,
                             'product_uom': product_uoms[move.id]
                     }
@@ -1510,6 +1594,7 @@ class stock_move(osv.osv):
         cr.execute('select id from stock_tracking where create_uid=%s order by id desc limit 1', (uid,))
         res = cr.fetchone()
         return (res and res[0]) or False
+
     _name = "stock.move"
     _description = "Stock Move"
     _order = 'date_expected desc, id'
@@ -1534,7 +1619,6 @@ class stock_move(osv.osv):
             'domain': '[]',
             'context': context
         }
-
 
     def name_get(self, cr, uid, ids, context=None):
         res = []
@@ -1595,10 +1679,19 @@ class stock_move(osv.osv):
         'move_history_ids2': fields.many2many('stock.move', 'stock_move_history_ids', 'child_id', 'parent_id', 'Move History (parent moves)'),
         'picking_id': fields.many2one('stock.picking', 'Reference', select=True,states={'done': [('readonly', True)]}),
         'note': fields.text('Notes'),
-        'state': fields.selection([('draft', 'New'), ('waiting', 'Waiting Another Move'), ('confirmed', 'Waiting Availability'), ('assigned', 'Available'), ('done', 'Done'), ('cancel', 'Cancelled')], 'State', readonly=True, select=True,
-              help='When the stock move is created it is in the \'Draft\' state.\n After that, it is set to \'Not Available\' state if the scheduler did not find the products.\n When products are reserved it is set to \'Available\'.\n When the picking is done the state is \'Done\'.\
-              \nThe state is \'Waiting\' if the move is waiting for another one.'),
-        'price_unit': fields.float('Unit Price', digits_compute= dp.get_precision('Account'), help="Technical field used to record the product cost set by the user during a picking confirmation (when average price costing method is used)"),
+        'state': fields.selection([('draft', 'New'),
+                                   ('cancel', 'Cancelled'),
+                                   ('waiting', 'Waiting Another Move'),
+                                   ('confirmed', 'Waiting Availability'),
+                                   ('assigned', 'Available'),
+                                   ('done', 'Done'),
+                                   ], 'Status', readonly=True, select=True,
+                 help= "* New: When the stock move is created and not yet confirmed.\n"\
+                       "* Waiting Another Move: This state can be seen when a move is waiting for another one, for example in a chained flow.\n"\
+                       "* Waiting Availability: This state is reached when the procurement resolution is not straight forward. It may need the scheduler to run, a component to me manufactured...\n"\
+                       "* Available: When products are reserved, it is set to \'Available\'.\n"\
+                       "* Done: When the shipment is processed, the state is \'Done\'."),
+        'price_unit': fields.float('Unit Price', digits_compute=dp.get_precision('Sale Price'), help="Technical field used to record the product cost set by the user during a picking confirmation (when average price costing method is used)"),
         'price_currency_id': fields.many2one('res.currency', 'Currency for average price', help="Technical field used to record the currency chosen by the user during a picking confirmation (when average price costing method is used)"),
         'company_id': fields.many2one('res.company', 'Company', required=True, select=True),
         'partner_id': fields.related('picking_id','address_id','partner_id',type='many2one', relation="res.partner", string="Partner", store=True, select=True),
@@ -1651,7 +1744,14 @@ class stock_move(osv.osv):
             elif picking_type == 'out':
                 location_xml_id = 'stock_location_customers'
             if location_xml_id:
-                location_model, location_id = mod_obj.get_object_reference(cr, uid, 'stock', location_xml_id)
+                try:
+                    location = mod_obj.get_object(cr, uid, 'stock', location_xml_id)
+                    # can I read?
+                    __ = location.name
+                    location_id = location.id
+                except (except_orm, ValueError):
+                    # likely the user does not have read access on the location
+                    location_id = False
         return location_id
 
     def _default_location_source(self, cr, uid, context=None):
@@ -1680,7 +1780,15 @@ class stock_move(osv.osv):
             elif picking_type == 'out':
                 location_xml_id = 'stock_location_stock'
             if location_xml_id:
-                location_model, location_id = mod_obj.get_object_reference(cr, uid, 'stock', location_xml_id)
+                try:
+                    location = mod_obj.get_object(cr, uid, 'stock', location_xml_id)
+                    # can I read?
+                    __ = location.name
+                    location_id = location.id
+                except (except_orm, ValueError):
+                    # likely the user does not have read access on the location
+                    location_id = False
+
         return location_id
 
     _defaults = {
@@ -1689,7 +1797,7 @@ class stock_move(osv.osv):
         'state': 'draft',
         'priority': '1',
         'product_qty': 1.0,
-        'scrapped' :  False,
+        'scrapped':  False,
         'date': lambda *a: time.strftime('%Y-%m-%d %H:%M:%S'),
         'company_id': lambda self,cr,uid,c: self.pool.get('res.company')._company_default_get(cr, uid, 'stock.move', context=c),
         'date_expected': lambda *a: time.strftime('%Y-%m-%d %H:%M:%S'),
@@ -1698,14 +1806,15 @@ class stock_move(osv.osv):
     def write(self, cr, uid, ids, vals, context=None):
         if isinstance(ids, (int, long)):
             ids = [ids]
-        if uid != 1:
-            frozen_fields = set(['product_qty', 'product_uom', 'product_uos_qty', 'product_uos', 'location_id', 'location_dest_id', 'product_id'])
-            for move in self.browse(cr, uid, ids, context=context):
-                if move.state == 'done':
-                    if frozen_fields.intersection(vals):
-                        raise osv.except_osv(_('Operation forbidden'),
-                                             _('Quantities, UoMs, Products and Locations cannot be modified on stock moves that have already been processed (except by the Administrator)'))
-        return  super(stock_move, self).write(cr, uid, ids, vals, context=context)
+        # if uid != 1:
+        #     frozen_fields = set(['product_qty', 'product_uom', 'product_uos_qty', 'product_uos', 'location_id', 'location_dest_id', 'product_id'])
+        #     for move in self.browse(cr, uid, ids, context=context):
+        #         if move.state == 'done':
+        #             if frozen_fields.intersection(vals):
+        #                 import pdb;pdb.set_trace()
+        #                 raise osv.except_osv(_('Operation forbidden'),
+        #                                      _('Quantities, UoMs, Products and Locations cannot be modified on stock moves that have already been processed (except by the Administrator)'))
+        return super(stock_move, self).write(cr, uid, ids, vals, context=context)
 
     def copy(self, cr, uid, id, default=None, context=None):
         if default is None:
@@ -2043,6 +2152,26 @@ class stock_move(osv.osv):
                         r = res.pop(0)
                         move_id = self.copy(cr, uid, move.id, {'product_qty': r[0], 'location_id': r[1]})
                         done.append(move_id)
+                # Else: Check if is any qty in location for a partial picking
+                elif move.picking_id and move.picking_id.move_type == 'direct':
+                    ctx = dict(context)
+                    ctx.update({
+                        'location': [move.location_id.id],
+                        'states': ['done', 'assigned', 'waiting'],
+                        'what': ('in', 'out')
+                    })
+                    
+                    qty_prod_available = self.pool['product.product'].get_product_available(cr, uid, [move.product_id.id], context=ctx)
+                    if qty_prod_available.get(move.product_id.id, 0.0) > 0:
+                        pickings[move.picking_id.id] = 1
+                        waiting_qty = move.product_qty - qty_prod_available[move.product_id.id]
+                        if waiting_qty == 0:
+                            done.append(move.id)
+                        else:
+                            move_id = self.copy(cr, uid, move.id, {'product_qty': qty_prod_available[move.product_id.id], 'location_id': move.location_id.id})
+                            self.write(cr, uid, [move.id], {'product_qty': waiting_qty})
+                            done.append(move_id)
+                        
         if done:
             count += len(done)
             self.write(cr, uid, done, {'state': 'assigned'})
@@ -2083,15 +2212,15 @@ class stock_move(osv.osv):
                 if move.picking_id:
                     pickings[move.picking_id.id] = True
             if move.move_dest_id and move.move_dest_id.state == 'waiting':
-                self.write(cr, uid, [move.move_dest_id.id], {'state': 'confirmed'})
+                self.write(cr, uid, [move.move_dest_id.id], {'state': 'confirmed'}, context=context)
                 if context.get('call_unlink',False) and move.move_dest_id.picking_id:
                     wf_service = netsvc.LocalService("workflow")
                     wf_service.trg_write(uid, 'stock.picking', move.move_dest_id.picking_id.id, cr)
-        self.write(cr, uid, ids, {'state': 'cancel', 'move_dest_id': False})
+        self.write(cr, uid, ids, {'state': 'cancel', 'move_dest_id': False}, context=context)
         if not context.get('call_unlink',False):
-            for pick in self.pool.get('stock.picking').browse(cr, uid, pickings.keys()):
+            for pick in self.pool.get('stock.picking').browse(cr, uid, list(pickings), context=context):
                 if all(move.state == 'cancel' for move in pick.move_lines):
-                    self.pool.get('stock.picking').write(cr, uid, [pick.id], {'state': 'cancel'})
+                    self.pool.get('stock.picking').write(cr, uid, [pick.id], {'state': 'cancel'}, context=context)
 
         wf_service = netsvc.LocalService("workflow")
         for id in ids:
@@ -2106,6 +2235,8 @@ class stock_move(osv.osv):
         :param context: context dictionary that can explicitly mention the company to consider via the 'force_company' key
         :raise: osv.except_osv() is any mandatory account or journal is not defined.
         """
+        if not context:
+            context = {}
         product_obj=self.pool.get('product.product')
         accounts = product_obj.get_product_accounts(cr, uid, move.product_id.id, context)
         if move.location_id.valuation_out_account_id:
@@ -2122,21 +2253,21 @@ class stock_move(osv.osv):
         journal_id = accounts['stock_journal']
 
         if acc_dest == acc_valuation:
-            raise osv.except_osv(_('Error!'),  _('Can not create Journal Entry, Output Account defined on this product and Valuation account on category of this product are same.'))
+            raise osv.except_osv(_('Error!'), _('Can not create Journal Entry, Output Account defined on this product and Valuation account on category of this product are same.'))
 
         if acc_src == acc_valuation:
-            raise osv.except_osv(_('Error!'),  _('Can not create Journal Entry, Input Account defined on this product and Valuation account on category of this product are same.'))
+            raise osv.except_osv(_('Error!'), _('Can not create Journal Entry, Input Account defined on this product and Valuation account on category of this product are same.'))
 
         if not acc_src:
-            raise osv.except_osv(_('Error!'),  _('There is no stock input account defined for this product or its category: "%s" (id: %d)') % \
+            raise osv.except_osv(_('Error!'), _('There is no stock input account defined for this product or its category: "%s" (id: %d)') % \
                                     (move.product_id.name, move.product_id.id,))
         if not acc_dest:
-            raise osv.except_osv(_('Error!'),  _('There is no stock output account defined for this product or its category: "%s" (id: %d)') % \
+            raise osv.except_osv(_('Error!'), _('There is no stock output account defined for this product or its category: "%s" (id: %d)') % \
                                     (move.product_id.name, move.product_id.id,))
         if not journal_id:
             raise osv.except_osv(_('Error!'), _('There is no journal defined on the product category: "%s" (id: %d)') % \
                                     (move.product_id.categ_id.name, move.product_id.categ_id.id,))
-        if not acc_valuation:
+        if not acc_valuation and not context.get('exclude_acc_valuation', False):
             raise osv.except_osv(_('Error!'), _('There is no inventory Valuation account defined on the product category: "%s" (id: %d)') % \
                                     (move.product_id.categ_id.name, move.product_id.categ_id.id,))
         return journal_id, acc_src, acc_dest, acc_valuation
@@ -2191,7 +2322,11 @@ class stock_move(osv.osv):
                      or move.location_id.company_id != move.location_dest_id.company_id):
                 journal_id, acc_src, acc_dest, acc_valuation = self._get_accounting_data_for_valuation(cr, uid, move, src_company_ctx)
                 reference_amount, reference_currency_id = self._get_reference_accounting_values_for_valuation(cr, uid, move, src_company_ctx)
-                account_moves += [(journal_id, self._create_account_move_line(cr, uid, move, acc_valuation, acc_dest, reference_amount, reference_currency_id, context))]
+                # returning goods to supplier
+                if move.location_dest_id.usage == 'supplier':
+                    account_moves += [(journal_id, self._create_account_move_line(cr, uid, move, acc_valuation, acc_src, reference_amount, reference_currency_id, context))]
+                else:
+                    account_moves += [(journal_id, self._create_account_move_line(cr, uid, move, acc_valuation, acc_dest, reference_amount, reference_currency_id, context))]
 
             # Incoming moves (or cross-company input part)
             if move.location_dest_id.company_id \
@@ -2199,16 +2334,25 @@ class stock_move(osv.osv):
                      or move.location_id.company_id != move.location_dest_id.company_id):
                 journal_id, acc_src, acc_dest, acc_valuation = self._get_accounting_data_for_valuation(cr, uid, move, dest_company_ctx)
                 reference_amount, reference_currency_id = self._get_reference_accounting_values_for_valuation(cr, uid, move, src_company_ctx)
-                account_moves += [(journal_id, self._create_account_move_line(cr, uid, move, acc_src, acc_valuation, reference_amount, reference_currency_id, context))]
+                # goods return from customer
+                if move.location_id.usage == 'customer':
+                    account_moves += [(journal_id, self._create_account_move_line(cr, uid, move, acc_dest, acc_valuation, reference_amount, reference_currency_id, context))]
+                else:
+                    account_moves += [(journal_id, self._create_account_move_line(cr, uid, move, acc_src, acc_valuation, reference_amount, reference_currency_id, context))]
+
+            if (move.location_dest_id.company_id and move.location_id.company_id) and (move.location_id.usage == 'production' and move.location_dest_id.usage == 'production'):
+                src_company_ctx.update({'exclude_acc_valuation': True})
+                journal_id, acc_src, acc_dest, acc_valuation = self._get_accounting_data_for_valuation(cr, uid, move, src_company_ctx)
+                reference_amount, reference_currency_id = self._get_reference_accounting_values_for_valuation(cr, uid, move, src_company_ctx)
+                account_moves += [(journal_id, self._create_account_move_line(cr, uid, move, acc_src, acc_dest, reference_amount, reference_currency_id, context))]
 
             move_obj = self.pool.get('account.move')
             for j_id, move_lines in account_moves:
-                move_obj.create(cr, uid,
-                        {
-                         'journal_id': j_id,
-                         'line_id': move_lines,
-                         'ref': move.picking_id and move.picking_id.name})
-
+                move_obj.create(cr, uid, {
+                    'journal_id': j_id,
+                    'line_id': move_lines,
+                    'ref': move.picking_id and move.picking_id.name
+                }, context=context)
 
     def action_done(self, cr, uid, ids, context=None):
         """ Makes the move done and if all moves are done, it will finish the picking.
@@ -2249,7 +2393,7 @@ class stock_move(osv.osv):
                             self.action_done(cr, uid, [move.move_dest_id.id], context=context)
 
             self._create_product_valuation_moves(cr, uid, move, context=context)
-            if move.state not in ('confirmed','done','assigned'):
+            if move.state not in ('confirmed', 'done', 'assigned'):
                 todo.append(move.id)
 
         if todo:
@@ -2318,10 +2462,14 @@ class stock_move(osv.osv):
         if context is None:
             context = {}
         ctx = context.copy()
-        for move in self.browse(cr, uid, ids, context=context):
-            if move.state != 'draft' and not ctx.get('call_unlink',False):
-                raise osv.except_osv(_('UserError'),
-                        _('You can only delete draft moves.'))
+
+        if not ctx.get('call_unlink', False) and self.search(cr, uid, [('id', 'in', ids), ('state', 'not in', ['draft', 'cancel'])], limit=1, context=context):
+            raise osv.except_osv(_('UserError'),
+                                 _('You can only delete draft or cancelled moves.'))
+        # for move in self.browse(cr, uid, ids, context=context):
+        #     if move.state not in ['draft', 'cancel'] and not ctx.get('call_unlink', False):
+        #         raise osv.except_osv(_('UserError'),
+        #                 _('You can only delete draft or cancelled moves.'))
         return super(stock_move, self).unlink(
             cr, uid, ids, context=ctx)
 
@@ -2572,7 +2720,7 @@ class stock_move(osv.osv):
                             'product_uos_qty': product_qty,
                             'picking_id' : move.picking_id.id,
                             'state': 'assigned',
-                            'move_dest_id': False,
+                            'move_dest_id': move.move_dest_id.id,
                             'price_unit': move.price_unit,
                             }
                 prodlot_id = prodlot_ids[move.id]
@@ -2599,7 +2747,7 @@ class stock_move(osv.osv):
             if prodlot_ids.get(move.id):
                 self.write(cr, uid, [move.id],{'prodlot_id': prodlot_ids.get(move.id)})
             self.action_done(cr, uid, [move.id], context=context)
-            if  move.picking_id.id :
+            if move.picking_id.id:
                 # TOCHECK : Done picking if all moves are done
                 cr.execute("""
                     SELECT move.id FROM stock_picking pick
@@ -2622,9 +2770,9 @@ class stock_inventory(osv.osv):
         'name': fields.char('Inventory Reference', size=64, required=True, readonly=True, states={'draft': [('readonly', False)]}),
         'date': fields.datetime('Creation Date', required=True, readonly=True, states={'draft': [('readonly', False)]}),
         'date_done': fields.datetime('Date done'),
-        'inventory_line_id': fields.one2many('stock.inventory.line', 'inventory_id', 'Inventories', states={'done': [('readonly', True)]}),
+        'inventory_line_id': fields.one2many('stock.inventory.line', 'inventory_id', 'Inventories', readonly=True, states={'draft': [('readonly', False)]}),
         'move_ids': fields.many2many('stock.move', 'stock_inventory_move_rel', 'inventory_id', 'move_id', 'Created Moves'),
-        'state': fields.selection( (('draft', 'Draft'), ('done', 'Done'), ('confirm','Confirmed'),('cancel','Cancelled')), 'State', readonly=True, select=True),
+        'state': fields.selection( (('draft', 'Draft'), ('done', 'Done'), ('confirm','Confirmed'), ('cancel', 'Cancelled')), 'State', readonly=True, select=True),
         'company_id': fields.many2one('res.company', 'Company', required=True, select=True, readonly=True, states={'draft':[('readonly',False)]}),
 
     }
@@ -2634,14 +2782,12 @@ class stock_inventory(osv.osv):
         'company_id': lambda self,cr,uid,c: self.pool.get('res.company')._company_default_get(cr, uid, 'stock.inventory', context=c)
     }
 
-    def copy_data(self, cr, uid, id, default=None, context=None):
+    def copy(self, cr, uid, id, default=None, context=None):
         if default is None:
             default = {}
-        # force new date, date_done and move_ids on copied datas
-        default.update(date=False, date_done=False, move_ids=[])
-        copied_data = super(stock_inventory, self).copy_data(cr, uid, id, default=default, context=context)
-        copied_data.pop('date',None)
-        return copied_data
+        default = default.copy()
+        default.update({'move_ids': [], 'date_done': False})
+        return super(stock_inventory, self).copy(cr, uid, id, default, context=context)
 
     def _inventory_line_hook(self, cr, uid, inventory_line, move_vals):
         """ Creates a stock move from an inventory line
@@ -2664,7 +2810,7 @@ class stock_inventory(osv.osv):
             # ask 'stock.move' action done are going to change to 'date' of the move,
             # we overwrite the date as moves must appear at the inventory date.
             move_obj.write(cr, uid, inventory_move_ids, {'date': inv.date}, context=context)
-            self.write(cr, uid, [inv.id], {'state':'done', 'date_done': time.strftime('%Y-%m-%d %H:%M:%S')}, context=context)
+            self.write(cr, uid, [inv.id], {'state': 'done', 'date_done': time.strftime('%Y-%m-%d %H:%M:%S')}, context=context)
         return True
 
     def action_confirm(self, cr, uid, ids, context=None):
@@ -2690,12 +2836,13 @@ class stock_inventory(osv.osv):
                 if change:
                     location_id = line.product_id.product_tmpl_id.property_stock_inventory.id
                     value = {
-                        'name': 'INV:' + str(line.inventory_id.id) + ':' + line.inventory_id.name,
+                        'name': _('INV:') + (line.inventory_id.name or ''),
                         'product_id': line.product_id.id,
                         'product_uom': line.product_uom.id,
                         'prodlot_id': lot_id,
                         'date': inv.date,
                     }
+
                     if change > 0:
                         value.update( {
                             'product_qty': change,
@@ -2750,6 +2897,17 @@ class stock_inventory_line(osv.osv):
     _name = "stock.inventory.line"
     _description = "Inventory Line"
     _rec_name = "inventory_id"
+    _order = "inventory_id, location_name, product_code, product_name, prodlot_name"
+
+    def _get_product_name_change(self, cr, uid, ids, context=None):
+        return self.pool.get('stock.inventory.line').search(cr, uid, [('product_id', 'in', ids)], context=context)
+
+    def _get_location_change(self, cr, uid, ids, context=None):
+        return self.pool.get('stock.inventory.line').search(cr, uid, [('location_id', 'in', ids)], context=context)
+        
+    def _get_prodlot_change(self, cr, uid, ids, context=None):
+        return self.pool.get('stock.inventory.line').search(cr, uid, [('prod_lot_id', 'in', ids)], context=context)
+
     _columns = {
         'inventory_id': fields.many2one('stock.inventory', 'Inventory', ondelete='cascade', select=True),
         'location_id': fields.many2one('stock.location', 'Location', required=True),
@@ -2757,8 +2915,33 @@ class stock_inventory_line(osv.osv):
         'product_uom': fields.many2one('product.uom', 'Product UOM', required=True),
         'product_qty': fields.float('Quantity', digits_compute=dp.get_precision('Product UoM')),
         'company_id': fields.related('inventory_id','company_id',type='many2one',relation='res.company',string='Company',store=True, select=True, readonly=True),
-        'prod_lot_id': fields.many2one('stock.production.lot', 'Production Lot', domain="[('product_id','=',product_id)]"),
-        'state': fields.related('inventory_id','state',type='char',string='State',readonly=True),
+        'prod_lot_id': fields.many2one('stock.production.lot', 'Serial Number', domain="[('product_id','=',product_id)]"),
+        'state': fields.related('inventory_id','state',type='char',string='Status',readonly=True),
+        'product_name': fields.related('product_id', 'name', type='char', string='Product name', store={
+                                                                                            'product.product': (_get_product_name_change, ['name'], 20),
+                                                                                            'stock.inventory.line': (lambda self, cr, uid, ids, c={}: ids, ['product_id'], 20),}),
+        'product_code': fields.related('product_id', 'default_code', type='char', string='Product code', store={
+                                                                                            'product.product': (_get_product_name_change, ['default_code'], 20),
+                                                                                            'stock.inventory.line': (lambda self, cr, uid, ids, c={}: ids, ['product_id'], 20),}),
+        'location_name': fields.related('location_id', 'complete_name', type='char', string='Location name', store={
+                                                                                            'stock.location': (_get_location_change, ['name', 'location_id', 'active'], 20),
+                                                                                            'stock.inventory.line': (lambda self, cr, uid, ids, c={}: ids, ['location_id'], 20),}),
+        'prodlot_name': fields.related('prod_lot_id', 'name', type='char', string='Serial Number name', store={
+                                                                                            'stock.production.lot': (_get_prodlot_change, ['name'], 20),
+                                                                                            'stock.inventory.line': (lambda self, cr, uid, ids, c={}: ids, ['prod_lot_id'], 20),}),
+    }
+
+    def _default_stock_location(self, cr, uid, context=None):
+        try:
+            location_model, location_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'stock', 'stock_location_stock')
+            with tools.mute_logger('openerp.osv.orm'):
+                self.pool.get('stock.location').check_access_rule(cr, uid, [location_id], 'read', context=context)
+        except (osv.except_osv, ValueError):
+            location_id = False
+        return location_id
+
+    _defaults = {
+        'location_id': _default_stock_location
     }
 
     def on_change_product_id(self, cr, uid, ids, location_id, product, uom=False, to_date=False):
@@ -2769,11 +2952,11 @@ class stock_inventory_line(osv.osv):
         @return:  Dictionary of changed values
         """
         if not product:
-            return {'value': {'product_qty': 0.0, 'product_uom': False}}
+            return {'value': {'product_qty': 0.0, 'product_uom': False, 'prod_lot_id': False}}
         obj_product = self.pool.get('product.product').browse(cr, uid, product)
         uom = uom or obj_product.uom_id.id
         amount = self.pool.get('stock.location')._product_get(cr, uid, location_id, [product], {'uom': uom, 'to_date': to_date, 'compute_child': False})[product]
-        result = {'product_qty': amount, 'product_uom': uom}
+        result = {'product_qty': amount, 'product_uom': uom, 'prod_lot_id': False}
         return {'value': result}
 
 stock_inventory_line()
@@ -2797,5 +2980,11 @@ class stock_warehouse(osv.osv):
     }
 
 stock_warehouse()
+
+class account_invoice_line(osv.osv):
+    _inherit = 'account.invoice.line'
+    _columns = {
+        'move_line_id': fields.many2one('stock.move', 'Move Line'),
+    }
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

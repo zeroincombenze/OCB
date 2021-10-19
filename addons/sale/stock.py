@@ -74,7 +74,7 @@ class stock_picking(osv.osv):
             invoice_vals['user_id'] = picking.sale_id.user_id.id
         return invoice_vals
 
-    def _get_price_unit_invoice(self, cursor, user, move_line, type):
+    def _get_price_unit_invoice(self, cursor, user, move_line, type, context=None):
         if move_line.sale_line_id and move_line.sale_line_id.product_id.id == move_line.product_id.id:
             uom_id = move_line.product_id.uom_id.id
             uos_id = move_line.product_id.uos_id and move_line.product_id.uos_id.id or False
@@ -84,7 +84,7 @@ class stock_picking(osv.osv):
                 price_unit = price / coeff
                 return price_unit
             return move_line.sale_line_id.price_unit
-        return super(stock_picking, self)._get_price_unit_invoice(cursor, user, move_line, type)
+        return super(stock_picking, self)._get_price_unit_invoice(cursor, user, move_line, type, context)
 
     def _get_discount_invoice(self, cursor, user, move_line):
         if move_line.sale_line_id:
@@ -102,23 +102,18 @@ class stock_picking(osv.osv):
         return super(stock_picking, self)._get_account_analytic_invoice(cursor, user, picking, move_line)
 
     def _invoice_line_hook(self, cursor, user, move_line, invoice_line_id):
-        sale_line_obj = self.pool.get('sale.order.line')
-        invoice_line_obj = self.pool.get('account.invoice.line')
         if move_line.sale_line_id:
-            sale_line_obj.write(cursor, user, [move_line.sale_line_id.id],
-                                    {
-                                        'invoiced': True,
-                                        'invoice_lines': [(4, invoice_line_id)],
-                                    })
-            invoice_line_obj.write(cursor, user, [invoice_line_id], {'note':  move_line.sale_line_id.notes,})
+            move_line.sale_line_id.write({
+                'invoiced': True,
+                'invoice_lines': [(4, invoice_line_id)],
+            })
         return super(stock_picking, self)._invoice_line_hook(cursor, user, move_line, invoice_line_id)
 
     def _invoice_hook(self, cursor, user, picking, invoice_id):
-        sale_obj = self.pool.get('sale.order')
         if picking.sale_id:
-            sale_obj.write(cursor, user, [picking.sale_id.id], {
+            picking.sale_id.write({
                 'invoice_ids': [(4, invoice_id)],
-                })
+        })
         return super(stock_picking, self)._invoice_hook(cursor, user, picking, invoice_id)
 
     def action_invoice_create(self, cursor, user, ids, journal_id=False,
@@ -155,6 +150,7 @@ class stock_picking(osv.osv):
             if picking.sale_id.client_order_ref:
                 inv_name = picking.sale_id.client_order_ref + " : " + invoice_created.name
                 invoice_obj.write(cursor, user, [invoice_created.id], {'name': inv_name}, context=context)
+            vals = False
             for sale_line in sale_lines:
                 if sale_line.product_id.type == 'service' and sale_line.invoiced == False:
                     if not type:
@@ -178,14 +174,17 @@ class stock_picking(osv.osv):
 
                     vals = order_line_obj._prepare_order_line_invoice_line(cursor, user, sale_line, account_id, context)
                     if vals: #note: in some cases we may not want to include all service lines as invoice lines
-                        vals['name'] = name
+                        vals['name'] = vals.get('name', name)
                         vals['account_analytic_id'] = self._get_account_analytic_invoice(cursor, user, picking, sale_line)
                         vals['invoice_id'] = invoices[result[picking.id]].id
                         invoice_line_id = invoice_line_obj.create(cursor, user, vals, context=context)
-                        order_line_obj.write(cursor, user, [sale_line.id], {
+                        sale_line.write({
                             'invoiced': True,
                             'invoice_lines': [(6, 0, [invoice_line_id])],
-                        })
+                       })
+            if vals:
+                invoice_obj.button_reset_taxes(cursor, user, [invoices[result[picking.id]].id], context=context)
+
         return result
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

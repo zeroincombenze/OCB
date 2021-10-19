@@ -19,11 +19,10 @@
 #
 ##############################################################################
 
-import time
-
 from osv import fields, osv
 from tools.translate import _
 import decimal_precision as dp
+
 
 class account_bank_statement(osv.osv):
 
@@ -139,8 +138,8 @@ class account_bank_statement(osv.osv):
         'balance_end_real': fields.float('Ending Balance', digits_compute=dp.get_precision('Account'),
             states={'confirm': [('readonly', True)]}),
         'balance_end': fields.function(_end_balance,
-            store = {
-                'account.bank.statement': (lambda self, cr, uid, ids, c={}: ids, ['line_ids','move_line_ids'], 10),
+            store={
+                'account.bank.statement': (lambda self, cr, uid, ids, c={}: ids, ['line_ids', 'move_line_ids', 'balance_start'], 10),
                 'account.bank.statement.line': (_get_statement, ['amount'], 10),
             },
             string="Computed Balance", help='Balance as calculated based on Starting Balance and transaction lines'),
@@ -159,6 +158,8 @@ class account_bank_statement(osv.osv):
         'currency': fields.function(_currency, string='Currency',
             type='many2one', relation='res.currency'),
         'account_id': fields.related('journal_id', 'default_debit_account_id', type='many2one', relation='account.account', string='Account used in this journal', readonly=True, help='used in statement reconciliation domain, but shouldn\'t be used elswhere.'),
+        'date_from': fields.function(lambda *a, **k: {}, method=True, type='date', string="Date from"),
+        'date_to': fields.function(lambda *a, **k: {}, method=True, type='date', string="Date to"),
     }
 
     _defaults = {
@@ -167,7 +168,7 @@ class account_bank_statement(osv.osv):
         'state': 'draft',
         'journal_id': _default_journal_id,
         'period_id': _get_period,
-        'company_id': lambda self,cr,uid,c: self.pool.get('res.company')._company_default_get(cr, uid, 'account.bank.statement',context=c),
+        'company_id': lambda self, cr, uid, c: self.pool.get('res.company')._company_default_get(cr, uid, 'account.bank.statement',context=c),
     }
 
     def _check_company_id(self, cr, uid, ids, context=None):
@@ -235,8 +236,8 @@ class account_bank_statement(osv.osv):
 
         acc_cur = ((st_line.amount<=0) and st.journal_id.default_debit_account_id) or st_line.account_id
         context.update({
-                'res.currency.compute.account': acc_cur,
-            })
+            'res.currency.compute.account': acc_cur,
+        })
         amount = res_currency_obj.compute(cr, uid, st.currency.id,
                 company_currency_id, st_line.amount, context=context)
 
@@ -256,7 +257,7 @@ class account_bank_statement(osv.osv):
             'analytic_account_id': st_line.analytic_account_id and st_line.analytic_account_id.id or False
         }
 
-        if st.currency.id <> company_currency_id:
+        if st.currency.id != company_currency_id:
             amount_cur = res_currency_obj.compute(cr, uid, company_currency_id,
                         st.currency.id, amount, context=context)
             val['amount_currency'] = -amount_cur
@@ -274,7 +275,7 @@ class account_bank_statement(osv.osv):
         # if currency is not the same than the company
         amount_currency = False
         currency_id = False
-        if st.currency.id <> company_currency_id:
+        if st.currency.id != company_currency_id:
             amount_currency = st_line.amount
             currency_id = st.currency.id
         account_move_line_obj.create(cr, uid, {
@@ -291,7 +292,7 @@ class account_bank_statement(osv.osv):
             'period_id': st.period_id.id,
             'amount_currency': amount_currency,
             'currency_id': currency_id,
-            }, context=context)
+        }, context=context)
 
         for line in account_move_line_obj.browse(cr, uid, [x.id for x in
                 account_move_obj.browse(cr, uid, move_id,
@@ -415,6 +416,7 @@ class account_bank_statement(osv.osv):
 
 account_bank_statement()
 
+
 class account_bank_statement_line(osv.osv):
 
     def onchange_partner_id(self, cr, uid, ids, partner_id, context=None):
@@ -456,7 +458,19 @@ class account_bank_statement_line(osv.osv):
             res['value']['account_id'] = account_id
         return res
 
-    _order = "statement_id desc, sequence"
+    def _get_running_balance(self, cr, uid, ids, name, args, context):
+        res = {}
+        for line in self.browse(cr, uid, ids, context=context):
+            res[line.id] = 0
+            statement = line.statement_id
+            running_balance = statement.balance_start
+            for st_line in statement.line_ids:
+                running_balance += st_line.amount
+                if st_line.id == line.id:
+                    res[line.id] = running_balance
+                    break
+        return res
+
     _name = "account.bank.statement.line"
     _description = "Bank Statement Line"
     _columns = {
@@ -464,12 +478,12 @@ class account_bank_statement_line(osv.osv):
         'date': fields.date('Date', required=True),
         'amount': fields.float('Amount', digits_compute=dp.get_precision('Account')),
         'type': fields.selection([
-            ('supplier','Supplier'),
-            ('customer','Customer'),
-            ('general','General')
+            ('supplier', 'Supplier'),
+            ('customer', 'Customer'),
+            ('general', 'General')
             ], 'Type', required=True),
         'partner_id': fields.many2one('res.partner', 'Partner'),
-        'account_id': fields.many2one('account.account','Account',
+        'account_id': fields.many2one('account.account', 'Account',
             required=True),
         'statement_id': fields.many2one('account.bank.statement', 'Statement',
             select=True, required=True, ondelete='cascade'),
@@ -479,14 +493,18 @@ class account_bank_statement_line(osv.osv):
             'Moves'),
         'ref': fields.char('Reference', size=32),
         'note': fields.text('Notes'),
+        'running_balance': fields.function(_get_running_balance, method=True, string="Running Balance"),
         'sequence': fields.integer('Sequence', select=True, help="Gives the sequence order when displaying a list of bank statement lines."),
         'company_id': fields.related('statement_id', 'company_id', type='many2one', relation='res.company', string='Company', store=True, readonly=True),
     }
     _defaults = {
-        'name': lambda self,cr,uid,context={}: self.pool.get('ir.sequence').get(cr, uid, 'account.bank.statement.line'),
-        'date': lambda self,cr,uid,context={}: context.get('date', fields.date.context_today(self,cr,uid,context=context)),
+#        'name': lambda self,cr,uid,context={}: self.pool.get('ir.sequence').get(cr, uid, 'account.bank.statement.line'),
+        'name': '/',
+        'date': lambda self, cr, uid, context={}: context.get('date', fields.date.context_today(self, cr, uid, context=context)),
         'type': 'general',
     }
+
+    _order = "statement_id desc, date, id"
 
 account_bank_statement_line()
 

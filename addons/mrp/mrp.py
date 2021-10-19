@@ -20,9 +20,10 @@
 ##############################################################################
 
 from datetime import datetime
-from osv import osv, fields
+from osv import osv, fields, orm
 import decimal_precision as dp
 from tools import float_compare
+from tools import DEFAULT_SERVER_DATETIME_FORMAT
 from tools.translate import _
 import netsvc
 import time
@@ -107,6 +108,7 @@ class mrp_routing_workcenter(osv.osv):
     """
     _name = 'mrp.routing.workcenter'
     _description = 'Work Center Usage'
+    _order = 'sequence'
     _columns = {
         'workcenter_id': fields.many2one('mrp.workcenter', 'Work Center', required=True),
         'name': fields.char('Name', size=64, required=True),
@@ -132,6 +134,25 @@ class mrp_bom(osv.osv):
     """
     _name = 'mrp.bom'
     _description = 'Bill of Material'
+
+
+    def _get_ext_routing(self, cr, uid, ids, name, arg, context=None):
+        result = {}
+        if context is None:
+            context = {}
+        for bom in self.browse(cr, uid, ids, context=context):
+            result[bom.id] = False
+            if bom.routing_id:
+                result[bom.id] = bom.routing_id.id
+            else:
+                boms_search = self.search(cr, uid, [('product_id', '=', bom.product_id.id), ('bom_id', '=', False)],
+                                          context=context)
+                if boms_search:
+                    bom_with_routing = self.browse(cr, uid, boms_search[0], context)
+                    result[bom.id] = bom_with_routing.routing_id.id
+
+        return result
+
 
     def _child_compute(self, cr, uid, ids, name, arg, context=None):
         """ Gets child bom.
@@ -213,6 +234,7 @@ class mrp_bom(osv.osv):
         'bom_lines': fields.one2many('mrp.bom', 'bom_id', 'BoM Lines'),
         'bom_id': fields.many2one('mrp.bom', 'Parent BoM', ondelete='cascade', select=True),
         'routing_id': fields.many2one('mrp.routing', 'Routing', help="The list of operations (list of work centers) to produce the finished product. The routing is mainly used to compute work center costs during operations and to plan future loads on work centers based on production planning."),
+        'ext_routing_id': fields.function(_get_ext_routing, relation='mrp.routing', string="Routing", type='many2one'),
         'property_ids': fields.many2many('mrp.property', 'mrp_bom_property_rel', 'bom_id','property_id', 'Properties'),
         'revision_ids': fields.one2many('mrp.bom.revision', 'bom_id', 'BoM Revisions'),
         'child_complete_ids': fields.function(_child_compute, relation='mrp.bom', string="BoM Hierarchy", type='many2many'),
@@ -227,6 +249,7 @@ class mrp_bom(osv.osv):
         'company_id': lambda self,cr,uid,c: self.pool.get('res.company')._company_default_get(cr, uid, 'mrp.bom', context=c),
     }
     _order = "sequence"
+    _parent_name = "bom_id"
     _sql_constraints = [
         ('bom_qty_zero', 'CHECK (product_qty>0)',  'All product quantities must be greater than 0.\n' \
             'You should install the mrp_subproduct module if you want to manage extra products on BoMs !'),
@@ -242,10 +265,24 @@ class mrp_bom(osv.osv):
             level -= 1
         return True
 
+    # Fixed by Andrei Levin 02.02.2018
+    # def _check_product(self, cr, uid, ids, context=None):
+    #     all_prod = []
+    #     boms = self.browse(cr, uid, ids, context=context)
+    #     def check_bom(boms):
+    #         res = True
+    #         for bom in boms:
+    #             if bom.product_id.id in all_prod:
+    #                 res = res and False
+    #             all_prod.append(bom.product_id.id)
+    #             lines = bom.bom_lines
+    #             if lines:
+    #                 res = res and check_bom([bom_id for bom_id in lines if bom_id not in boms])
+    #         return res
+    #     return check_bom(boms)
+
     def _check_product(self, cr, uid, ids, context=None):
-        all_prod = []
-        boms = self.browse(cr, uid, ids, context=context)
-        def check_bom(boms):
+        def check_bom(boms, all_prod):
             res = True
             for bom in boms:
                 if bom.product_id.id in all_prod:
@@ -253,9 +290,17 @@ class mrp_bom(osv.osv):
                 all_prod.append(bom.product_id.id)
                 lines = bom.bom_lines
                 if lines:
-                    res = res and check_bom([bom_id for bom_id in lines if bom_id not in boms])
+                    res = res and check_bom([bom_id for bom_id in lines if bom_id not in boms], all_prod)
             return res
-        return check_bom(boms)
+
+        for bom in self.browse(cr, uid, ids, context=context):
+            all_prod = []
+
+            passed = check_bom([bom], all_prod)
+            if not passed:
+                return False
+        else:
+            return True
 
     _constraints = [
         (_check_recursion, 'Error ! You cannot create recursive BoM.', ['parent_id']),
@@ -280,8 +325,10 @@ class mrp_bom(osv.osv):
         @param properties: List of related properties.
         @return: False or BoM id.
         """
-        cr.execute('select id from mrp_bom where product_id=%s and bom_id is null order by sequence', (product_id,))
-        ids = map(lambda x: x[0], cr.fetchall())
+        domain = [('product_id', '=', product_id), ('bom_id', '=', False),
+                  '|', ('date_start', '=', False), ('date_start', '<=', time.strftime(DEFAULT_SERVER_DATETIME_FORMAT)),
+                  '|', ('date_stop', '=', False), ('date_stop', '>=', time.strftime(DEFAULT_SERVER_DATETIME_FORMAT))]
+        ids = self.search(cr, uid, domain, order='sequence')
         max_prop = 0
         result = False
         for bom in self.pool.get('mrp.bom').browse(cr, uid, ids):
@@ -326,6 +373,9 @@ class mrp_bom(osv.osv):
             if addthis and not bom.bom_lines:
                 result.append(
                 {
+                    'id': bom.id,
+                    'default_code': bom.product_id.default_code,
+                    'position': bom.position,
                     'name': bom.product_id.name,
                     'product_id': bom.product_id.id,
                     'product_qty': bom.product_qty * factor,
@@ -341,7 +391,7 @@ class mrp_bom(osv.osv):
                     mult = (d + (m and 1.0 or 0.0))
                     cycle = mult * wc_use.cycle_nbr
                     result2.append({
-                        'name': tools.ustr(wc_use.name) + ' - '  + tools.ustr(bom.product_id.name),
+                        'name': tools.ustr(wc_use.name),
                         'workcenter_id': wc.id,
                         'sequence': level+(wc_use.sequence or 0),
                         'cycle': cycle,
@@ -360,7 +410,6 @@ class mrp_bom(osv.osv):
         default.update({'name': bom_data['name'] + ' ' + _('Copy'), 'bom_id':False})
         return super(mrp_bom, self).copy_data(cr, uid, id, default, context=context)
 
-mrp_bom()
 
 class mrp_bom_revision(osv.osv):
     _name = 'mrp.bom.revision'
@@ -434,6 +483,22 @@ class mrp_production(osv.osv):
         for prod in self.browse(cr, uid, ids, context=context):
             result[prod.id] = prod.date_planned[:10]
         return result
+    
+    def _src_id_default(self, cr, uid, ids, context=None):
+        try:
+            location_model, location_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'stock', 'stock_location_stock')
+            self.pool.get('stock.location').check_access_rule(cr, uid, [location_id], 'read', context=context)
+        except (orm.except_orm, ValueError):
+            location_id = False
+        return location_id
+
+    def _dest_id_default(self, cr, uid, ids, context=None):
+        try:
+            location_model, location_id = self.pool.get('ir.model.data').get_object_reference(cr, uid, 'stock', 'stock_location_stock')
+            self.pool.get('stock.location').check_access_rule(cr, uid, [location_id], 'read', context=context)
+        except (orm.except_orm, ValueError):
+            location_id = False
+        return location_id
 
     _columns = {
         'name': fields.char('Reference', size=64, required=True),
@@ -481,6 +546,8 @@ class mrp_production(osv.osv):
         'state': lambda *a: 'draft',
         'date_planned': lambda *a: time.strftime('%Y-%m-%d %H:%M:%S'),
         'product_qty':  lambda *a: 1.0,
+        'location_src_id': _src_id_default,
+        'location_dest_id': _dest_id_default,
         'name': lambda x, y, z, c: x.pool.get('ir.sequence').get(y, z, 'mrp.production') or '/',
         'company_id': lambda self, cr, uid, c: self.pool.get('res.company')._company_default_get(cr, uid, 'mrp.production', context=c),
     }
@@ -651,13 +718,13 @@ class mrp_production(osv.osv):
             self.log(cr, uid, production_id, message)
         return True
 
-    def action_production_end(self, cr, uid, ids):
+    def action_production_end(self, cr, uid, ids, context=None):
         """ Changes production state to Finish and writes finished date.
         @return: True
         """
-        for production in self.browse(cr, uid, ids):
-            self._costs_generate(cr, uid, production)
-        return self.write(cr, uid, ids, {'state': 'done', 'date_finished': time.strftime('%Y-%m-%d %H:%M:%S')})
+        for production in self.browse(cr, uid, ids, context):
+            self._costs_generate(cr, uid, production, context)
+        return self.write(cr, uid, ids, {'state': 'done', 'date_finished': time.strftime('%Y-%m-%d %H:%M:%S')}, context)
 
     def test_production_done(self, cr, uid, ids):
         """ Tests whether production is done or not.
@@ -799,7 +866,7 @@ class mrp_production(osv.osv):
         wf_service.trg_validate(uid, 'mrp.production', production_id, 'button_produce_done', cr)
         return True
 
-    def _costs_generate(self, cr, uid, production):
+    def _costs_generate(self, cr, uid, production, context=None):
         """ Calculates total costs at the end of the production.
         @param production: Id of production order.
         @return: Calculated amount.
@@ -843,7 +910,7 @@ class mrp_production(osv.osv):
                     } )
         return amount
 
-    def action_in_production(self, cr, uid, ids):
+    def action_in_production(self, cr, uid, ids, context=None):
         """ Changes state to In Production and writes starting date.
         @return: True
         """
@@ -926,7 +993,7 @@ class mrp_production(osv.osv):
         # If usage of routing location is a internal, make outgoing shipment otherwise internal shipment
         if production.bom_id.routing_id and production.bom_id.routing_id.location_id:
             routing_loc = production.bom_id.routing_id.location_id
-            if routing_loc.usage <> 'internal':
+            if routing_loc.usage != 'internal':
                 pick_type = 'out'
             address_id = routing_loc.address_id and routing_loc.address_id.id or False
 
@@ -950,7 +1017,7 @@ class mrp_production(osv.osv):
         stock_move = self.pool.get('stock.move')
         source_location_id = production.product_id.product_tmpl_id.property_stock_production.id
         destination_location_id = production.location_dest_id.id
-        move_name = _('PROD: %s') + production.name 
+        move_name = _('PROD: %s') % production.name
         data = {
             'name': move_name,
             'date': production.date_planned,
@@ -992,7 +1059,7 @@ class mrp_production(osv.osv):
             'move_dest_id': parent_move_id,
             'state': 'waiting',
             'company_id': production.company_id.id,
-        })
+        }, context)
         production.write({'move_lines': [(4, move_id)]}, context=context)
         return move_id
 
@@ -1002,9 +1069,11 @@ class mrp_production(osv.osv):
         """
         shipment_id = False
         wf_service = netsvc.LocalService("workflow")
-        uncompute_ids = filter(lambda x:x, [not x.product_lines and x.id or False for x in self.browse(cr, uid, ids, context=context)])
+
+        production_browse = self.browse(cr, uid, ids, context=context)
+        uncompute_ids = filter(lambda x:x, [not x.product_lines and x.id or False for x in production_browse])
         self.action_compute(cr, uid, uncompute_ids, context=context)
-        for production in self.browse(cr, uid, ids, context=context):
+        for production in production_browse:
             shipment_id = self._make_production_internal_shipment(cr, uid, production, context=context)
             produce_move_id = self._make_production_produce_line(cr, uid, production, context=context)
             
@@ -1013,19 +1082,21 @@ class mrp_production(osv.osv):
             if production.bom_id.routing_id and production.bom_id.routing_id.location_id:
                 source_location_id = production.bom_id.routing_id.location_id.id
 
+            consume_move_ids = []
             for line in production.product_lines:
                 consume_move_id = self._make_production_consume_line(cr, uid, line, produce_move_id, source_location_id=source_location_id, context=context)
-                shipment_move_id = self._make_production_internal_shipment_line(cr, uid, line, shipment_id, consume_move_id,\
-                                 destination_location_id=source_location_id, context=context)
-                self._make_production_line_procurement(cr, uid, line, shipment_move_id, context=context)
-                    
+                consume_move_ids.append(consume_move_id)
+                # shipment_move_id = self._make_production_internal_shipment_line(cr, uid, line, shipment_id, consume_move_id, destination_location_id=source_location_id, context=context)
+                # self._make_production_line_procurement(cr, uid, line, shipment_move_id, context=context)
+
+            self.pool['stock.move'].write(cr, uid, consume_move_ids, {'picking_id': shipment_id}, context)
             wf_service.trg_validate(uid, 'stock.picking', shipment_id, 'button_confirm', cr)
-            production.write({'state':'confirmed'}, context=context)
-            message = _("Manufacturing order '%s' is scheduled for the %s.") % (
-                production.name,
-                datetime.strptime(production.date_planned,'%Y-%m-%d %H:%M:%S').strftime('%m/%d/%Y'),
-            )
-            self.log(cr, uid, production.id, message)
+            production.write({'state': 'confirmed'}, context=context)
+            # message = _("Manufacturing order '%s' is scheduled for the %s.") % (
+            #     production.name,
+            #     datetime.strptime(production.date_planned,'%Y-%m-%d %H:%M:%S').strftime('%m/%d/%Y'),
+            # )
+            # self.log(cr, uid, production.id, message)
         return shipment_id
 
     def force_production(self, cr, uid, ids, *args):

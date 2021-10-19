@@ -47,6 +47,7 @@ SALE_ORDER_EDI_STRUCT = {
     'company_id': True, # -> to be changed into partner
     #custom: 'partner_ref'
     'date_order': True,
+    'minimum_planned_date': True,
     'partner_id': True,
     #custom: 'partner_address'
     #custom: 'notes'
@@ -87,7 +88,10 @@ class sale_order(osv.osv, EDIMixin):
                     'currency': self.pool.get('res.currency').edi_export(cr, uid, [order.pricelist_id.currency_id],
                                                                          context=context)[0],
                     'partner_ref': order.client_order_ref or False,
-                    'notes': order.note or False,
+                    # WARNING: order.note inherit content from the opportuniy, which may or may not
+                    # be sensible data not to be shared with the customer. Here replaced with custom field.
+                    #'notes': order.note or False,
+                    'notes': order.condizioni_vendita or False,
             })
             edi_doc_list.append(edi_doc)
         return edi_doc_list
@@ -207,8 +211,9 @@ class sale_order_line(osv.osv, EDIMixin):
             edi_doc = super(sale_order_line,self).edi_export(cr, uid, [line], edi_struct, context)[0]
             edi_doc['__import_model'] = 'purchase.order.line'
             edi_doc['product_qty'] = line.product_uom_qty
+
             if line.product_uos:
-                edi_doc.update(product_uom=line.product_uos,
+                edi_doc.update(product_uom=line.product_uos.name,
                                product_qty=line.product_uos_qty)
 
             # company.security_days is for internal use, so customer should only

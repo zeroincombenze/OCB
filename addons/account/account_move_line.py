@@ -107,6 +107,116 @@ class account_move_line(osv.osv):
         query += company_clause
         return query
 
+    def action_view_account_move(self, cr, uid, ids, context=None):
+        '''
+        This function returns an action that display existing delivery orders
+        of given sales order ids. It can either be a in a list or in a form
+        view, if there is only one delivery order to show.
+        '''
+        account_move_line = self.browse(cr, uid, ids[0], context)
+        mod_obj = self.pool['ir.model.data']
+        act_obj = self.pool['ir.actions.act_window']
+
+        view = mod_obj.get_object_reference(cr, uid, 'account', 'view_move_form')
+
+        # compute the number of delivery orders to display
+        account_move = []
+        res_model = 'account.move'
+        # choose the view_mode accordingly
+        view = mod_obj.get_object_reference(cr, uid, 'account', 'view_move_form')
+        view_id = view and view[1] or False
+        ctx = "{'nodelete': '1', 'nocreate': '1'}"
+        name = _('Journal Entries')
+        return {
+            'name': name,
+            'view_type': 'form',
+            'view_mode': 'form',
+            'view_id': [view_id],
+            'res_model': res_model,
+            'context': ctx,
+            'type': 'ir.actions.act_window',
+            'nodestroy': False,
+            'target': 'current',
+            'res_id': account_move_line.move_id.id,
+        }
+
+    def action_view_invoice(self, cr, uid, ids, context=None):
+        '''
+        This function returns an action that display existing delivery orders
+        of given sales order ids. It can either be a in a list or in a form
+        view, if there is only one delivery order to show.
+        '''
+        context = context or self.pool['res.users'].context_get(cr, uid)
+        account_move_line = self.browse(cr, uid, ids[0], context)
+        mod_obj = self.pool['ir.model.data']
+        act_obj = self.pool['ir.actions.act_window']
+
+
+
+        # compute the number of delivery orders to display
+        account_move = []
+        res_model = 'account.invoice'
+        # choose the view_mode accordingly
+        if account_move_line.invoice:
+            if account_move_line.invoice.type in ['out_invoice', 'out_refund']:
+                view = mod_obj.get_object_reference(cr, uid, 'account', 'invoice_form')
+            else:
+                view = mod_obj.get_object_reference(cr, uid, 'account', 'invoice_supplier_form')
+        else:
+            return False
+
+        view_id = view and view[1] or False
+
+        ctx = "{'nodelete': '1', 'nocreate': '1'}"
+        name = _('Invoice')
+        return {
+            'name': name,
+            'view_type': 'page',
+            'view_mode': 'page',
+            'view_id': [view_id],
+            'res_model': res_model,
+            'context': ctx,
+            'type': 'ir.actions.act_window',
+            'nodestroy': False,
+            'target': 'current',
+            'res_id': account_move_line.invoice.id,
+        }
+
+    def action_view_reconcile(self, cr, uid, ids, context=None):
+        '''
+        This function returns an action that display existing delivery orders
+        of given sales order ids. It can either be a in a list or in a form
+        view, if there is only one delivery order to show.
+        '''
+        context = context or self.pool['res.users'].context_get(cr, uid)
+        account_move_line = self.browse(cr, uid, ids[0], context)
+        mod_obj = self.pool['ir.model.data']
+        act_obj = self.pool['ir.actions.act_window']
+
+        res_model = 'account.move.reconcile'
+        # choose the view_mode accordingly
+        if account_move_line.reconcile_function_id:
+            view = mod_obj.get_object_reference(cr, uid, 'account', 'view_move_reconcile_form')
+        else:
+            return False
+
+        view_id = view and view[1] or False
+
+        ctx = "{'nodelete': '1', 'nocreate': '1'}"
+        name = _('Invoice')
+        return {
+            'name': name,
+            'view_type': 'page',
+            'view_mode': 'page',
+            'view_id': [view_id],
+            'res_model': res_model,
+            'context': ctx,
+            'type': 'ir.actions.act_window',
+            'nodestroy': False,
+            'target': 'current',
+            'res_id': account_move_line.reconcile_function_id.id,
+        }
+
     def _amount_residual(self, cr, uid, ids, field_names, args, context=None):
         """
            This function returns the residual amount on a receivable or payable account.move.line.
@@ -467,6 +577,17 @@ class account_move_line(osv.osv):
                 result.append(line.id)
         return result
 
+    def _get_reconcile(self, cr, uid, ids, prop, unknown_none, context=None):
+        if not len(ids):
+            return {}
+
+        res = {}
+        for move_line in self.browse(cr, uid, ids, context=context):
+            reconcile_id = move_line.reconcile_partial_id and move_line.reconcile_partial_id.id or move_line.reconcile_id and move_line.reconcile_id.id or False
+            res[move_line.id] = reconcile_id
+
+        return res
+
     _columns = {
         'name': fields.char('Name', size=64, required=True),
         'quantity': fields.float('Quantity', digits=(16,2), help="The optional quantity expressed by this line, eg: number of product sold. The quantity is not a legal requirement but is very useful for some reports."),
@@ -479,6 +600,12 @@ class account_move_line(osv.osv):
         'narration': fields.related('move_id','narration', type='text', relation='account.move', string='Internal Note'),
         'ref': fields.related('move_id', 'ref', string='Reference', type='char', size=64, store=True),
         'statement_id': fields.many2one('account.bank.statement', 'Statement', help="The bank statement used for bank reconciliation", select=1),
+        'reconcile_function_id': fields.function(
+            _get_reconcile, method=True,
+            string='Reconcile',
+            type='many2one',
+            relation="account.move.reconcile"
+        ),
         'reconcile_id': fields.many2one('account.move.reconcile', 'Reconcile', readonly=True, ondelete='set null', select=2),
         'reconcile_partial_id': fields.many2one('account.move.reconcile', 'Partial Reconcile', readonly=True, ondelete='set null', select=2),
         'amount_currency': fields.float('Amount Currency', help="The amount expressed in an optional other currency if it is a multi-currency entry.", digits_compute=dp.get_precision('Account')),
@@ -511,7 +638,7 @@ class account_move_line(osv.osv):
                     "this field will contain the basic amount(without tax)."),
         'invoice': fields.function(_invoice, string='Invoice',
             type='many2one', relation='account.invoice', fnct_search=_invoice_search),
-        'account_tax_id':fields.many2one('account.tax', 'Tax'),
+        'account_tax_id': fields.many2one('account.tax', 'Tax'),
         'analytic_account_id': fields.many2one('account.analytic.account', 'Analytic Account'),
         'company_id': fields.related('account_id', 'company_id', type='many2one', relation='res.company', string='Company', store=True, readonly=True)
     }
@@ -563,16 +690,20 @@ class account_move_line(osv.osv):
     ]
 
     def _auto_init(self, cr, context=None):
-        super(account_move_line, self)._auto_init(cr, context=context)
+        res = super(account_move_line, self)._auto_init(cr, context=context)
         cr.execute('SELECT indexname FROM pg_indexes WHERE indexname = \'account_move_line_journal_id_period_id_index\'')
         if not cr.fetchone():
             cr.execute('CREATE INDEX account_move_line_journal_id_period_id_index ON account_move_line (journal_id, period_id)')
+        cr.execute('SELECT indexname FROM pg_indexes WHERE indexname = %s', ('account_move_line_date_id_index',))
+        if not cr.fetchone():
+            cr.execute('CREATE INDEX account_move_line_date_id_index ON account_move_line (date DESC, id desc)')
+        return res
 
     def _check_no_view(self, cr, uid, ids, context=None):
         lines = self.browse(cr, uid, ids, context=context)
         for l in lines:
             if l.account_id.type == 'view':
-                raise osv.except_osv(_('Error :'), _('You can not create journal items on a "view" account %s %s') % (l.account_id.code, l.account_id.name))
+                raise osv.except_osv(_('Error :'), _('For %s You can not create journal items on a "view" account %s %s') % (l.name, l.account_id.code, l.account_id.name))
         return True
 
     def _check_no_closed(self, cr, uid, ids, context=None):
@@ -590,10 +721,10 @@ class account_move_line(osv.osv):
         return True
 
     def _check_date(self, cr, uid, ids, context=None):
-        for l in self.browse(cr, uid, ids, context=context):
-            if l.journal_id.allow_date:
-                if not time.strptime(l.date[:10],'%Y-%m-%d') >= time.strptime(l.period_id.date_start, '%Y-%m-%d') or not time.strptime(l.date[:10], '%Y-%m-%d') <= time.strptime(l.period_id.date_stop, '%Y-%m-%d'):
-                    return False
+        for line in self.browse(cr, uid, ids, context=context):
+            if line.journal_id.allow_date:
+                if not time.strptime(line.date[:10], '%Y-%m-%d') >= time.strptime(line.period_id.date_start, '%Y-%m-%d') or not time.strptime(line.date[:10], '%Y-%m-%d') <= time.strptime(line.period_id.date_stop, '%Y-%m-%d'):
+                    raise osv.except_osv(_(u'Error'), _(u"Journal '{journal}' required date check, but invoice {invoice} have move not on period {period}").format(journal=line.journal_id.name, invoice=line.invoice.number, period=line.period_id.name))
         return True
 
     def _check_currency(self, cr, uid, ids, context=None):
@@ -762,7 +893,7 @@ class account_move_line(osv.osv):
         company_list = []
 
         for line in self.browse(cr, uid, ids, context=context):
-            if company_list and not line.company_id.id in company_list:
+            if company_list and line.company_id.id not in company_list:
                 raise osv.except_osv(_('Warning !'), _('To reconcile the entries company should be the same for all entries'))
             company_list.append(line.company_id.id)
 
@@ -800,11 +931,11 @@ class account_move_line(osv.osv):
         return True
 
     def reconcile(self, cr, uid, ids, type='auto', writeoff_acc_id=False, writeoff_period_id=False, writeoff_journal_id=False, context=None):
-        account_obj = self.pool.get('account.account')
-        move_obj = self.pool.get('account.move')
-        move_rec_obj = self.pool.get('account.move.reconcile')
-        partner_obj = self.pool.get('res.partner')
-        currency_obj = self.pool.get('res.currency')
+        account_obj = self.pool['account.account']
+        move_obj = self.pool['account.move']
+        move_rec_obj = self.pool['account.move.reconcile']
+        partner_obj = self.pool['res.partner']
+        currency_obj = self.pool['res.currency']
         lines = self.browse(cr, uid, ids, context=context)
         unrec_lines = filter(lambda x: not x['reconcile_id'], lines)
         credit = debit = 0.0
@@ -815,11 +946,11 @@ class account_move_line(osv.osv):
             context = {}
         company_list = []
         for line in self.browse(cr, uid, ids, context=context):
-            if company_list and not line.company_id.id in company_list:
+            if company_list and line.company_id.id not in company_list:
                 raise osv.except_osv(_('Warning !'), _('To reconcile the entries company should be the same for all entries'))
             company_list.append(line.company_id.id)
         for line in unrec_lines:
-            if line.state <> 'valid':
+            if line.state != 'valid':
                 raise osv.except_osv(_('Error'),
                         _('Entry "%s" is not valid !') % line.name)
             credit += line['credit']
@@ -837,19 +968,20 @@ class account_move_line(osv.osv):
                    'WHERE id IN %s '\
                    'GROUP BY account_id,reconcile_id',
                    (tuple(ids), ))
-        r = cr.fetchall()
-        #TODO: move this check to a constraint in the account_move_reconcile object
-        if len(r) != 1:
-            raise osv.except_osv(_('Error'), _('Entries are not of the same account or already reconciled ! '))
+        res = cr.fetchall()
+        # TODO: move this check to a constraint in the account_move_reconcile object
         if not unrec_lines:
             raise osv.except_osv(_('Error'), _('Entry is already reconciled'))
         account = account_obj.browse(cr, uid, account_id, context=context)
-        if not account.reconcile:
-            raise osv.except_osv(_('Error'), _('The account is not defined to be reconciled !'))
-        if r[0][1] != None:
+        if res[0][1] is not None:
             raise osv.except_osv(_('Error'), _('Some entries are already reconciled !'))
 
-        if (not currency_obj.is_zero(cr, uid, account.company_id.currency_id, writeoff)) or \
+        if context.get('fy_closing'):
+            # We don't want to generate any write-off when being called from the
+            # wizard used to close a fiscal year (and it doesn't give us any
+            # writeoff_acc_id).
+            pass
+        elif (not currency_obj.is_zero(cr, uid, account.company_id.currency_id, writeoff)) or \
            (account.currency_id and (not currency_obj.is_zero(cr, uid, account.currency_id, currency))):
             if not writeoff_acc_id:
                 raise osv.except_osv(_('Warning'), _('You have to provide an account for the write off/exchange difference entry !'))
@@ -872,10 +1004,10 @@ class account_move_line(osv.osv):
             cur_obj = self.pool.get('res.currency')
             cur_id = False
             amount_currency_writeoff = 0.0
-            if context.get('company_currency_id',False) != context.get('currency_id',False):
-                cur_id = context.get('currency_id',False)
+            if context.get('company_currency_id', False) != context.get('currency_id', False):
+                cur_id = context.get('currency_id', False)
                 for line in unrec_lines:
-                    if line.currency_id and line.currency_id.id == context.get('currency_id',False):
+                    if line.currency_id and line.currency_id.id == context.get('currency_id', False):
                         amount_currency_writeoff += line.amount_currency
                     else:
                         tmp_amount = cur_obj.compute(cr, uid, line.account_id.company_id.currency_id.id, context.get('currency_id',False), abs(line.debit-line.credit), context={'date': line.date})
@@ -1020,7 +1152,7 @@ class account_move_line(osv.osv):
         for journal in journals:
             all_journal.append(journal.id)
             for field in journal.view_id.columns_id:
-                if not field.field in fields:
+                if field.field not in fields:
                     fields[field.field] = [journal.id]
                     fld.append((field.field, field.sequence))
                     flds.append(field.field)
@@ -1059,8 +1191,12 @@ class account_move_line(osv.osv):
             elif field == 'credit':
                 f.set('sum', _("Total credit"))
 
+            elif field == 'residual':
+                f.set('sum', _("Total residual"))
+
             elif field == 'move_id':
                 f.set('required', 'False')
+                f.set('readonly', 'True')
 
             elif field == 'account_tax_id':
                 f.set('domain', "[('parent_id', '=' ,False)]")
@@ -1168,7 +1304,7 @@ class account_move_line(osv.osv):
         if ('account_id' in vals) and not account_obj.read(cr, uid, vals['account_id'], ['active'])['active']:
             raise osv.except_osv(_('Bad account!'), _('You can not use an inactive account!'))
         if update_check:
-            if ('account_id' in vals) or ('journal_id' in vals) or ('period_id' in vals) or ('move_id' in vals) or ('debit' in vals) or ('credit' in vals) or ('date' in vals):
+            if ('account_id' in vals) or ('journal_id' in vals) or ('period_id' in vals) or ('debit' in vals) or ('credit' in vals) or ('date' in vals): #SC: or ('move_id' in vals) #removed to add entries in reconcilied entries
                 self._update_check(cr, uid, ids, context)
 
         todo_date = None
@@ -1193,7 +1329,7 @@ class account_move_line(osv.osv):
             if journal.centralisation:
                 self._check_moves(cr, uid, context=ctx)
         result = super(account_move_line, self).write(cr, uid, ids, vals, context)
-        if check:
+        if check and not context.get('novalidate'):
             done = []
             for line in self.browse(cr, uid, ids):
                 if line.move_id.id not in done:
@@ -1203,18 +1339,34 @@ class account_move_line(osv.osv):
                         move_obj.write(cr, uid, [line.move_id.id], {'date': todo_date}, context=context)
         return result
 
+    # def search(self, cr, uid, args, offset=0, limit=0, order=None, context=None, count=False):
+    #     new_args = []
+    #
+    #     for arg in args:
+    #         if arg and len(arg) == 3 and arg[1] == 'ilike':
+    #             values = arg[2].split(',')
+    #             if values > 1:
+    #                 new_args += ['|' for x in range(len(values) - 1)] + [(arg[0], arg[1], value.strip()) for value in values]
+    #         else:
+    #             new_args.append(arg)
+    #
+    #     return super(account_move_line, self).search(cr, uid, new_args, offset=offset, limit=limit, order=order,
+    #                                              context=context, count=count)
+
     def _update_journal_check(self, cr, uid, journal_id, period_id, context=None):
         journal_obj = self.pool.get('account.journal')
         period_obj = self.pool.get('account.period')
         jour_period_obj = self.pool.get('account.journal.period')
         cr.execute('SELECT state FROM account_journal_period WHERE journal_id = %s AND period_id = %s', (journal_id, period_id))
         result = cr.fetchall()
+        journal = journal_obj.browse(cr, uid, journal_id, context=context)
+        period = period_obj.browse(cr, uid, period_id, context=context)
+
         for (state,) in result:
             if state == 'done':
-                raise osv.except_osv(_('Error !'), _('You can not add/modify entries in a closed journal.'))
+                raise osv.except_osv(_('Error !'), _(u'The period {period} is close, so is not possible to add/modify for journal {journal}').format(period=period.name, journal=journal.name))
+                # raise osv.except_osv(_('Error !'), _('You can not add/modify entries in a closed journal.'))
         if not result:
-            journal = journal_obj.browse(cr, uid, journal_id, context=context)
-            period = period_obj.browse(cr, uid, period_id, context=context)
             jour_period_obj.create(cr, uid, {
                 'name': (journal.code or journal.name)+':'+(period.name or ''),
                 'journal_id': journal.id,
@@ -1390,7 +1542,7 @@ class account_move_line(osv.osv):
                     self.create(cr, uid, data, context)
             del vals['account_tax_id']
 
-        if check and ((not context.get('no_store_function')) or journal.entry_posted):
+        if check and ((not context.get('no_store_function')) or journal.entry_posted) and not context.get('novalidate'):
             tmp = move_obj.validate(cr, uid, [vals['move_id']], context)
             if journal.entry_posted and tmp:
                 move_obj.button_validate(cr,uid, [vals['move_id']], context)

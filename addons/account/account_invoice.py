@@ -30,6 +30,7 @@ from tools.translate import _
 
 class account_invoice(osv.osv):
     def _amount_all(self, cr, uid, ids, name, args, context=None):
+        cur_obj = self.pool.get('res.currency')
         res = {}
         for invoice in self.browse(cr, uid, ids, context=context):
             res[invoice.id] = {
@@ -41,6 +42,9 @@ class account_invoice(osv.osv):
                 res[invoice.id]['amount_untaxed'] += line.price_subtotal
             for line in invoice.tax_line:
                 res[invoice.id]['amount_tax'] += line.amount
+
+            res[invoice.id]['amount_tax'] = cur_obj.round(cr, uid, invoice.currency_id, res[invoice.id]['amount_tax'])
+            res[invoice.id]['amount_untaxed'] = cur_obj.round(cr, uid, invoice.currency_id, res[invoice.id]['amount_untaxed'])
             res[invoice.id]['amount_total'] = res[invoice.id]['amount_tax'] + res[invoice.id]['amount_untaxed']
         return res
 
@@ -91,19 +95,44 @@ class account_invoice(osv.osv):
         return [('none', _('Free Reference'))]
 
     def _amount_residual(self, cr, uid, ids, name, args, context=None):
+        if context is None:
+            context = {}
+        ctx = context.copy()
         result = {}
+        currency_obj = self.pool.get('res.currency')
         for invoice in self.browse(cr, uid, ids, context=context):
-            checked_partial_rec_ids = []
+            nb_inv_in_partial_rec = max_invoice_id = 0
             result[invoice.id] = 0.0
             if invoice.move_id:
-                for move_line in invoice.move_id.line_id:
-                    if move_line.account_id.type in ('receivable','payable'):
-                        if move_line.reconcile_partial_id:
-                            partial_reconcile_id = move_line.reconcile_partial_id.id
-                            if partial_reconcile_id in checked_partial_rec_ids:
-                                continue
-                            checked_partial_rec_ids.append(partial_reconcile_id)
-                        result[invoice.id] += move_line.amount_residual_currency
+                for aml in invoice.move_id.line_id:
+                    if aml.account_id.type in ('receivable','payable'):
+                        if aml.currency_id and aml.currency_id.id == invoice.currency_id.id:
+                            result[invoice.id] += aml.amount_residual_currency
+                        else:
+                            ctx['date'] = aml.date
+                            result[invoice.id] += currency_obj.compute(cr, uid, aml.company_id.currency_id.id, invoice.currency_id.id, aml.amount_residual, context=ctx)
+
+                        if aml.reconcile_partial_id.line_partial_ids:
+                            #we check if the invoice is partially reconciled and if there are other invoices
+                            #involved in this partial reconciliation (and we sum these invoices)
+                            for line in aml.reconcile_partial_id.line_partial_ids:
+                                if line.invoice:
+                                    nb_inv_in_partial_rec += 1
+                                    #store the max invoice id as for this invoice we will make a balance instead of a simple division
+                                    max_invoice_id = max(max_invoice_id, line.invoice.id)
+            if nb_inv_in_partial_rec:
+                #if there are several invoices in a partial reconciliation, we split the residual by the number
+                #of invoice to have a sum of residual amounts that matches the partner balance
+                new_value = currency_obj.round(cr, uid, invoice.currency_id, result[invoice.id] / nb_inv_in_partial_rec)
+                if invoice.id == max_invoice_id:
+                    #if it's the last the invoice of the bunch of invoices partially reconciled together, we make a
+                    #balance to avoid rounding errors
+                    result[invoice.id] = result[invoice.id] - ((nb_inv_in_partial_rec - 1) * new_value)
+                else:
+                    result[invoice.id] = new_value
+
+            #prevent the residual amount on the invoice to be less than 0
+            result[invoice.id] = result[invoice.id]
         return result
 
     # Give Journal Items related to the payment reconciled to this invoice
@@ -129,10 +158,11 @@ class account_invoice(osv.osv):
         return res
 
     def _get_invoice_line(self, cr, uid, ids, context=None):
-        result = {}
-        for line in self.pool.get('account.invoice.line').browse(cr, uid, ids, context=context):
-            result[line.invoice_id.id] = True
-        return result.keys()
+        # result = {}
+        # for line in self.pool.get('account.invoice.line').browse(cr, uid, ids, context=context):
+        #     result[line.invoice_id.id] = True
+        # return result.keys()
+        return self.pool['account.invoice'].search(cr, uid, [('invoice_line', 'in', ids)], context=context)
 
     def _get_invoice_tax(self, cr, uid, ids, context=None):
         result = {}
@@ -189,8 +219,13 @@ class account_invoice(osv.osv):
     _name = "account.invoice"
     _description = 'Invoice'
     _order = "id desc"
+    _inherit = ['mail.thread']
+
+    def _get_invoice_from_move(self, cr, uid, ids, context):
+        return self.pool['account.invoice'].search(cr, uid, [('move_id', 'in', ids)], context=context)
 
     _columns = {
+        'message_ids': fields.one2many('mail.message', 'res_id', 'Messages', domain=[('model', '=', _name)]),
         'name': fields.char('Description', size=64, select=True, readonly=True, states={'draft':[('readonly',False)]}),
         'origin': fields.char('Source Document', size=64, help="Reference of the document that produced this invoice.", readonly=True, states={'draft':[('readonly',False)]}),
         'type': fields.selection([
@@ -200,7 +235,10 @@ class account_invoice(osv.osv):
             ('in_refund','Supplier Refund'),
             ],'Type', readonly=True, select=True, change_default=True),
 
-        'number': fields.related('move_id','name', type='char', readonly=True, size=64, relation='account.move', store=True, string='Number'),
+        'number': fields.related('move_id', 'name', type='char', readonly=True, size=64, relation='account.move', string='Number', store={
+                'account.move': (_get_invoice_from_move, ['name'], 10),
+                'account.invoice': (lambda self, cr, uid, ids, c={}: ids, ['move_id'], 10),
+        }),
         'internal_number': fields.char('Invoice Number', size=32, readonly=True, help="Unique number of the invoice, computed automatically when the invoice is created."),
         'reference': fields.char('Invoice Reference', size=64, help="The partner reference of this invoice."),
         'reference_type': fields.selection(_get_reference_type, 'Reference Type',
@@ -265,7 +303,7 @@ class account_invoice(osv.osv):
         'check_total': fields.float('Verification Total', digits_compute=dp.get_precision('Account'), states={'open':[('readonly',True)],'close':[('readonly',True)]}),
         'reconciled': fields.function(_reconciled, string='Paid/Reconciled', type='boolean',
             store={
-                'account.invoice': (lambda self, cr, uid, ids, c={}: ids, None, 50), # Check if we can remove ?
+                # 'account.invoice': (lambda self, cr, uid, ids, c={}: ids, None, 50), # Check if we can remove ?
                 'account.move.line': (_get_invoice_from_line, None, 50),
                 'account.move.reconcile': (_get_invoice_from_reconcile, None, 50),
             }, help="It indicates that the invoice has been paid and the journal entry of the invoice has been reconciled with one or several journal entries of payment."),
@@ -284,8 +322,40 @@ class account_invoice(osv.osv):
         'payment_ids': fields.function(_compute_lines, relation='account.move.line', type="many2many", string='Payments'),
         'move_name': fields.char('Journal Entry', size=64, readonly=True, states={'draft':[('readonly',False)]}),
         'user_id': fields.many2one('res.users', 'Salesman', readonly=True, states={'draft':[('readonly',False)]}),
-        'fiscal_position': fields.many2one('account.fiscal.position', 'Fiscal Position', readonly=True, states={'draft':[('readonly',False)]})
+        'fiscal_position': fields.many2one('account.fiscal.position',
+            'Fiscal Position', readonly=True,
+            states={'draft':[('readonly',False)]}),
+        'tax_calculation_rounding_method': fields.selection([
+            ('round_per_line', 'Round per line'),
+            ('round_globally', 'Round globally'),
+            ], 'Tax calculation rounding method',
+            help='''If you select 'Round per line' : for each tax, the tax
+amount will first be computed and rounded for each PO/SO/invoice line and then
+these rounded amounts will be summed, leading to the total amount for that tax.
+If you select 'Round globally': for each tax, the tax amount will be computed
+for each PO/SO/invoice line, then these amounts will be summed and eventually
+this total tax amount will be rounded. If you sell with tax included, you
+should choose 'Round per line' because you certainly want the sum of your
+tax-included line subtotals to be equal to the total amount with taxes.'''),
     }
+
+    def _get_company_rounding(self, cr, uid, company_id, context=None):
+        res = 'round_per_line'
+        if  company_id:
+            company_model = self.pool.get('res.company')
+            company_obj = company_model.browse(
+                cr, uid, company_id, context=context)
+            if  company_obj and company_obj['tax_calculation_rounding_method']:
+                res = company_obj['tax_calculation_rounding_method']
+        return res
+
+    def _get_default_rounding_method(self, cr, uid, context=None):
+        # default rounding depends on company. We start with default company
+        company_model = self.pool.get('res.company')
+        company_id = company_model._company_default_get(
+            cr, uid, 'account.invoice', context=context)
+        return self._get_company_rounding(cr, uid, company_id, context)
+
     _defaults = {
         'type': _get_type,
         'state': 'draft',
@@ -296,9 +366,10 @@ class account_invoice(osv.osv):
         'check_total': 0.0,
         'internal_number': False,
         'user_id': lambda s, cr, u, c: u,
+        'tax_calculation_rounding_method': _get_default_rounding_method,
     }
     _sql_constraints = [
-        ('number_uniq', 'unique(number, company_id, journal_id, type)', 'Invoice Number must be unique per Company!'),
+        ('number_uniq', 'unique(number, company_id, journal_id, type, period_id)', 'Invoice Number must be unique per Company!'),
     ]
 
     def fields_view_get(self, cr, uid, view_id=None, view_type=False, context=None, toolbar=False, submenu=False):
@@ -361,6 +432,22 @@ class account_invoice(osv.osv):
         context['view_id'] = view_id
         return context
 
+    def write(self, cr, uid, ids, vals, context=None):
+        res = super(account_invoice, self).write(cr, uid, ids, vals, context=context)
+        if vals.get('state', False) or vals.get('internal_number', False):
+            for (ids, name) in self.name_get(cr, uid, ids):
+                if context is None:
+                    context = self.pool['res.users'].context_get(cr, uid)
+                if vals.get('state', False):
+                    text = name + _(' has been change to ') + dict(self.fields_get(cr, uid, allfields=['state'], context=context)['state']['selection'])[vals.get('state', False)]
+                    # self.log(cr, uid, ids, text)
+                    self.message_append(cr, uid, [ids], text, body_text=text, context=context)
+                if vals.get('internal_number', False):
+                    text = name + _(' has internal_number change to ') + vals.get('internal_number', False)
+                    # self.log(cr, uid, ids, text)
+                    self.message_append(cr, uid, [ids], text, body_text=text, context=context)
+        return res
+
     def create(self, cr, uid, vals, context=None):
         if context is None:
             context = {}
@@ -392,18 +479,24 @@ class account_invoice(osv.osv):
     def unlink(self, cr, uid, ids, context=None):
         if context is None:
             context = {}
-        invoices = self.read(cr, uid, ids, ['state','internal_number'], context=context)
-        unlink_ids = []
-        for t in invoices:
-            if t['state'] in ('draft', 'cancel') and t['internal_number']== False:
-                unlink_ids.append(t['id'])
-            else:
-                raise osv.except_osv(_('Invalid action !'), _('You can not delete an invoice which is open or paid. We suggest you to refund it instead.'))
+        # invoices = self.read(cr, uid, ids, ['state','internal_number'], context=context)
+        # unlink_ids = []
+        unlink_ids = self.search(cr, uid, [('id', 'in', ids), ('state', 'in', ['draft', 'cancel']), ('internal_number', '=', False)], context=context)
+        # for t in invoices:
+        #     if t['state'] in ('draft', 'cancel') and t['internal_number']== False:
+        #         unlink_ids.append(t['id'])
+        #     else:
+        #         raise osv.except_osv(_('Invalid action !'), _(
+        #             'You can not delete an invoice which is open or paid. We suggest you to refund it instead.'))
+        if len(unlink_ids) != len(ids):
+            raise osv.except_osv(_('Invalid action !'), _(
+                'You can not delete an invoice which is open or paid. We suggest you to refund it instead.'))
         osv.osv.unlink(self, cr, uid, unlink_ids, context=context)
         return True
 
     def onchange_partner_id(self, cr, uid, ids, type, partner_id,\
             date_invoice=False, payment_term=False, partner_bank_id=False, company_id=False):
+        context = self.pool['res.users'].context_get(cr, uid)
         invoice_addr_id = False
         contact_addr_id = False
         partner_payment_term = False
@@ -418,26 +511,26 @@ class account_invoice(osv.osv):
             res = self.pool.get('res.partner').address_get(cr, uid, [partner_id], ['contact', 'invoice'])
             contact_addr_id = res['contact']
             invoice_addr_id = res['invoice']
-            p = self.pool.get('res.partner').browse(cr, uid, partner_id)
+            p = self.pool.get('res.partner').browse(cr, uid, partner_id, context)
             if company_id:
                 if p.property_account_receivable.company_id.id != company_id and p.property_account_payable.company_id.id != company_id:
                     property_obj = self.pool.get('ir.property')
-                    rec_pro_id = property_obj.search(cr,uid,[('name','=','property_account_receivable'),('res_id','=','res.partner,'+str(partner_id)+''),('company_id','=',company_id)])
-                    pay_pro_id = property_obj.search(cr,uid,[('name','=','property_account_payable'),('res_id','=','res.partner,'+str(partner_id)+''),('company_id','=',company_id)])
+                    rec_pro_id = property_obj.search(cr, uid, [('name', '=', 'property_account_receivable'), ('res_id', '=', 'res.partner,' + str(partner_id) + ''), ('company_id',' =', company_id)], context=context)
+                    pay_pro_id = property_obj.search(cr, uid, [('name', '=', 'property_account_payable'), ('res_id', '=', 'res.partner,' + str(partner_id) + ''), ('company_id', '=', company_id)], context=context)
                     if not rec_pro_id:
-                        rec_pro_id = property_obj.search(cr,uid,[('name','=','property_account_receivable'),('company_id','=',company_id)])
+                        rec_pro_id = property_obj.search(cr, uid, [('name', '=', 'property_account_receivable'), ('company_id', '=', company_id)], context=context)
                     if not pay_pro_id:
-                        pay_pro_id = property_obj.search(cr,uid,[('name','=','property_account_payable'),('company_id','=',company_id)])
-                    rec_line_data = property_obj.read(cr,uid,rec_pro_id,['name','value_reference','res_id'])
-                    pay_line_data = property_obj.read(cr,uid,pay_pro_id,['name','value_reference','res_id'])
-                    rec_res_id = rec_line_data and rec_line_data[0].get('value_reference',False) and int(rec_line_data[0]['value_reference'].split(',')[1]) or False
-                    pay_res_id = pay_line_data and pay_line_data[0].get('value_reference',False) and int(pay_line_data[0]['value_reference'].split(',')[1]) or False
+                        pay_pro_id = property_obj.search(cr, uid, [('name','=','property_account_payable'), ('company_id','=', company_id)], context=context)
+                    rec_line_data = property_obj.read(cr, uid, rec_pro_id, ['name', 'value_reference', 'res_id'], context=context)
+                    pay_line_data = property_obj.read(cr, uid, pay_pro_id, ['name', 'value_reference', 'res_id'], context=context)
+                    rec_res_id = rec_line_data and rec_line_data[0].get('value_reference', False) and int(rec_line_data[0]['value_reference'].split(',')[1]) or False
+                    pay_res_id = pay_line_data and pay_line_data[0].get('value_reference', False) and int(pay_line_data[0]['value_reference'].split(',')[1]) or False
                     if not rec_res_id and not pay_res_id:
                         raise osv.except_osv(_('Configuration Error !'),
                             _('Can not find a chart of accounts for this company, you should create one.'))
                     account_obj = self.pool.get('account.account')
-                    rec_obj_acc = account_obj.browse(cr, uid, [rec_res_id])
-                    pay_obj_acc = account_obj.browse(cr, uid, [pay_res_id])
+                    rec_obj_acc = account_obj.browse(cr, uid, [rec_res_id], context=context)
+                    pay_obj_acc = account_obj.browse(cr, uid, [pay_res_id], context=context)
                     p.property_account_receivable = rec_obj_acc[0]
                     p.property_account_payable = pay_obj_acc[0]
 
@@ -446,6 +539,8 @@ class account_invoice(osv.osv):
             else:
                 acc_id = p.property_account_payable.id
             fiscal_position = p.property_account_position and p.property_account_position.id or False
+            if fiscal_position:
+                acc_id = self.pool['account.fiscal.position'].map_account(cr, uid, p.property_account_position, acc_id)
             partner_payment_term = p.property_payment_term and p.property_payment_term.id or False
             if p.bank_ids:
                 bank_id = p.bank_ids[0].id
@@ -516,6 +611,9 @@ class account_invoice(osv.osv):
         obj_journal = self.pool.get('account.journal')
         account_obj = self.pool.get('account.account')
         inv_line_obj = self.pool.get('account.invoice.line')
+        if  company_id:
+            val['tax_calculation_rounding_method'] = (
+                self._get_company_rounding(cr, uid, company_id))
         if company_id and part_id and type:
             acc_id = False
             partner_obj = self.pool.get('res.partner').browse(cr,uid,part_id)
@@ -659,15 +757,15 @@ class account_invoice(osv.osv):
             if partner.lang:
                 ctx.update({'lang': partner.lang})
             for taxe in ait_obj.compute(cr, uid, id, context=ctx).values():
-                ait_obj.create(cr, uid, taxe)
+                ait_obj.create(cr, uid, taxe, context)
         # Update the stored value (fields.function), so we write to trigger recompute
-        self.pool.get('account.invoice').write(cr, uid, ids, {'invoice_line':[]}, context=ctx)
+        self.pool.get('account.invoice').write(cr, uid, ids, {'invoice_line': []}, context=ctx)
         return True
 
     def button_compute(self, cr, uid, ids, context=None, set_total=False):
         self.button_reset_taxes(cr, uid, ids, context)
-        for inv in self.browse(cr, uid, ids, context=context):
-            if set_total:
+        if set_total:
+            for inv in self.browse(cr, uid, ids, context=context):
                 self.pool.get('account.invoice').write(cr, uid, [inv.id], {'check_total': inv.amount_total})
         return True
 
@@ -737,14 +835,14 @@ class account_invoice(osv.osv):
                     continue
                 key = (tax.tax_code_id.id, tax.base_code_id.id, tax.account_id.id)
                 tax_key.append(key)
-                if not key in compute_taxes:
-                    raise osv.except_osv(_('Warning !'), _('Global taxes defined, but they are not in invoice lines !'))
+                if key not in compute_taxes:
+                    raise osv.except_osv(_('Warning !'), _('Global taxes defined, but they are not in invoice lines ! On invoice of partner {partner} of {date}').format(partner=inv.partner_id.name, date=inv.date_invoice))
                 base = compute_taxes[key]['base']
                 if abs(base - tax.base) > inv.company_id.currency_id.rounding:
-                    raise osv.except_osv(_('Warning !'), _('Tax base different!\nClick on compute to update the tax base.'))
+                    raise osv.except_osv(_('Warning !'), _('Tax base different!\nClick on compute to update the tax base.On invoice of partner {partner} of {date}').format(partner=inv.partner_id.name, date=inv.date_invoice))
             for key in compute_taxes:
-                if not key in tax_key:
-                    raise osv.except_osv(_('Warning !'), _('Taxes are missing!\nClick on compute button.'))
+                if key not in tax_key:
+                    raise osv.except_osv(_('Warning !'), _('Taxes are missing!\nClick on compute button.On invoice of partner {partner} of {date}').format(partner=inv.partner_id.name, date=inv.date_invoice))
 
     def compute_invoice_totals(self, cr, uid, inv, company_currency, ref, invoice_move_lines):
         total = 0
@@ -768,6 +866,8 @@ class account_invoice(osv.osv):
             else:
                 total -= i['price']
                 total_currency -= i['amount_currency'] or i['price']
+        total = cur_obj.compute(cr, uid, inv.currency_id.id, inv.currency_id.id, total, context={'date': inv.date_invoice or time.strftime('%Y-%m-%d')}, round=True)
+        total_currency = cur_obj.compute(cr, uid, inv.currency_id.id, inv.currency_id.id, total_currency, context={'date': inv.date_invoice or time.strftime('%Y-%m-%d')}, round=True)
         return total, total_currency, invoice_move_lines
 
     def inv_line_characteristic_hashcode(self, invoice, invoice_line):
@@ -864,7 +964,7 @@ class account_invoice(osv.osv):
                 if inv.type == 'out_refund':
                     entry_type = 'cont_voucher'
 
-            diff_currency_p = inv.currency_id.id <> company_currency
+            diff_currency_p = inv.currency_id.id != company_currency
             # create one move line for the total and possibly adjust the other lines amount
             total = 0
             total_currency = 0
@@ -938,7 +1038,7 @@ class account_invoice(osv.osv):
                 'line_id': line,
                 'journal_id': journal_id,
                 'date': date,
-                'narration':inv.comment
+                'narration': inv.comment
             }
             period_id = inv.period_id and inv.period_id.id or False
             ctx.update(company_id=inv.company_id.id,
@@ -957,9 +1057,9 @@ class account_invoice(osv.osv):
             self.write(cr, uid, [inv.id], {'move_id': move_id,'period_id':period_id, 'move_name':new_move_name}, context=ctx)
             # Pass invoice in context in method post: used if you want to get the same
             # account move reference when creating the same invoice after a cancelled one:
-            ctx.update({'invoice':inv})
-            move_obj.post(cr, uid, [move_id], context=ctx)
-        self._log_event(cr, uid, ids)
+            # ctx.update({'invoice':inv})
+            # move_obj.post(cr, uid, [move_id], context=ctx)
+        # self._log_event(cr, uid, ids)
         return True
 
     def line_get_convert(self, cr, uid, x, part, date, context=None):
@@ -984,19 +1084,28 @@ class account_invoice(osv.osv):
         }
 
     def action_number(self, cr, uid, ids, context=None):
-        if context is None:
-            context = {}
-        #TODO: not correct fix but required a frech values before reading it.
-        self.write(cr, uid, ids, {})
+        context = context or self.pool['res.users'].context_get(cr, uid)
 
-        for obj_inv in self.browse(cr, uid, ids, context=context):
+        move_obj = self.pool['account.move']
+        invoice_browse = self.browse(cr, uid, ids, context=context)
+        for inv in invoice_browse:
+            ctx = context.copy()
+            ctx.update({'lang': inv.partner_id.lang})
+            ctx.update(company_id=inv.company_id.id, account_period_prefer_normal=True)
+            ctx.update({'invoice': inv})
+            move_obj.post(cr, uid, [inv.move_id.id], context=ctx)
+
+        # #TODO: not correct fix but required a frech values before reading it.
+        # self.write(cr, uid, ids, {})
+
+        for obj_inv in invoice_browse:
             id = obj_inv.id
             invtype = obj_inv.type
             number = obj_inv.number
             move_id = obj_inv.move_id and obj_inv.move_id.id or False
             reference = obj_inv.reference or ''
 
-            self.write(cr, uid, ids, {'internal_number':number})
+            # self.write(cr, uid, ids, {'internal_number': number})
 
             if invtype in ('in_invoice', 'in_refund'):
                 if not reference:
@@ -1018,31 +1127,46 @@ class account_invoice(osv.osv):
                         'AND account_analytic_line.move_id = account_move_line.id',
                         (ref, move_id))
 
-            for inv_id, name in self.name_get(cr, uid, [id]):
-                ctx = context.copy()
-                if obj_inv.type in ('out_invoice', 'out_refund'):
-                    ctx = self.get_log_context(cr, uid, context=ctx)
-                message = _("Invoice  '%s' is validated.") % name
-                self.log(cr, uid, inv_id, message, context=ctx)
+            # for inv_id, name in self.name_get(cr, uid, [id]):
+            #     ctx = context.copy()
+            #     if obj_inv.type in ('out_invoice', 'out_refund'):
+            #         ctx = self.get_log_context(cr, uid, context=ctx)
+            #     message = _("Invoice  '%s' is validated.") % name
+            #     self.log(cr, uid, inv_id, message, context=ctx)
         return True
+
+    def action_proforma(self, cr, uid, ids, context=None):
+        """
+        Check if all taxes are present with the correct base amount
+        on creating a proforma invoice. This leaves room for manual
+        corrections of the tax amount.
+        """
+        if not ids:
+            return True
+        if isinstance(ids, (int, long)):
+            ids = [ids]
+        ait_obj = self.pool.get('account.invoice.tax')
+        for inv in self.browse(cr, uid, ids, context=context):
+            compute_taxes = ait_obj.compute(cr, uid, inv.id, context=context)
+            self.check_tax_lines(cr, uid, inv, compute_taxes, ait_obj)
+        return self.write(
+            cr, uid, ids, {'state': 'proforma2'}, context=context)
 
     def action_cancel(self, cr, uid, ids, *args):
         context = {} # TODO: Use context from arguments
         account_move_obj = self.pool.get('account.move')
-        invoices = self.read(cr, uid, ids, ['move_id', 'payment_ids'])
         move_ids = [] # ones that we will need to remove
-        for i in invoices:
-            if i['move_id']:
-                move_ids.append(i['move_id'][0])
-            if i['payment_ids']:
+        for invoice in self.browse(cr, uid, ids):
+            if invoice.move_id:
+                move_ids.append(invoice.move_id.id)
+            if invoice.payment_ids:
                 account_move_line_obj = self.pool.get('account.move.line')
-                pay_ids = account_move_line_obj.browse(cr, uid, i['payment_ids'])
-                for move_line in pay_ids:
+                payment_ids = [payment.id for payment in invoice.payment_ids]
+                for move_line in account_move_line_obj.browse(cr, uid, payment_ids, context):
                     if move_line.reconcile_partial_id and move_line.reconcile_partial_id.line_partial_ids:
                         raise osv.except_osv(_('Error !'), _('You can not cancel an invoice which is partially paid! You need to unreconcile related payment entries first!'))
-
-        # First, set the invoices as cancelled and detach the move ids
-        self.write(cr, uid, ids, {'state':'cancel', 'move_id':False})
+            # First, set the invoices as cancelled and detach the move ids
+            self.write(cr, uid, invoice.id, {'state': 'cancel', 'move_id': False, 'internal_number': invoice.number})
         if move_ids:
             # second, invalidate the move(s)
             account_move_obj.button_cancel(cr, uid, move_ids, context=context)
@@ -1069,15 +1193,20 @@ class account_invoice(osv.osv):
         return True
 
     def name_get(self, cr, uid, ids, context=None):
-        if not ids:
-            return []
-        types = {
-                'out_invoice': 'CI: ',
-                'in_invoice': 'SI: ',
-                'out_refund': 'OR: ',
-                'in_refund': 'SR: ',
-                }
-        return [(r['id'], (r['number']) or types[r['type']] + (r['name'] or '')) for r in self.read(cr, uid, ids, ['type', 'number', 'name'], context, load='_classic_write')]
+
+        TYPES = {
+            'out_invoice': _('Invoice'),
+            'in_invoice': _('Supplier Invoice'),
+            'out_refund': _('Refund'),
+            'in_refund': _('Supplier Refund'),
+        }
+
+        if isinstance(ids, (int, long)):
+            ids = [ids]
+        result = []
+        for inv in self.browse(cr, uid, ids, context):
+            result.append((inv.id, "%s %s" % (inv.number or TYPES[inv.type], inv.name or '')))
+        return result
 
     def name_search(self, cr, user, name, args=None, operator='ilike', context=None, limit=100):
         if not args:
@@ -1092,16 +1221,31 @@ class account_invoice(osv.osv):
         return self.name_get(cr, user, ids, context)
 
     def _refund_cleanup_lines(self, cr, uid, lines):
+        invoice_line_obj = self.pool['account.invoice.line']
+
+        columns_many2one = []
+        columns_many2many = []
+        for col in invoice_line_obj._columns:
+            col_type = invoice_line_obj._columns[col]._type
+            if col_type == 'many2one':
+                columns_many2one.append(col)
+            elif col_type == 'many2many':
+                columns_many2many.append(col)
+
         for line in lines:
             del line['id']
             del line['invoice_id']
-            for field in ('company_id', 'partner_id', 'account_id', 'product_id',
-                          'uos_id', 'account_analytic_id', 'tax_code_id', 'base_code_id'):
+            for field in columns_many2one:
+            # for field in ('company_id', 'partner_id', 'account_id', 'product_id',
+            #               'uos_id', 'account_analytic_id', 'tax_code_id', 'base_code_id'):
                 if line.get(field):
                     line[field] = line[field][0]
-            if 'invoice_line_tax_id' in line:
-                line['invoice_line_tax_id'] = [(6,0, line.get('invoice_line_tax_id', [])) ]
-        return map(lambda x: (0,0,x), lines)
+
+            for field in columns_many2many:
+                line[field] = [(6, 0, line.get(field, []))]
+            # if 'invoice_line_tax_id' in line:
+            #    line['invoice_line_tax_id'] = [(6,0, line.get('invoice_line_tax_id', [])) ]
+        return map(lambda x: (0, 0, x), lines)
 
     def refund(self, cr, uid, ids, date=None, period_id=None, description=None, journal_id=None):
         invoices = self.read(cr, uid, ids, ['name', 'type', 'number', 'reference', 'comment', 'date_due', 'partner_id', 'address_contact_id', 'address_invoice_id', 'partner_contact', 'partner_insite', 'partner_ref', 'payment_term', 'account_id', 'currency_id', 'invoice_line', 'tax_line', 'journal_id', 'user_id', 'fiscal_position'])
@@ -1151,11 +1295,32 @@ class account_invoice(osv.osv):
                 invoice.update({
                     'name': description,
                 })
+
+            columns_many2one = []
+            columns_many2many = []
+            for col in self._columns:
+                col_type = self._columns[col]._type
+                if col_type == 'many2one':
+                    columns_many2one.append(col)
+                elif col_type == 'many2many':
+                    columns_many2many.append(col)
+
             # take the id part of the tuple returned for many2one fields
             for field in ('address_contact_id', 'address_invoice_id', 'partner_id',
                     'account_id', 'currency_id', 'payment_term', 'journal_id',
                     'user_id', 'fiscal_position'):
                 invoice[field] = invoice[field] and invoice[field][0]
+
+            # for field in ('address_contact_id', 'address_invoice_id', 'partner_id',
+            #         'account_id', 'currency_id', 'payment_term', 'journal_id',
+            #         'user_id', 'fiscal_position'):
+            #     invoice[field] = invoice[field] and invoice[field][0]
+            #
+            # index = 0
+            # for line in invoice['invoice_line']:
+            #     if line[2].get('move_line_id', False):
+            #         invoice['invoice_line'][index][2]['move_line_id'] = invoice['invoice_line'][index][2]['move_line_id'][0]
+            #     index += 1
             # create the new invoice
             new_ids.append(self.create(cr, uid, invoice))
 
@@ -1268,13 +1433,21 @@ class account_invoice_line(osv.osv):
         res = {}
         tax_obj = self.pool.get('account.tax')
         cur_obj = self.pool.get('res.currency')
+        local_context = {}
         for line in self.browse(cr, uid, ids):
             price = line.price_unit * (1-(line.discount or 0.0)/100.0)
-            taxes = tax_obj.compute_all(cr, uid, line.invoice_line_tax_id, price, line.quantity, product=line.product_id, address_id=line.invoice_id.address_invoice_id, partner=line.invoice_id.partner_id)
+            local_context['tax_calculation_rounding_method'] = (
+                    line.invoice_id.tax_calculation_rounding_method)
+            taxes = tax_obj.compute_all(
+                cr, uid, line.invoice_line_tax_id, price, line.quantity,
+                product=line.product_id,
+                address_id=line.invoice_id.address_invoice_id,
+                partner=line.invoice_id.partner_id,
+                context=local_context)
             res[line.id] = taxes['total']
-            if line.invoice_id:
-                cur = line.invoice_id.currency_id
-                res[line.id] = cur_obj.round(cr, uid, cur, res[line.id])
+            # if line.invoice_id:
+            #     cur = line.invoice_id.currency_id
+            #     res[line.id] = cur_obj.round(cr, uid, cur, res[line.id])
         return res
 
     def _price_unit_default(self, cr, uid, context=None):
@@ -1307,7 +1480,7 @@ class account_invoice_line(osv.osv):
         'price_unit': fields.float('Unit Price', required=True, digits_compute= dp.get_precision('Account')),
         'price_subtotal': fields.function(_amount_line, string='Subtotal', type="float",
             digits_compute= dp.get_precision('Account'), store=True),
-        'quantity': fields.float('Quantity', required=True),
+        'quantity': fields.float('Quantity', digits_compute=dp.get_precision('Product UoM'), required=True),
         'discount': fields.float('Discount (%)', digits_compute= dp.get_precision('Account')),
         'invoice_line_tax_id': fields.many2many('account.tax', 'account_invoice_line_tax', 'invoice_line_id', 'tax_id', 'Taxes', domain=[('parent_id','=',False)]),
         'note': fields.text('Notes'),
@@ -1380,11 +1553,19 @@ class account_invoice_line(osv.osv):
         else:
             taxes = res.supplier_taxes_id and res.supplier_taxes_id or (a and self.pool.get('account.account').browse(cr, uid, a, context=context).tax_ids or False)
         tax_id = fpos_obj.map_tax(cr, uid, fpos, taxes)
+        result['invoice_line_tax_id'] = tax_id
 
-        if type in ('in_invoice', 'in_refund'):
-            result.update( {'price_unit': price_unit or res.standard_price,'invoice_line_tax_id': tax_id} )
-        else:
-            result.update({'price_unit': res.list_price, 'invoice_line_tax_id': tax_id})
+        warning = {}
+        # When product changes, price ALWAYS need to be reset. If not price
+        # found in product, or pricelist, it should become False. Only if
+        # product_id has been cleared by user, we will leave price_unit as is.
+        if  product:
+            price_unit, pu_warning = self._price_unit_get(
+                cr, uid, product, uom, qty, type, partner_id,
+                currency_id, context=context)
+            result['price_unit'] = price_unit  # might be False
+            warning.update(pu_warning)
+
         result['name'] = res.partner_ref
 
         domain = {}
@@ -1395,26 +1576,87 @@ class account_invoice_line(osv.osv):
             if res2:
                 domain = {'uos_id':[('category_id','=',res2 )]}
 
-        res_final = {'value':result, 'domain':domain}
-
-        if not company_id or not currency_id:
-            return res_final
-
-        company = self.pool.get('res.company').browse(cr, uid, company_id, context=context)
-        currency = self.pool.get('res.currency').browse(cr, uid, currency_id, context=context)
-
-        if company.currency_id.id != currency.id:
-            if type in ('in_invoice', 'in_refund'):
-                res_final['value']['price_unit'] = res.standard_price
-            new_price = res_final['value']['price_unit'] * currency.rate
-            res_final['value']['price_unit'] = new_price
-
-        if uom:
-            uom = self.pool.get('product.uom').browse(cr, uid, uom, context=context)
-            if res.uom_id.category_id.id == uom.category_id.id:
-                new_price = res_final['value']['price_unit'] * uom.factor_inv
-                res_final['value']['price_unit'] = new_price
+        res_final = {'value': result, 'domain': domain, 'warning': warning}
         return res_final
+
+    def _price_unit_get(
+            self, cr, uid, product_id, uom_id, qty, invoice_type, partner_id,
+            currency_id, context=None):
+        price_unit = False
+        warning = {}
+        standard_currency_id = currency_id
+        partner_model = self.pool.get('res.partner')
+        partner_obj = partner_model.browse(
+            cr, uid, partner_id, context=context)
+        assert partner_obj, _('No partner found for id %d') % partner_id
+        if invoice_type in ('in_invoice', 'in_refund'):
+            field = 'list_price'
+            pricelist_property = 'property_product_pricelist_purchase'
+        else:
+            field = 'standard_price'
+            pricelist_property = 'property_product_pricelist'
+        if  pricelist_property in partner_obj:
+            pricelist_id = partner_obj[pricelist_property].id
+        else:
+            pricelist_id = False
+        # Check whether standard price p.u. modified by pricelist
+        if  pricelist_id:
+            pricelist_model = self.pool.get('product.pricelist')
+            price_unit = pricelist_model.price_get(
+                cr, uid, [pricelist_id], product_id, qty or 1.0, partner_id,
+                {'uom': uom_id})[pricelist_id]
+            if  price_unit is False:  # 0.0 is OK, we night have free products
+                warning = {
+                   'title': _('No valid pricelist line found!'),
+                   'message':
+                    _("Couldn't find a pricelist line matching this product"
+                    " and quantity.\n"
+                    "You have to change either the product, the quantity or"
+                    " the pricelist.")
+                }
+            # Pricelist converts price from standard currency to pricelist
+            # currency. We have to convert this to the invoice currency.
+            # In practice that will often mean undoing the conversion
+            # done by the pricelist object
+            pricelist_obj = pricelist_model.browse(cr, uid, pricelist_id)
+            if  (pricelist_obj and pricelist_obj.currency_id and
+                 pricelist_obj.currency_id.id):
+                standard_currency_id = pricelist_obj.currency_id.id
+        else:
+            # Take standard price per unit directly from product
+            product_model = self.pool.get('product.product')
+            product_obj = product_model.browse(
+                cr, uid, product_id, context=context)
+            assert product_obj, _('No product found for id %d') % product_id
+            assert field in product_obj, _(
+                'Field %s not found in product') % field
+            price_unit = product_obj[field]
+            # If price_unit not taken from price-list, we still have to
+            # take unit of measurement into account
+            if  uom_id:
+                uom_model = self.pool.get('product.uom')
+                uom_obj = uom_model.browse(cr, uid, uom_id)
+                p_uom_category_id = product_obj.uom_id.category_id.id
+                if  p_uom_category_id == uom_obj.category_id.id:
+                    price_unit = price_unit * uom_obj.factor_inv
+            # When price not taken from pricelist, the currency is
+            # determined by the price_type:
+            price_type_model = self.pool.get('product.price.type')
+            price_type_ids = price_type_model.search(
+                cr, uid, [('field', '=', field)])
+            if  price_type_ids:
+                price_type_obj = price_type_model.browse(
+                    cr, uid, price_type_ids[0])
+                if  (price_type_obj and price_type_obj.currency_id and
+                     price_type_obj.currency_id.id):
+                    standard_currency_id = price_type_obj.currency_id.id
+        # convert price_unit to currency of invoice
+        if  standard_currency_id != currency_id:
+            currency_model = self.pool.get('res.currency')
+            price_unit = currency_model.compute(
+                cr, uid, standard_currency_id, currency_id,
+                price_unit, round=True, context=context)
+        return price_unit, warning
 
     def uos_id_change(self, cr, uid, ids, product, uom, qty=0, name='', type='out_invoice', partner_id=False, fposition_id=False, price_unit=False, address_invoice_id=False, currency_id=False, context=None, company_id=None):
         if context is None:
@@ -1448,6 +1690,10 @@ class account_invoice_line(osv.osv):
         inv = self.pool.get('account.invoice').browse(cr, uid, invoice_id, context=context)
         company_currency = inv.company_id.currency_id.id
 
+        local_context = {
+            'tax_calculation_rounding_method':
+                inv.tax_calculation_rounding_method
+        }
         for line in inv.invoice_line:
             mres = self.move_line_get_item(cr, uid, line, context)
             if not mres:
@@ -1457,7 +1703,7 @@ class account_invoice_line(osv.osv):
             for tax in tax_obj.compute_all(cr, uid, line.invoice_line_tax_id,
                     (line.price_unit * (1.0 - (line['discount'] or 0.0) / 100.0)),
                     line.quantity, inv.address_invoice_id.id, line.product_id,
-                    inv.partner_id)['taxes']:
+                    inv.partner_id, context=local_context)['taxes']:
 
                 if inv.type in ('out_invoice', 'in_invoice'):
                     tax_code_id = tax['base_code_id']
@@ -1477,7 +1723,7 @@ class account_invoice_line(osv.osv):
                 tax_code_found = True
 
                 res[-1]['tax_code_id'] = tax_code_id
-                res[-1]['tax_amount'] = cur_obj.compute(cr, uid, inv.currency_id.id, company_currency, tax_amount, context={'date': inv.date_invoice})
+                res[-1]['tax_amount'] = tax_amount  #cur_obj.compute(cr, uid, inv.currency_id.id, company_currency, tax_amount, context={'date': inv.date_invoice})
         return res
 
     def move_line_get_item(self, cr, uid, line, context=None):
@@ -1514,7 +1760,7 @@ class account_invoice_line(osv.osv):
                 company_id=account.company_id.id)
             if product_change_result and 'value' in product_change_result and 'invoice_line_tax_id' in product_change_result['value']:
                 unique_tax_ids = product_change_result['value']['invoice_line_tax_id']
-        return {'value':{'invoice_line_tax_id': unique_tax_ids}}
+        return {'value': {'invoice_line_tax_id': unique_tax_ids}}
 
 account_invoice_line()
 
@@ -1588,26 +1834,37 @@ class account_invoice_tax(osv.osv):
         'base_amount': 0.0,
         'tax_amount': 0.0,
     }
+
     def compute(self, cr, uid, invoice_id, context=None):
         tax_grouped = {}
         tax_obj = self.pool.get('account.tax')
         cur_obj = self.pool.get('res.currency')
-        inv = self.pool.get('account.invoice').browse(cr, uid, invoice_id, context=context)
+        if isinstance(invoice_id, (int, long)):
+            invoice_id = [invoice_id]
+        inv = self.pool.get('account.invoice').browse(cr, uid, invoice_id[0], context=context)
         cur = inv.currency_id
         company_currency = inv.company_id.currency_id.id
 
+        local_context = {
+            'tax_calculation_rounding_method':
+                inv.tax_calculation_rounding_method
+        }
         for line in inv.invoice_line:
-            for tax in tax_obj.compute_all(cr, uid, line.invoice_line_tax_id, (line.price_unit* (1-(line.discount or 0.0)/100.0)), line.quantity, inv.address_invoice_id.id, line.product_id, inv.partner_id)['taxes']:
-                tax['price_unit'] = cur_obj.round(cr, uid, cur, tax['price_unit'])
+            for tax in tax_obj.compute_all(
+                    cr, uid, line.invoice_line_tax_id,
+                    (line.price_unit * (1 - (line.discount or 0.0) / 100.0)),
+                    line.quantity, inv.address_invoice_id.id, line.product_id,
+                    inv.partner_id, context=local_context)['taxes']:
                 val={}
+                val['account_tax_id'] = tax['id']
                 val['invoice_id'] = inv.id
                 val['name'] = tax['name']
                 val['amount'] = tax['amount']
                 val['manual'] = False
                 val['sequence'] = tax['sequence']
-                val['base'] = tax['price_unit'] * line['quantity']
+                val['base'] = tax['price_unit'] * line['quantity'] # cur_obj.round(cr, uid, cur, tax['price_unit'] * line['quantity'])
 
-                if inv.type in ('out_invoice','in_invoice'):
+                if inv.type in ('out_invoice', 'in_invoice'):
                     val['base_code_id'] = tax['base_code_id']
                     val['tax_code_id'] = tax['tax_code_id']
                     val['base_amount'] = cur_obj.compute(cr, uid, inv.currency_id.id, company_currency, val['base'] * tax['base_sign'], context={'date': inv.date_invoice or time.strftime('%Y-%m-%d')}, round=False)
@@ -1621,7 +1878,7 @@ class account_invoice_tax(osv.osv):
                     val['account_id'] = tax['account_paid_id'] or line.account_id.id
 
                 key = (val['tax_code_id'], val['base_code_id'], val['account_id'])
-                if not key in tax_grouped:
+                if key not in tax_grouped:
                     tax_grouped[key] = val
                 else:
                     tax_grouped[key]['amount'] += val['amount']

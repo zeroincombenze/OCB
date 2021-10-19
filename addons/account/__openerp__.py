@@ -3,6 +3,7 @@
 #
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2010 Tiny SPRL (<http://tiny.be>).
+#    Copyright (c) 2015 Didotech srl (http://www.didotech.com)
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -19,9 +20,9 @@
 #
 ##############################################################################
 {
-    "name" : "eInvoicing",
-    "version" : "1.1",
-    "author" : "OpenERP SA",
+    "name": "eInvoicing",
+    "version": "2.4.6.10a",
+    "author": "OpenERP SA",
     "category": 'Accounting & Finance',
     'complexity': "easy",
     "description": """
@@ -51,9 +52,9 @@ grouping is maintained through journal) for a particular financial year and for 
 module named account_voucher.
     """,
     'website': 'http://www.openerp.com',
-    'images' : ['images/accounts.jpeg','images/bank_statement.jpeg','images/cash_register.jpeg','images/chart_of_accounts.jpeg','images/customer_invoice.jpeg','images/journal_entries.jpeg'],
+    'images': ['images/accounts.jpeg','images/bank_statement.jpeg','images/cash_register.jpeg','images/chart_of_accounts.jpeg','images/customer_invoice.jpeg','images/journal_entries.jpeg'],
     'init_xml': [],
-    "depends" : ["base_setup", "product", "analytic", "process", "board", "edi"],
+    "depends": ["base_setup", "product", "analytic", "process", "board", "edi"],
     'update_xml': [
         'security/account_security.xml',
         'security/ir.model.access.csv',

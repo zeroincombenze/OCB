@@ -20,13 +20,16 @@
 ##############################################################################
 
 import time
+import datetime
 
+import netsvc
+from openerp import SUPERUSER_ID
+from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
+from openerp.tools.float_utils import float_round
 from osv import osv, fields
 from tools.translate import _
+
 import pos_box_entries
-import netsvc
-from openerp.tools.float_utils import float_round
-from openerp import SUPERUSER_ID
 
 
 class pos_make_payment(osv.osv_memory):
@@ -80,28 +83,49 @@ class pos_make_payment(osv.osv_memory):
                     partner_id = self.pool['res.partner'].search(cr, uid, [('property_customer_ref', '=', line.notice[len(order.shop_id.product_customer_id.default_code):-1])])
                     if partner_id:
                         order.write({'partner_id': partner_id[0]})
-                        line.write({'active': False})
-
-            if float_round(list_price, precision_digits=2) != 0.0 and float_round(list_price, precision_digits=2) != float_round(pos_price, precision_digits=2):
-                discount = (list_price - pos_price) / list_price * 100
-                line_data = {
-                    'price_unit': list_price,
-                    'discount': discount,
-                    'pos_discount': True,
-                }
-                order_line_obj.write(cr, uid, line.id, line_data, context=context)
+                line.write({'active': False})
+            if not context.get('skip_force_discount', False):
+                if float_round(list_price, precision_digits=2) != 0.0 and float_round(list_price, precision_digits=2) != float_round(pos_price, precision_digits=2):
+                    discount = (list_price - pos_price) / list_price * 100
+                    line_data = {
+                        'price_unit': list_price,
+                        'discount': discount,
+                        'pos_discount': True,
+                    }
+                    order_line_obj.write(cr, uid, line.id, line_data, context=context)
 
         if hr_employee and len(order.lines) == len(line_deactive):  # i have set only one employee
             result = []
             while hr_employee:
                 employee = hr_employee.pop()
                 try:
-                    res = hr_employee_obj.attendance_action_change(cr, employee.user_id.id, [employee.id], type=sign_action.pop()['type'], context=context, dt=order.date_order)
+                    ctx = context.copy()
+                    ctx['shop_id'] = order.shop_id.id
+                    attendance_action = sign_action.pop()['type']
+                    employee_state = employee.state
+                    force_attendance_action = False
+                    if attendance_action == 'sign_in' and employee_state == 'present':
+                        force_attendance_action = 'sign_out'
+                    elif attendance_action == 'sign_out' and employee_state == 'absent':
+                        force_attendance_action = 'sign_in'
+                    if force_attendance_action:
+                        result.append("Force {} at {}".format(force_attendance_action, order.date_order))
+
+                        dt = datetime.datetime.strptime(order.date_order, DEFAULT_SERVER_DATETIME_FORMAT)
+                        dt_10 = dt - datetime.timedelta(seconds=10)
+                        hr_employee_obj.attendance_action_change(cr, employee.user_id.id, [employee.id],
+                                                                 type=force_attendance_action, context=ctx,
+                                                                 dt=dt_10.strftime(DEFAULT_SERVER_DATETIME_FORMAT))
+
+                    res = hr_employee_obj.attendance_action_change(cr, employee.user_id.id, [employee.id], type=attendance_action, context=ctx, dt=order.date_order)
                 except Exception as e:
                     res = str(e)
                 result.append(res)
 
             order_obj.write(cr, uid, active_id, {'active': False, 'note': result}, context=context)
+            pos_order_line_ids = self.pool['pos.order.line'].search(cr, uid, [('order_id', '=', active_id)], context=context)
+            if pos_order_line_ids:
+                self.pool['pos.order.line'].write(cr, uid, pos_order_line_ids, {'active': False}, context=context)
             wf_service = netsvc.LocalService("workflow")
             wf_service.trg_validate(uid, 'pos.order', active_id, 'cancel', cr)
             return {'type': 'ir.actions.act_window_close'}
@@ -113,17 +137,18 @@ class pos_make_payment(osv.osv_memory):
         if vals:
             order_obj.write(cr, uid, active_id, vals, context=context)
 
-        amount = float_round(order.amount_total, precision_digits=2) - float_round(order.amount_paid, precision_digits=2)
-        data = self.read(cr, uid, ids, context=context)[0]
+        # amount = float_round(order.amount_total, precision_digits=2) - float_round(order.amount_paid, precision_digits=2)
+        amount2 = abs(int(order.amount_total * 100) - int(order.amount_paid * 100))
         # this is probably a problem of osv_memory as it's not compatible with normal OSV's
         # data['journal'] = data['journal'][0]
-
-        if amount != 0.0:
+#        if amount != 0.0:
+        if amount2 > 0.1:
+            data = self.read(cr, uid, ids, context=context)[0]
             order_obj.add_payment(cr, uid, active_id, data, context=context)
-        if order_obj.test_paid(cr, uid, [active_id]):
+        if order_obj.test_paid(cr, uid, [active_id], context):
             wf_service = netsvc.LocalService("workflow")
             wf_service.trg_validate(uid, 'pos.order', active_id, 'paid', cr)
-            return True  # self.print_report(cr, uid, ids, context=context)
+            return True #self.print_report(cr, uid, ids, context=context)
 
         return self.launch_payment(cr, uid, ids, context=context)
 
@@ -161,15 +186,18 @@ class pos_make_payment(osv.osv_memory):
             return order.amount_total - order.amount_paid
         return False
 
+    def _get_journal(self, cr, uid, context=None):
+        return self.pool['pos.box.entries']._get_journal(cr, uid, context)
+
     _columns = {
-        'journal': fields.selection(pos_box_entries.get_journal, "Payment Mode", required=True),
+        'journal': fields.selection(_get_journal, "Payment Mode", required=True),
         'amount': fields.float('Amount', digits=(16, 2), required= True),
         'payment_name': fields.char('Payment Reference', size=32),
         'payment_date': fields.date('Payment Date', required=True),
     }
 
     _defaults = {
-        'payment_date': time.strftime('%Y-%m-%d %H:%M:%S'),
+        'payment_date': lambda *a: time.strftime('%Y-%m-%d %H:%M:%S'),
         'amount': _default_amount,
         'journal': _default_journal
     }

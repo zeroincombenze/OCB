@@ -59,6 +59,7 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
             self.ACCOUNT_TYPE = ['payable']
         else:
             self.ACCOUNT_TYPE = ['payable','receivable']
+        self.partner_ids = ids if data.get('model') == 'res.partner' else False
         return super(aged_trial_report, self).set_context(objects, data, ids, report_type=report_type)
 
     def _get_lines(self, form):
@@ -66,6 +67,15 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
         move_state = ['draft','posted']
         if self.target_move == 'posted':
             move_state = ['posted']
+        query_params = [
+            tuple(move_state), tuple(self.ACCOUNT_TYPE),
+            self.date_from, self.date_from]
+        if self.partner_ids:
+            partner_query = ' AND res_partner.id IN %s '
+            query_params.append(tuple(self.partner_ids))
+        else:
+            partner_query = ''
+
         self.cr.execute('SELECT DISTINCT res_partner.id AS id,\
                     res_partner.name AS name \
                 FROM res_partner,account_move_line AS l, account_account, account_move am\
@@ -75,11 +85,11 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
                     AND (account_account.type IN %s)\
                     AND account_account.active\
                     AND ((reconcile_id IS NULL)\
-                       OR (reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date > %s )))\
+                       OR (reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date >= %s::timestamp + \'1day\'::interval )))\
                     AND (l.partner_id=res_partner.id)\
                     AND (l.date <= %s)\
-                    AND ' + self.query + ' \
-                ORDER BY res_partner.name', (tuple(move_state), tuple(self.ACCOUNT_TYPE), self.date_from, self.date_from,))
+                    AND ' + self.query + partner_query + ' \
+                ORDER BY res_partner.name', tuple(query_params))
         partners = self.cr.dictfetchall()
         ## mise a 0 du total
         for i in range(7):
@@ -99,7 +109,7 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
                     AND (account_account.type IN %s)\
                     AND (l.partner_id IN %s)\
                     AND ((l.reconcile_id IS NULL)\
-                    OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date > %s )))\
+                    OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date >= %s::timestamp + \'1day\'::interval )))\
                     AND ' + self.query + '\
                     AND account_account.active\
                     AND (l.date <= %s)\
@@ -119,7 +129,7 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
                         AND (COALESCE(l.date_maturity, l.date) < %s)\
                         AND (l.partner_id IN %s)\
                         AND ((l.reconcile_id IS NULL)\
-                        OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date > %s )))\
+                        OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date >= %s::timestamp + \'1day\'::interval )))\
                         AND '+ self.query + '\
                         AND account_account.active\
                     AND (l.date <= %s)\
@@ -136,7 +146,7 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
                         AND (COALESCE(l.date_maturity,l.date) > %s)\
                         AND (l.partner_id IN %s)\
                         AND ((l.reconcile_id IS NULL)\
-                        OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date > %s )))\
+                        OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date >= %s::timestamp + \'1day\'::interval )))\
                         AND '+ self.query + '\
                         AND account_account.active\
                     AND (l.date <= %s)\
@@ -155,10 +165,10 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
                 dates_query += ' BETWEEN %s AND %s)'
                 args_list += (form[str(i)]['start'], form[str(i)]['stop'])
             elif form[str(i)]['start']:
-                dates_query += ' > %s)'
+                dates_query += ' >= %s)'
                 args_list += (form[str(i)]['start'],)
             else:
-                dates_query += ' < %s)'
+                dates_query += ' <= %s)'
                 args_list += (form[str(i)]['stop'],)
             args_list += (self.date_from,)
             self.cr.execute('''SELECT l.partner_id, SUM(l.debit-l.credit)
@@ -168,7 +178,7 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
                         AND (account_account.type IN %s)
                         AND (l.partner_id IN %s)
                         AND ((l.reconcile_id IS NULL)
-                          OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date > %s )))
+                          OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date >= %s::timestamp + \'1day\'::interval )))
                         AND ''' + self.query + '''
                         AND account_account.active
                         AND ''' + dates_query + '''
@@ -226,6 +236,8 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
         return res
 
     def _get_lines_with_out_partner(self, form):
+        if self.partner_ids:
+            return []
         res = []
         move_state = ['draft','posted']
         if self.target_move == 'posted':
@@ -242,7 +254,7 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
                     AND (l.partner_id IS NULL)\
                     AND (account_account.type IN %s)\
                     AND ((l.reconcile_id IS NULL) \
-                    OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date > %s )))\
+                    OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date >= %s::timestamp + \'1day\'::interval )))\
                     AND ' + self.query + '\
                     AND (l.date <= %s)\
                     AND account_account.active ',(tuple(move_state), tuple(self.ACCOUNT_TYPE), self.date_from, self.date_from,))
@@ -259,7 +271,7 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
                         AND (account_account.type IN %s)\
                         AND (COALESCE(l.date_maturity, l.date) < %s)\
                         AND ((l.reconcile_id IS NULL)\
-                        OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date > %s )))\
+                        OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date >= %s::timestamp + \'1day\'::interval )))\
                         AND '+ self.query + '\
                         AND account_account.active ', (tuple(move_state), tuple(self.ACCOUNT_TYPE), self.date_from, self.date_from))
             t = self.cr.fetchall()
@@ -274,7 +286,7 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
                         AND (account_account.type IN %s)\
                         AND (COALESCE(l.date_maturity,l.date) > %s)\
                         AND ((l.reconcile_id IS NULL)\
-                        OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date > %s )))\
+                        OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date >= %s::timestamp + \'1day\'::interval )))\
                         AND '+ self.query + '\
                         AND account_account.active ', (tuple(move_state), tuple(self.ACCOUNT_TYPE), self.date_from, self.date_from))
             t = self.cr.fetchall()
@@ -302,7 +314,7 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
                         AND (account_account.type IN %s)\
                         AND (l.partner_id IS NULL)\
                         AND ((l.reconcile_id IS NULL)\
-                        OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date > %s )))\
+                        OR (l.reconcile_id IN (SELECT recon.id FROM account_move_reconcile AS recon WHERE recon.create_date >= %s::timestamp + \'1day\'::interval )))\
                         AND '+ self.query + '\
                         AND account_account.active\
                         AND ' + dates_query + '\
@@ -368,6 +380,7 @@ class aged_trial_report(report_sxw.rml_parse, common_report_header):
         return period or 0.0
 
     def _get_partners(self,data):
+        # TODO: deprecated, to remove in trunk
         if data['form']['result_selection'] == 'customer':
             return _('Receivable Accounts')
         elif data['form']['result_selection'] == 'supplier':

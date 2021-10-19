@@ -356,8 +356,7 @@ class pos_order(osv.osv):
         if data.get('payment_name', False):
             args['name'] = args['name'] + ': ' + data['payment_name']
         account_def = property_obj.get(cr, uid, 'property_account_receivable', 'res.partner', context=context)
-        args['account_id'] = (order.partner_id and order.partner_id.property_account_receivable \
-                             and order.partner_id.property_account_receivable.id) or order.shop_id and order.shop_id.property_account_receivable and order.shop_id.property_account_receivable.id or (account_def and account_def.id) or False
+        args['account_id'] = (order.partner_id and order.partner_id.property_account_receivable and order.partner_id.property_account_receivable.id) or (order.shop_id and order.shop_id.property_account_receivable and order.shop_id.property_account_receivable.id) or (account_def and account_def.id) or False
         args['partner_id'] = order.partner_id and order.partner_id.id or None
 
         if not args['account_id']:
@@ -423,7 +422,7 @@ class pos_order(osv.osv):
         return abs
 
     def action_invoice_state(self, cr, uid, ids, context=None):
-        return self.write(cr, uid, ids, {'state':'invoiced'}, context=context)
+        return self.write(cr, uid, ids, {'state': 'invoiced'}, context=context)
 
     def action_invoice(self, cr, uid, ids, context=None):
         wf_service = netsvc.LocalService("workflow")
@@ -527,10 +526,10 @@ class pos_order(osv.osv):
         def compute_tax(amount, tax, line):
             if amount > 0:
                 tax_code_id = tax['base_code_id']
-                tax_amount = line.price_subtotal * tax['base_sign']
+                tax_amount = abs(line.price_subtotal) * tax['base_sign']
             else:
                 tax_code_id = tax['ref_base_code_id']
-                tax_amount = line.price_subtotal * tax['ref_base_sign']
+                tax_amount = abs(line.price_subtotal) * tax['ref_base_sign']
 
             return (tax_code_id, tax_amount,)
 
@@ -584,7 +583,7 @@ class pos_order(osv.osv):
                 })
 
                 if data_type == 'product':
-                    key = ('product', values['partner_id'], values['account_id'], values['debit'] > 0)
+                    key = ('product', values['partner_id'], "{}_{}".format(values['account_id'], values['tax_code_id']), values['debit'] > 0)
                 elif data_type == 'tax':
                     key = ('tax', values['partner_id'], values['tax_code_id'], values['debit'] > 0)
                 elif data_type == 'counter_part':
@@ -604,8 +603,11 @@ class pos_order(osv.osv):
                         grouped_data[key].append(values)
                     else:
                         current_value = grouped_data[key][0]
+                        if data_type == 'product':
+                            current_value.update({
+                                'name': _('Product')
+                            })
                         current_value.update({
-                            'name': data_type,
                             'quantity': current_value.get('quantity', 0.0) + values.get('quantity', 0.0),
                             'credit': current_value.get('credit', 0.0) + values.get('credit', 0.0),
                             'debit': current_value.get('debit', 0.0) + values.get('debit', 0.0),
@@ -632,8 +634,12 @@ class pos_order(osv.osv):
                     taxes = self.pool['account.tax'].browse(cr, uid, taxes, context)
 
                 context.update({'tax_calculation_rounding_method': 'round_globally'})
-                # computed_taxes = account_tax_obj.compute_all(cr, uid, taxes, (line.price_unit * (100.0-line.discount)) / 100.0, line.qty, context=context)['taxes']
-                computed_taxes = account_tax_obj.compute_all(cr, uid, taxes, line.price_subtotal_incl / line.qty, line.qty, context=context)['taxes']
+                computed_taxes = account_tax_obj.compute_all(cr, uid, taxes, (line.price_unit * (100.0-line.discount)) / 100.0, line.qty, context=context)['taxes']
+                # if line.qty:
+                #     computed_taxes = account_tax_obj.compute_all(cr, uid, taxes, line.price_subtotal_incl / line.qty, line.qty, context=context)['taxes']
+                # else:
+                #     computed_taxes = account_tax_obj.compute_all(cr, uid, taxes, line.price_subtotal_incl, line.qty, context=context)['taxes']
+
                 for tax in computed_taxes:
                     # tax_amount += cur_obj.round(cr, uid, cur, tax['amount'])
                     group_key = (tax['tax_code_id'], tax['base_code_id'], tax['account_collected_id'], tax['id'])
@@ -675,7 +681,7 @@ class pos_order(osv.osv):
                     'debit': ((amount < 0) and -amount) or 0.0,
                     'tax_code_id': tax_code_id,
                     'tax_amount': tax_amount,
-                    'partner_id': order.partner_id and self.pool["res.partner"]._find_accounting_partner(order.partner_id).id or False
+                    'partner_id': order.partner_id and order.partner_id.id or False
                 })
                 counter_part += amount
 
@@ -711,8 +717,7 @@ class pos_order(osv.osv):
                     'debit': ((tax_amount < 0) and -tax_amount) or 0.0,
                     'tax_code_id': key[tax_code_pos],
                     'tax_amount': tax_amount,
-                    'partner_id': order.partner_id and self.pool['res.partner']._find_accounting_partner(
-                        order.partner_id).id or False
+                    'partner_id': order.partner_id and order.partner_id.id or False
                 })
                 counter_part += tax_amount
 
@@ -724,7 +729,7 @@ class pos_order(osv.osv):
                 # 'debit': ((order.amount_total > 0) and order.amount_total) or 0.0,
                 'credit': ((counter_part < 0) and -counter_part) or 0.0,
                 'debit': ((counter_part > 0) and counter_part) or 0.0,
-                'partner_id': order.partner_id and self.pool["res.partner"]._find_accounting_partner(order.partner_id).id or False
+                'partner_id': order.partner_id and order.partner_id.id or False
             })
 
             order.write({'state': 'done', 'account_move': move_id})
@@ -772,7 +777,8 @@ class account_bank_statement(osv.osv):
 class account_bank_statement_line(osv.osv):
     _inherit = 'account.bank.statement.line'
     _columns = {
-        'journal_id': fields.related('statement_id','journal_id','name', store=True, string='Journal', type='char', size=64),
+        'journal_id': fields.related('statement_id', 'journal_id', type='many2one', relation='account.journal',
+                                     string='Journal', store=True, readonly=True),
         'pos_statement_id': fields.many2one('pos.order', ondelete='cascade'),
     }
 
@@ -796,8 +802,9 @@ class pos_order_line(osv.osv):
             taxes = account_tax_obj.compute_all(cr, uid, taxes_ids, price, line.qty, product=line.product_id, partner=line.order_id.partner_id or False)
 
             cur = line.order_id.pricelist_id.currency_id
-            res[line.id]['price_subtotal'] = cur_obj.round(cr, uid, cur, taxes['total'])
-            res[line.id]['price_subtotal_incl'] = cur_obj.round(cr, uid, cur, taxes['total_included'])
+
+            res[line.id]['price_subtotal'] = taxes['total']  # cur_obj.round(cr, uid, cur, taxes['total'])
+            res[line.id]['price_subtotal_incl'] = taxes['total_included']  # cur_obj.round(cr, uid, cur, taxes['total_included'])
         return res
 
     def onchange_product_id(self, cr, uid, ids, pricelist, product_id, qty=0, partner_id=False, context=None):
@@ -832,28 +839,51 @@ class pos_order_line(osv.osv):
         result['price_subtotal_incl'] = taxes['total_included']
         return {'value': result}
 
+    def _get_order(self, cr, uid, ids, context=None):
+        res = self.pool['pos.order.line'].search(cr, uid, [('order_id', 'in', ids)], context=context)
+        return res
+
+    def _get_order_from_product(self, cr, uid, ids, context=None):
+        res = self.pool['pos.order.line'].search(cr, uid, [('product_id', 'in', ids)], context=context)
+        return res
+
     _columns = {
         'date_from': fields.function(lambda *a, **k: {}, method=True, type='date', string="Date from"),
         'date_to': fields.function(lambda *a, **k: {}, method=True, type='date', string="Date to"),
-        'date_order': fields.related('order_id', 'date_order', store=True, string='Date Order', type='date', size=64),
+        'date_order': fields.related('order_id', 'date_order', string='Date Order', type='date', size=64, store={
+                'pos.order.line': (lambda self, cr, uid, ids, c={}: ids, ['order_id'], 2000),
+                'pos.order': (_get_order, ['date_order'], 20),
+        }),
         'active': fields.boolean('Active'),
         'company_id': fields.many2one('res.company', 'Company', required=True),
         'name': fields.char('Line No', size=32, required=True),
         'notice': fields.char('Discount Notice', size=128),
         'product_id': fields.many2one('product.product', 'Product', domain=[('sale_ok', '=', True)], required=True, change_default=True),
-        'price_unit': fields.float(string='Unit Price', digits=(16, 2)),
-        'qty': fields.float('Quantity', digits=(16, 2)),
-        'price_subtotal': fields.function(_amount_line_all, multi='pos_order_line_amount', string='Subtotal w/o Tax', store={'pos.order.line': (lambda self, cr, uid, ids, c={}: ids, ['price_unit', 'qty', 'discount'], 50)}),
-        'price_subtotal_incl': fields.function(_amount_line_all, multi='pos_order_line_amount', string='Subtotal', store={'pos.order.line': (lambda self, cr, uid, ids, c={}: ids, ['price_unit', 'qty', 'discount'], 50)}),
+        'price_unit': fields.float(string='Unit Price', digits_compute=dp.get_precision('Sale Price')),
+        'qty': fields.float('Quantity', digits_compute=dp.get_precision('Product UoM')),
+        'price_subtotal': fields.function(_amount_line_all, digits_compute=dp.get_precision('Sale Price'), multi='pos_order_line_amount', string='Subtotal w/o Tax', store={'pos.order.line': (lambda self, cr, uid, ids, c={}: ids, ['price_unit', 'qty', 'discount'], 50)}),
+        'price_subtotal_incl': fields.function(_amount_line_all, digits_compute=dp.get_precision('Sale Price'), multi='pos_order_line_amount', string='Subtotal', store={'pos.order.line': (lambda self, cr, uid, ids, c={}: ids, ['price_unit', 'qty', 'discount'], 50)}),
         'discount': fields.float('Discount (%)', digits=(16, 2)),
         'order_id': fields.many2one('pos.order', 'Order Ref', ondelete='cascade'),
         'create_date': fields.datetime('Creation Date', readonly=True),
         'pos_discount': fields.boolean('Discount?'),
-        'shop_id': fields.related('order_id', 'shop_id', type='many2one', relation='sale.shop', string='Shop', store=True),
-        'user_id': fields.related('order_id', 'user_id', type='many2one', relation='res.users', string='Connected Salesman', store=True),
-        'default_code': fields.related('product_id', 'default_code', type='char', relation='product.product', string='Reference', store=True),
+        'shop_id': fields.related('order_id', 'shop_id', type='many2one', relation='sale.shop', string='Shop', store={
+                'pos.order.line': (lambda self, cr, uid, ids, c={}: ids, ['order_id'], 2000),
+                'pos.order': (_get_order, ['shop_id'], 20),
+        }),
+        'user_id': fields.related('order_id', 'user_id', type='many2one', relation='res.users', string='Connected Salesman', store={
+                'pos.order.line': (lambda self, cr, uid, ids, c={}: ids, ['order_id'], 2000),
+                'pos.order': (_get_order, ['user_id', 'state'], 20),
+        }),
+        'default_code': fields.related('product_id', 'default_code', type='char', relation='product.product', string='Reference', store={
+                'pos.order.line': (lambda self, cr, uid, ids, c={}: ids, ['product_id'], 2000),
+                'product.product': (_get_order_from_product, ['default_code'], 20),
+        }),
         'employee_id': fields.integer('ID employee'),
-        'categ_id': fields.related('product_id', 'product_tmpl_id', 'categ_id', type='many2one', relation='product.category', string='Category', store=True),
+        'categ_id': fields.related('product_id', 'product_tmpl_id', 'categ_id', type='many2one', relation='product.category', string='Category', store={
+                'pos.order.line': (lambda self, cr, uid, ids, c={}: ids, ['product_id'], 2000),
+                'product.product': (_get_order_from_product, ['categ_id'], 20),
+        }),
     }
 
     _defaults = {
@@ -1013,6 +1043,33 @@ class res_partner(osv.osv):
     _columns = {
         'property_customer_ref': fields.char('Customer Ref.', size=16, help="The reference attributed by the partner to the current company as a customer of theirs."),
     }
+
+
+class hr_attendance(osv.osv):
+    _inherit = "hr.attendance"
+
+    _columns = {
+        'shop_id': fields.many2one('sale.shop', 'Shop'),
+    }
+
+    def create(self, cr, uid, values, context=None):
+        context = context or self.pool['res.users'].context_get(cr, uid)
+        if context.get('shop_id'):
+            values['shop_id'] = context['shop_id']
+        return super(hr_attendance, self).create(cr, uid, values, context)
+
+    def _altern_si_so(self, cr, uid, ids, context=None):
+
+        return True
+
+    _constraints = [(_altern_si_so, 'Error: Sign in (resp. Sign out) must follow Sign out (resp. Sign in)', ['action'])]
+
+
+class hr_employee(osv.osv):
+    _inherit = "hr.employee"
+
+    def _action_check(self, cr, uid, emp_id, dt=False, context=None):
+        return True
 
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
