@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        
+        <record model="ir.ui.view" id="product_product_search_inherit">
+            <field name="name">product.product.search.inherit</field>
+            <field name="model">product.product</field>
+            <field name="type">search</field>
+            <field name="inherit_id" ref="product.product_search_form_view"/>
+            <field name="arch" type="xml">
+                <field name="name" position="replace">
+                    <field name="default_code" filter_domain="['|', ('default_code','ilike',self),('ean13','=',self)]"/>
+                    <field name="name"/>
+                </field>
+            </field>
+        </record>
+        
+    </data>
+</openerp>

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        
+        <record model="ir.ui.view" id="purchase_order_line_form_inherit">
+            <field name="name">purchase.order.line.form.inherit</field>
+            <field name="model">purchase.order.line</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="purchase.purchase_order_line_form"/>
+            <field name="arch" type="xml">
+                <field name="price_unit" position="after">
+                    <field name="extra_purchase_discount"/>
+                </field>
+            </field>
+        </record>
+        
+        <record model="ir.ui.view" id="purchase_order_line_form_inherit">
+            <field name="name">purchase.order.line.form.inherit</field>
+            <field name="model">purchase.order.line</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="purchase.purchase_order_line_form"/>
+            <field name="arch" type="xml">
+                <field name="price_unit" position="after">
+                    <field name="extra_purchase_discount"/>
+                </field>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_order_line_form2_inherit">
+            <field name="name">sale.order.line.form2.inherit</field>
+            <field name="model">sale.order.line</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="sale.view_order_line_form2" />
+            <field name="arch" type="xml">
+                <field name="purchase_price" position="replace">
+                    <field name="purchase_price"/>
+                </field>
+                <field name="purchase_price" position="after">
+                    <field name="extra_purchase_discount"/>
+                    <field name="manufacturer"/>
+                    <field name="manufacturer_pref"/>
+                    <field name="supplier"/>
+                    <field name="enable_desc"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_order_form_inherit" model="ir.ui.view">
+            <field name="name">sale.order.form</field>
+            <field name="model">sale.order</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="sale.view_order_form" />
+            <field name="arch" type="xml">
+                <field name="origin" position="after">
+                    <field name="requisition_id" readonly="1" />
+                </field>
+            </field>
+        </record>
+        
+        <record id="view_partner_form_inherit" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="priority" eval="25" />
+            <field name="arch" type="xml">
+                <field name="address" position="replace">
+                    <field colspan="4" mode="form,tree" name="address" nolabel="1" select="1" height="260">
+                        <form string="Partner Contacts">
+                            <group colspan="4" col="8">
+                                <group colspan="4" col="4">
+                                    <separator string="Postal Address" colspan="4" col="4" />
+                                    <field name="type" /><newline/>
+                                    <field name="street" colspan="4"/>
+                                    <field name="street2" colspan="4"/>
+                                    <field name="city" on_change="on_change_city(city)"/><newline/>
+                                    <field name="zip"/><newline/>
+                                    <field name="province" on_change="on_change_province(province)"/><newline/>
+                                    <field name="region" /><newline/>
+                                    <field name="country_id" completion="1"/>
+                                </group>
+
+                                <group colspan="2" col="4">
+                                    <separator string="Communication" colspan="4" col="4" />
+                                    <field name="name" /><newline/>
+                                    <field name="title" /><newline/>
+                                    <field name="phone" /><newline/>
+                                    <field name="mobile" /><newline/>
+                                    <field name="fax"/><newline/>
+                                    <field name="email" widget="email"/><newline/>
+                                    <field name="pec" widget="email"/><newline/>
+                                </group>
+                            </group>
+                        </form>
+                    </field>
+                </field>
+            </field>
+        </record>
+        
+        <!--<record id="view_partner_contact_form_inherit" model="ir.ui.view">
+            <field name="name">res.partner.contact.form.inherit</field>
+            <field name="model">res.partner.contact</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="base_contact.view_partner_contact_form"/>
+            <field name="arch" type="xml">
+                <field name="email" position="after">
+                    <field name="pec" />
+                </field>
+            </field>
+        </record>-->
+        
+    </data>
+</openerp>

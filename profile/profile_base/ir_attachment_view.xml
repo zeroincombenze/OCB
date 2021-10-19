@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<openerp>
+    <data>
+        <record id="view_attachment_search_active" model="ir.ui.view">
+            <field name="name">ir.attachment.active</field>
+            <field name="model">ir.attachment</field>
+            <field name="inherit_id" ref="base.view_attachment_search"/>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <filter icon="terp-stage" string="URL" domain="[('type','=','url')]" position="after" >
+                    <filter icon="terp-personal+" domain="[('active','=',True)]" name="active" string="Active"/>
+                </filter>
+            </field>
+        </record>
+    
+        <record id="view_attachment_tree_active" model="ir.ui.view">
+            <field name="name">ir.attachment.active.tree</field>
+            <field name="model">ir.attachment</field>
+            <field name="inherit_id" ref="base.view_attachment_tree"/>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <field name="name" position="after" >
+                    <field name="active" invisible="1"/> 
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>
