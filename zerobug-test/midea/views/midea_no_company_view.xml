@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="midea.no_company">
+            <field name="name">Midea tabel without company</field>
+            <field name="model">midea.no_company</field>
+            <field name="type">form</field>
+            <field name="priority" eval="16"/>
+            <field name="arch" type="xml">
+            <!-- view content: <form>, <tree>, <graph>, … -->
+                <form string="Midea form">
+                    <field name="name"/>
+                    <field name="active"/>
+                    <field name="state"/>
+                </form>
+            </field>
+        </record>
+
+        <record id="midea.action_test" model="ir.actions.act_window">
+            <field name="name">My idea test record</field>
+            <field name="res_model">midea.no_company</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="midea.no_company"/>
+        </record>
+
+    </data>
+</openerp>

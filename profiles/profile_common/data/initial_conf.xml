@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data noupdate="1">
+
+    <!-- Root user (not in 6.1)
+    <record id="base.partner_root" model="res.partner">
+        <field name="country_id" ref="base.it"/>
+        <field name="tz">Europe/Rome</field>
+    </record>
+    -->
+
+    <!-- Base company -->
+    <record id="base.main_partner" model="res.partner">
+        <field name="currency_id" ref="base.EUR"/>
+    </record>
+
+    <!-- Main company -->
+    <record id="base.main_company" model="res.company">
+        <field name="country_id" ref="base.it"/>
+        <field name="currency_id" ref="base.EUR"/>
+    </record>
+
+</data>
+</openerp>

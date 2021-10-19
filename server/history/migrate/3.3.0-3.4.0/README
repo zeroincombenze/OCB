@@ -1,0 +1,160 @@
+[![Build Status](https://travis-ci.org/zeroincombenze/3.3.0-3.4.0.svg?branch=6.1)](https://travis-ci.org/zeroincombenze/3.3.0-3.4.0)
+[![license agpl](https://img.shields.io/badge/licence-AGPL--3-blue.svg)](http://www.gnu.org/licenses/agpl-3.0.html)
+[![Coverage Status](https://coveralls.io/repos/github/zeroincombenze/3.3.0-3.4.0/badge.svg?branch=6.1)](https://coveralls.io/github/zeroincombenze/3.3.0-3.4.0?branch=6.1)
+[![codecov](https://codecov.io/gh/zeroincombenze/3.3.0-3.4.0/branch/6.1/graph/badge.svg)](https://codecov.io/gh/zeroincombenze/3.3.0-3.4.0/branch/6.1)
+[![OCA_project](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-oca-6.svg)](https://github.com/OCA/3.3.0-3.4.0/tree/6.1)
+[![Tech Doc](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-docs-6.svg)](http://wiki.zeroincombenze.org/en/Odoo/6.1/dev)
+[![Help](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-help-6.svg)](http://wiki.zeroincombenze.org/en/Odoo/6.1/man/)
+[![try it](http://www.zeroincombenze.it/wp-content/uploads/ci-ct/prd/button-try-it-6.svg)](http://erp6.zeroincombenze.it)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[![en](http://www.shs-av.com/wp-content/en_US.png)](http://wiki.zeroincombenze.org/it/Odoo/7.0/man)
+
+This document describes the steps to follow to migrate from a version 3.3.0 of Tiny ERP server to a version 3.4.0
+================================================================================================
+
+Warning: the migration scripts involved in this migration are only meant for 
+a standard Tiny ERP installation. It might not work or even break some data 
+if you added or modified some code to the default Tiny ERP distribution.
+
+To migrate a 3.3.0 server to version 3.4.0 you should:
+
+- stop Tiny ERP server 3.3.0
+
+- backup your database
+	For example: pg_dump terp330 > backup330.sql
+
+- run the pre.py script (located in this directory)
+	You might need to pass it some optional arguments so that it can connect 
+	to the database.
+
+	For example: python pre.py -d terp330
+
+- run TinyERP server 3.4.0 with "-u all" in the parameters
+	For example: ./tinyerp-server.py -d terp330 -u all
+
+- stop TinyERP server 3.4.0
+
+- run the post.py script (located in this directory)
+
+	You might need to pass it some optional arguments so that it can connect 
+	to the database.
+
+	For example: python post.py -d terp330
+
+- run TinyERP server 3.4.0 again with "-u all" in the parameters
+	For example: ./tinyerp-server.py -d terp330 -u all
+
+- you are ready to work with the new version.
+
+[//]: # (copyright)
+
+----
+
+**Odoo** is a trademark of [Odoo S.A.](https://www.odoo.com/) (formerly OpenERP, formerly TinyERP)
+
+**OCA**, or the [Odoo Community Association](http://odoo-community.org/), is a nonprofit organization whose
+mission is to support the collaborative development of Odoo features and
+promote its widespread use.
+
+**zeroincombenze®** is a trademark of [SHS-AV s.r.l.](http://www.shs-av.com/)
+which distributes and promotes **Odoo** ready-to-use on its own cloud infrastructure.
+[Zeroincombenze® distribution](http://wiki.zeroincombenze.org/en/Odoo)
+is mainly designed for Italian law and markeplace.
+Everytime, every Odoo DB and customized code can be deployed on local server too.
+
+[//]: # (end copyright)
+
+[//]: # (addons)
+
+[//]: # (end addons)
+
+[![chat with us](https://www.shs-av.com/wp-content/chat_with_us.gif)](https://tawk.to/85d4f6e06e68dd4e358797643fe5ee67540e408b)
