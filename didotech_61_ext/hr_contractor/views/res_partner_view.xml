@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_partner_form" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="/form/notebook/page[@string='General']" position="inside">
+                    <group  groups="base.group_extended">
+                        <separator colspan="4" string="Brands"/>
+                        <field  colspan="4" name="brand_ids" nolabel="1">
+                            <form string="Brand" >
+                                <field name="name" />
+                                <field name="owner_id" invisible="1" /><newline/>
+                            </form>
+                            <tree string="Brands" >
+                                <field name="name" />
+                            </tree>
+                            <search string="Brands" >
+                                <field name="name" />
+                            </search>
+                        </field>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>

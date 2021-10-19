@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_telegram_command_tree" model="ir.ui.view">
+            <field name="name">telegram.command.tree</field>
+            <field name="model">telegram.command</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Telegram Command">
+                    <field name="sequence"/>
+                    <field name="name"/>
+                    <field name="description"/>
+                    <field name="model_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_telegram_command_form" model="ir.ui.view">
+            <field name="name">telegram.command.form</field>
+            <field name="model">telegram.command</field>
+            <field name="arch" type="xml">
+                <form string="Telegram Command">
+                    <group colspan="4">
+                        <field name="name" nolabel="1"/>
+                        <field name="model_id" on_change="onchange_model_id(model_id)"/>
+                        <field name="model" invisible="1"/>
+                    </group>
+                    <notebook colspan="4">
+                        <page string="SetUP">
+                            <field name="description" colspan="4"/>
+                            <field name="sequence"/>
+                            <field name="group_ids" widget="many2many_tags" colspan="4"/>
+                        </page>
+                        <page string="Response">
+                            <group col="4" colspan="2">
+                                <notebook colspan="4">
+                                    <page string="Code">
+                                        <group string="Response Code" colspan="4">
+                                            <field name="response_code" nolabel="1"/>
+                                        </group>
+                                    </page>
+                                    <page string="Response Template">
+                                        <group string="Response Template" colspan="4">
+                                            <field name="response_template" nolabel="1"/>
+                                        </group>
+                                        <group string="Dynamic Values Builder" colspan="2">
+                                            <field name="model_object_field"
+                                                   domain="[('model_id','=',model_id),('ttype','!=','one2many'),('ttype','!=','many2many')]"
+                                                   on_change="onchange_sub_model_object_value_field(model_object_field)"
+                                                   colspan="4"/>
+                                            <field name="sub_object" readonly="1" colspan="4"/>
+                                            <field name="sub_model_object_field"
+                                                   domain="[('model_id','=',sub_object),('ttype','!=','one2many'),('ttype','!=','many2many')]"
+                                                   colspan="4"
+                                                   attrs="{'readonly':[('sub_object','=',False)],'required':[('sub_object','!=',False)]}"
+                                                   on_change="onchange_sub_model_object_value_field(model_object_field,sub_model_object_field)"/>
+                                            <field name="null_value" colspan="4"
+                                                   on_change="onchange_sub_model_object_value_field(model_object_field,sub_model_object_field,null_value)"/>
+                                            <field name="copyvalue" colspan="4"/>
+                                        </group>
+                                        <group string="Attachment" colspan="2">
+                                            <notebook colspan="2">
+                                                <page string="Attach Report">
+                                                    <field name="report_template" colspan="4"
+                                                           domain="[('model','=',model)]"/>
+                                                    <field name="report_name" colspan="4"/>
+                                                </page>
+                                                <page string="Attach existing files">
+                                                    <field name="attachment_ids" colspan="4" nolabel="1" height="350"/>
+                                                </page>
+                                            </notebook>
+                                        </group>
+                                    </page>
+                                    <page string="Post Response Code">
+                                        <group string="Post Response Code">
+                                            <field name="post_response_code" nolabel="1"/>
+                                        </group>
+                                    </page>
+                                </notebook>
+                            </group>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_telegram_command" model="ir.actions.act_window">
+            <field name="name">Telegram Commands</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">telegram.command</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_telegram_command" parent="telegram.menu_telegram" name="Telegram Commands" sequence="10"
+                  action="action_telegram_command"/>
+
+    </data>
+</openerp>

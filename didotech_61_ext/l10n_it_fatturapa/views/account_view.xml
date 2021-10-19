@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <menuitem name="Fattura PA" id="menu_fattura_pa_receivables" parent="account.menu_finance_receivables"/>
+        <menuitem name="Fattura PA" id="menu_fattura_pa_payables" parent="account.menu_finance_payables"/>
+
+        <record id="view_payment_term_form_fatturapa" model="ir.ui.view">
+            <field name="name">account.payment.term.fatturapa</field>
+            <field name="model">account.payment.term</field>
+            <field name="inherit_id" ref="account.view_payment_term_form"/>
+            <field name="arch" type="xml">
+                <field name="line_ids" position="after">
+                    <group col="2" colspan="2">
+                        <separator colspan="2" string="FatturaPA"/>
+                        <field name="fatturapa_pt_id" widget="selection"/>
+                        <field name="fatturapa_pm_id" widget="selection"/>
+                    </group>
+                </field>
+            </field>
+        </record>
+
+        <record id="customer_invoice_stamp" model="ir.ui.view">
+            <field name="name">customer_invoice_stamp</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <field name="tax_line" position="after">
+                    <group>
+                        <field name="virtual_stamp"/>
+                        <field name="stamp_amount" attrs="{'required': [('virtual_stamp', '!=', False)], 'invisible': [('virtual_stamp', '=', False)]}"/>
+                    </group>
+                </field>
+            </field>
+        </record>
+
+        <!-- NO NEED ON 6.1
+        <record id="customer_invoice_lines_not_editable" model="ir.ui.view">
+            <field name="name">customer_invoice_lines_not_editable</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"></field>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='invoice_line']/tree" position="attributes">
+                    <attribute eval="False" name="editable"></attribute>
+                </xpath>
+            </field>
+        </record>
+        <record id="supplier_invoice_lines_not_editable" model="ir.ui.view">
+            <field name="name">supplier_invoice_lines_not_editable</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_supplier_form"></field>
+            <field name="arch" type="xml">
+                <xpath expr="//field[@name='invoice_line']/tree" position="attributes">
+                    <attribute eval="False" name="editable"></attribute>
+                </xpath>
+            </field>
+        </record>
+        -->
+        <record id="view_invoice_line_form_fatturapa" model="ir.ui.view">
+            <field name="name">account.invoice.line.fatturapa</field>
+            <field name="model">account.invoice.line</field>
+            <field name="inherit_id" ref="l10n_it_account.view_invoice_line_form_customer"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/notebook/page[@string='Invoice Line']" position="after">
+                    <page string="Fattura PA">
+
+                        <group string="Related Documents">
+                            <field name="related_documents" nolabel="1">
+                                <tree editable="bottom" string="Related Documents">
+                                    <field name="type"/>
+                                    <field name="name"/>
+                                    <field name="lineRef" readonly="1"/>
+                                    <field name="date"/>
+                                    <field name="numitem"/>
+                                    <field name="code"/>
+                                    <field name="cig"/>
+                                    <field name="cup"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_account_journal_form_fatturapa" model="ir.ui.view">
+            <field name="name">account.journal.fatturapa</field>
+            <field name="model">account.journal</field>
+            <field name="inherit_id" ref="account.view_account_journal_form"/>
+            <field name="arch" type="xml">
+                <field name="default_credit_account_id" position="after">
+                    <field name="fattura_pa"/>
+                </field>
+                <xpath expr="//notebook" position="inside">
+                    <page string="Fattura Elettronica">
+                        <field name="doc_type_id" />
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</openerp>

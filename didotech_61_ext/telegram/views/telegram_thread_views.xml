@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_telegram_thread_tree" model="ir.ui.view">
+            <field name="name">telegram.thread.tree</field>
+            <field name="model">telegram.thread</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Telegram Command">
+                    <field name="create_date"/>
+                    <field name="user_id"/>
+                    <field name="channel"/>
+                    <field name="message"/>
+                    <field name="message_id"/>
+                    <field name="update_id"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_telegram_thread_form" model="ir.ui.view">
+            <field name="name">telegram.thread.form</field>
+            <field name="model">telegram.thread</field>
+            <field name="arch" type="xml">
+                <form string="Telegram Thread">
+                    <field name="create_date"/>
+                    <field name="channel"/>
+                    <field name="message"/>
+                    <field name="message_id"/>
+                    <field name="update_id"/>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="action_telegram_thread" model="ir.actions.act_window">
+            <field name="name">Telegram Thread</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">telegram.thread</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem id="menu_telegram_thread" parent="telegram.menu_telegram" name="Telegram Thread" sequence="20"
+                  action="action_telegram_thread"/>
+
+    </data>
+</openerp>

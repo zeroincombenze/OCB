@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_invoice_form_fatturapa_out" model="ir.ui.view">
+            <field name="name">account.invoice.fatturapa_out</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Jmaga" groups="account.group_account_invoice">
+                        <notebook>
+                            <page string="Errori di importazione">
+                                <field name="inconsistencies" nolabel="1" colspan="4" readonly="1"/>
+                            </page>
+                        </notebook>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>

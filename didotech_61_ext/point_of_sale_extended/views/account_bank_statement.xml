@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="account.action_bank_statement_tree" model="ir.actions.act_window">
+            <field name="name">Bank Statements</field>
+            <field name="domain">[('journal_id.type', '=', 'bank'), ('journal_id.journal_user', '=', False)]</field>
+        </record>
+
+        <record id="point_of_sale.action_new_bank_statement_all_tree" model="ir.actions.act_window">
+            <field name="name">Cash Registers</field>
+            <field name="domain">[('journal_id.journal_user','!=', False)]</field>
+        </record>
+
+        <record id="view_bank_statement_tree" model="ir.ui.view">
+            <field name="name">account.bank.statement.user.tree</field>
+            <field name="model">account.bank.statement</field>
+            <field name="inherit_id" ref="account.view_bank_statement_tree"/>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <field name="name" position="before" >
+                    <field name="user_id" />
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>

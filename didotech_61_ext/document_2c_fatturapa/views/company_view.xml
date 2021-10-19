@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_account_config_settings" model="ir.ui.view">
+            <field name="name">view_account_config_settings</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="/form/notebook/page[@string='General Information']" position="after">
+                    <page string="Fattura PA 2C Invio a SdI">
+                        <group name="fatturapa_2c_settings">
+                            <field name="fpa_2c_username" required="1" />
+                            <field name="fpa_2c_password" required="1" />
+                            <field name="fpa_2c_formato_storage"  />
+                            <field name="fpa_2c_sent_to_sdi"  />
+                            <field name="node" />
+                            <field name="fpa_2c_node" />
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>

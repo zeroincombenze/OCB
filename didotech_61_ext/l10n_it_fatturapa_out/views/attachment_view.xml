@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record model="ir.ui.view" id="view_fatturapa_out_attachment_tree">
+            <field name="name">fatturapa.attachment.out.tree</field>
+            <field name="model">fatturapa.attachment.out</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Export Electronic Invoice" create="false">
+                    <field name="xml_error" invisible="1" />
+                    <button name="show_error" string="" type="object" icon="gtk-dialog-error" attrs="{'invisible': [('xml_error', '!=', True)]}" />
+                    <field name="name"/>
+                    <field name="invoice_partner_id"/>
+                    <field name="out_invoice_ids"/>
+                </tree>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_fatturapa_out_attachment_search">
+            <field name="name">fatturapa.attachment.out.search</field>
+            <field name="model">fatturapa.attachment.out</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search>
+                    <field name="name"/>
+                    <field name="invoice_partner_id"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_fatturapa_out_attachment_form">
+            <field name="name">fatturapa.attachment.out.form</field>
+            <field name="model">fatturapa.attachment.out</field>
+            <field name="arch" type="xml">
+                <form string="Export Electronic Invoice" col="4">
+                    <field name="datas" filename="datas_fname" readonly="1" nolabel="1"/>
+                    <field name="datas_fname" invisible="1"/>
+                    <field name="name" invisible="1"/>
+                    <group >
+                        <field name="xml_error" invisible="1" />
+                        <button name="show_error" string="Attenzione rilevata un'anomalia" type="object" icon="gtk-dialog-error" attrs="{'invisible': [('xml_error', '!=', True)]}" />
+                        <group string="Fatture Presenti">
+                            <field name="customer_invoice_numbers" nolabel="1"/>
+                        </group>
+                        <group string="Allegati Presenti">
+                            <field name="attachment_list" nolabel="1"/>
+                        </group>
+                    </group>
+                    <notebook colspan="4">
+                        <page string="Invoices">
+                            <field name="out_invoice_ids" nolabel="1"
+                                   context="{'form_view_ref': 'account.invoice_form', 'tree_view_ref': 'account.invoice_tree'}"/>
+                            <newline/>
+                            <group groups="base.group_no_one" string="History" colspan="6">
+                                <field name="create_uid" readonly="1"/>
+                                <field name="create_date" readonly="1"/>
+                                <field name="invoices_total" readonly="1" />
+                            </group>
+                        </page>
+                        <page string="Invoice Preview">
+                            <field name="xml_preview" widget="text_WYSIWYG" nolabel="1" readonly="1"/>
+                        </page>
+                    </notebook>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="action_fatturapa_attachment" model="ir.actions.act_window">
+            <field name="name">Electronic Invoice Export Files</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">fatturapa.attachment.out</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'nodelete': '1', 'nocreate': '1'}</field>
+            <field name="view_id" ref="view_fatturapa_out_attachment_tree"/>
+        </record>
+
+        <menuitem action="action_fatturapa_attachment"
+            parent="l10n_it_fatturapa.menu_fattura_pa_receivables"
+            name="E-invoice Export Files"
+            id="fatturapa_attachment_menu"/>
+
+    </data>
+</openerp>

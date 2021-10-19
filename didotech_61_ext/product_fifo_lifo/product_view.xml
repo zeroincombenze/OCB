@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_product_standard_price_form_fifo_lifo" model="ir.ui.view">
+            <field name="name">product.product.standard.price.form.inherit</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="stock.view_product_standard_price_form"/>
+            <field name="arch" type="xml">
+                <field name="standard_price" position="replace">
+                    <field name="standard_price" attrs="{'readonly':[('valuation','=','real_time'), ('cost_method', 'in', ['standard', 'average'])]}" nolabel="1"/>
+                </field>
+                <button string="Update" position="replace" >
+                    <button name="%(stock.action_view_change_standard_price)d" string="Update"
+                        type="action" attrs="{'invisible':['|', ('valuation','!=', 'real_time'), ('cost_method', 'not in', ['standard', 'average'])]}"
+                         groups="product.group_costing_method"/>
+                </button>
+            </field>
+        </record>
+
+<!-- purchase view -->
+
+        <menuitem
+            id="menu_purchase_config_fifo_lifo" name="Product Lifo/Fifo"
+            parent="purchase.menu_purchase_config_purchase" sequence="400"  groups="base.group_extended"/>
+
+        <record id="view_purchase_configuration_fifo_lifo" model="ir.ui.view">
+            <field name="name">purchase settings</field>
+            <field name="model">purchase.config.settings</field>
+            <field name="arch" type="xml">
+                <field name="group_costing_method" on_change="onchange_group_costing_method(group_costing_method)"/>
+                <field name="group_stock_inventory_valuation" invisible="1"/>
+            </field>
+        </record>
+
+        <record id="product_fifo_lifo_action" model="ir.actions.act_window">
+            <field name="name">Product Lifo/Fifo</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">purchase.config.settings</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="view_purchase_configuration_fifo_lifo"/>
+            <field name="help">Configure Lifo/Fifo</field>
+        </record>
+
+        <menuitem
+            action="product_fifo_lifo_action" id="menu_product_fifo_lifo_action_purchase"
+            parent="menu_purchase_config_fifo_lifo" sequence="200"/>
+
+    </data>
+</openerp>

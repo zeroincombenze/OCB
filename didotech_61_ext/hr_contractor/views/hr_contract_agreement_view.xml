@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_hr_contract_agreement_type_tree" model="ir.ui.view">
+            <field name="name">hr.contract.agreement.type</field>
+            <field name="model">hr.contract.agreement.type</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Contract Types" editable="top">
+                    <field name="name" />
+                    <field name="interval" />
+                    <field name="default" />
+                    <field name="auto_approve" />
+                    <field name="payment_term_id" widget="selection"/>
+                    <field name="crea_notula" />
+                    <field name="progetto_unico"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_hr_contract_type" model="ir.actions.act_window">
+           <field name="name">Contract Types</field>
+           <field name="res_model">hr.contract.agreement.type</field>
+           <field name="view_type">form</field>
+           <field name="view_mode">tree</field>
+       </record>
+    </data>
+</openerp>

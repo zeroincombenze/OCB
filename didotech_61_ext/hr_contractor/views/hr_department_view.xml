@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_department_form_inherit" model="ir.ui.view">
+            <field name="name">hr.contract.hr.department.form.inherit</field>
+            <field name="model">hr.department</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="hr.view_department_form"/>
+            <field name="arch" type="xml">
+                <field name="company_id" position="after">
+                    <field name="has_contractor" />
+                    <field name="allow_overlap" />
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>

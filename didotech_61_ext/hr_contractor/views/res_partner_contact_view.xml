@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="partner_contact_form" model="ir.ui.view">
+            <field name="name">partner.contact.form.inherit</field>
+            <field name="model">res.partner.contact</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="base_contact.view_partner_contact_form"/>
+            <field name="arch" type="xml">
+                <field name="lang_id" position="replace">
+                    <newline/>
+                    <group colspan="2" col="4" string="Postal Address">
+                        <field name="destination" />
+                        <field name="street" colspan="4"/>
+                        <field name="street2" colspan="4"/>
+                        <field name="city" on_change="on_change_city(city)"/>
+                        <field name="zip"/>
+                        <field name="province" select="2"/>
+                        <field name="region"/>
+                        <field name="phone" colspan="4"/>
+                        <field name="fax" colspan="4"/>
+                    </group>
+                </field>
+                
+                <page string="Notes" position="after" >
+                    <page string="Portale" >
+                        <group colspan="4" col="4">
+                            <separator string="Credenziali Accesso" colspan="4" col="4" />
+							<field name="user_django" colspan="4"  />
+                            <field name="password_django" colspan="4"  />  
+                        </group>	
+					</page>
+                </page>
+                
+                <field name="country_id" position="replace" />
+            </field>
+        </record>
+
+        <record id="partner_contact_tree" model="ir.ui.view">
+            <field name="name">partner.contact.tree.inherit</field>
+            <field name="model">res.partner.contact</field>
+            <field name="type">tree</field>
+            <field name="inherit_id" ref="base_contact.view_partner_contact_tree"/>
+            <field name="arch" type="xml">
+                <field name="lang_id" position="replace">
+                    <tree>
+                        <field name="destination" />
+                        <field name="street" colspan="4"/>
+                        <field name="street2" colspan="4"/>
+                        <field name="city" on_change="on_change_city(city)"/>
+                        <field name="zip"/>
+                        <field name="province" select="2"/>
+                        <field name="region"/>
+                        <field name="phone" colspan="4"/>
+                        <field name="fax" colspan="4"/>
+                        <field name="country_id" position="replace" />
+                    </tree>
+                </field>
+            </field>
+        </record>
+
+        <record id="open_view_partner_contact_agents" model="ir.actions.act_window">
+            <field name="name">Agents</field>
+            <field name="res_model">res.partner.contact</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="partner_contact_tree"/>
+        </record>
+        <menuitem id="menu_open_view_partner_contact_agents" action="open_view_partner_contact_agents" sequence="4" parent="hr.menu_hr_main"/>
+
+    </data>
+</openerp>

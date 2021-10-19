@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!--
+        ==========
+         res_partner_director
+        ==========
+        -->
+        <record id="view_res_partner_director_form" model="ir.ui.view">
+            <field name="name">res.partner.director.form</field>
+            <field name="model">res.partner.director</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Director">
+                    <field name="name" />
+                    <field name="department_id" widget="selection"/>
+                    <field name="phone" />
+                    <field name="email" widget="email"/>
+                </form>
+            </field>
+        </record>
+        <record id="view_res_partner_director_tree" model="ir.ui.view">
+            <field name="name">res.partner.director.tree</field>
+            <field name="model">res.partner.director</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Director">
+                    <field name="name" />
+                    <field name="department_id" />
+                    <field name="phone" />
+                    <field name="email"  />
+                </tree>
+            </field>
+        </record>
+
+        <record id="action_view_res_partner_director_form" model="ir.actions.act_window">
+            <field name="name">Director</field>
+            <field name="res_model">res.partner.director</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem id="menu_res_partner_director_view" name="Director" parent="base.menu_config_address_book" action="action_view_res_partner_director_form" />
+
+        <record id="view_res_partner_director_tree" model="ir.ui.view">
+            <field name="name">res.partner.director.tree</field>
+            <field name="model">res.partner.director</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Director">
+                    <field name="name" />
+                    <field name="department_id" />
+                    <field name="phone" />
+                    <field name="email"  />
+                </tree>
+            </field>
+        </record>
+    </data>
+</openerp>

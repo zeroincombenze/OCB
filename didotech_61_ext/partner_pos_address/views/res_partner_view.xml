@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+		<record id="view_partner_form_inherit_partner_pos_address" model="ir.ui.view">
+            <field name="name">res.partner.form.inherit.partner.pos.address</field>
+            <field name="model">res.partner</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="/form/notebook/page[@string='General']" position="after">
+					<page string="Competitors">
+						<group colspan="4" cols="4">
+							<separator string="Competitors" colspan="4" />
+							<field name="competitor_ids" nolabel="1" colspan="4" />
+						</group>
+					</page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>

@@ -1,0 +1,1016 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <menuitem name="Repair Center" id="menu_repair_center" sequence="4" web_icon="images/rc.png"
+                  web_icon_hover="images/rc-hover.png" groups="group_repair_user"/>
+
+        <function
+                eval="('default', False, 'warehouse_id', [('repair.order', False)], ref('stock.warehouse0'), True, False, False, False, True)"
+                id="repair_default_set"
+                model="ir.values"
+                name="set"/>
+
+        <record id="view_repair_order_tree" model="ir.ui.view">
+            <field name="name">repair.order.tree</field>
+            <field name="model">repair.order</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Repair Orders"
+                      colors="grey:state=='done';blue:state=='draft';red:state=='confirmed';green:state=='wait_delivery';orange:state=='under_repair'">
+                    <field name="name"/>
+                    <!--                    <field name="product_id" />-->
+                    <field name="machine_id"/>
+                    <field name="customer_ref"/>
+                    <!--                    <field name="manufacturer_pname" />
+                                        <field name="manufacturer_pref" />-->
+                    <field name="customer_id"/>
+                    <!--                    <field name="serial" />-->
+                    <field name="email"/>
+                    <field name="order_date"/>
+                    <field name="state"/>
+                    <field name="on_site"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_repair_order_form" model="ir.ui.view">
+            <field name="name">repair.order.form</field>
+            <field name="model">repair.order</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Repair Order">
+                    <group colspan="4" col="6">
+                        <group colspan="4" col="4">
+                            <field name="name" string="Number"
+                                   attrs="{'readonly': ['|', ('on_site', '=', False), ('state', 'not in', ('draft', ))], 'required': [('on_site', '=', True)]}"
+                                   colspan="2"/>
+                            <field name="order_date" attrs="{'readonly':[('state','not in',['draft'])]}"/>
+                            <field name="customer_id" default_focus="1"
+                                   on_change="on_change_customer(customer_id, dest_address_id)"
+                                   attrs="{'readonly':[('state','not in',['draft','confirmed','analyzing'])]}"/>
+                            <field name="partner_address_id"
+                                   attrs="{'readonly':[('state','not in',['draft','confirmed','analyzing'])]}"/>
+                            <field name="phone" invisible="1"/>
+                            <field name="cell_phone" invisible="1"/>
+                            <field name="contact_number"
+                                   attrs="{'readonly':[('state','not in',['draft','confirmed','analyzing'])]}"/>
+                            <field name="email"
+                                   attrs="{'readonly':[('state','not in',['draft','confirmed','analyzing'])]}"/>
+                            <field name="machine_id" domain="[('customer_id', '=', customer_id)]"
+                                   on_change="on_change_machine(machine_id)" colspan="4"
+                                   context="{'customer_id': customer_id, 'product_id': product_id }"
+                                   attrs="{'readonly': [('state','not in',['draft','confirmed','analyzing'])]}"/>
+                            <field name="product_id" on_change="on_change_product(product_id)"
+                                   attrs="{'invisible': [('machine_id','!=',False)], 'readonly': [('state','not in',['draft'])]}"
+                                   context="{'customer_id': customer_id, 'model': 'repair.order', 'all_products': all_products}"/>
+                            <field name="all_products" readonly="False"
+                                   attrs="{'invisible':[('machine_id','!=', False)], 'readonly': [('state','not in',['draft'])]}"/>
+                            <field name="order_move_id"
+                                   on_change="on_change_move_id(order_move_id,product_id,customer_id,order_date)"
+                                   context="{'search_default_product_id':product_id}"
+                                   attrs="{'readonly':[('state','not in',['draft'])], 'invisible':[('machine_id','=', True)]}"/>
+                            <field name="dest_address_id" invisible="1"/>
+                            <field name="pricelist_id" invisible="1"/>
+                            <field name="customer_ref" required="1"
+                                   attrs="{'readonly':[('state','not in',['draft'])]}"/>
+                            <field name="account_id" attrs="{'readonly':[('state','not in',['draft'])]}"
+                                   context="{'partner_id': customer_id }" groups="analytic.group_analytic_accounting"/>
+                        </group>
+                        <group colspan="2" col="2" string="Status">
+                            <field name="inward_ok"/>
+                            <field name="repairable"/>
+                            <field name="outward_producer_ok" attrs="{'invisible':[('repairable','=',True)]}"/>
+                            <field name="inward_producer_ok" attrs="{'invisible':[('repairable','=',True)]}"/>
+                            <field name="repaired"/>
+                            <field name="invoiced"/>
+                            <field name="is_delivered"/>
+                            <field name="is_analized" invisible="True"/>
+                        </group>
+                    </group>
+                    <newline/>
+                    <notebook colspan="6">
+                        <page string="General">
+                            <group colspan="4" col="4">
+                                <group colspan="4" col="4">
+                                    <group colspan="2" col="4" attrs="{'readonly':[('state','not in',['draft'])]}">
+                                        <separator string="Product Information" colspan="4"/>
+                                        <field name="manufacturer" domain="[('is_manufacturer','=',True)]"/>
+                                        <newline/>
+                                        <field name="manufacturer_pname"/>
+                                        <field name="manufacturer_pref"/>
+                                        <field name="serial" context="{'product_id': product_id}"
+                                               attrs="{'readonly': [('state','not in',['draft'])]}"/>
+                                        <field name="repair_condition" widget="selection"
+                                               groups='repair_center.group_repair_accessories'/>
+                                        <field name="purchased_date"/>
+                                        <field name="under_warranty"
+                                               on_change="on_change_under_warranty(under_warranty)"
+                                               attrs="{'readonly': [('state','not in',['draft', 'confirmed'])]}"/>
+                                        <field name="on_site"/>
+                                    </group>
+                                    <group colspan="2" col="4">
+                                        <separator string="Problem from Customer" colspan="4"/>
+                                        <field name="description" nolabel="1" colspan="4"/>
+                                    </group>
+                                    <group colspan="2" col="4" groups='repair_center.group_repair_accessories'>
+                                        <separator string="Accessories" colspan="4"/>
+                                        <field name="accessory_ids" nolabel="1" colspan="4"
+                                               attrs="{'readonly':[('state','not in',['draft'])]}">
+                                            <tree string="" editable="bottom">
+                                                <field name="order_id" invisible="1"/>
+                                                <field name="accessory_id" widget="selection"/>
+                                                <field name="product_uom_qty"/>
+                                                <field name="serial"/>
+                                            </tree>
+                                            <form string="Accessory">
+                                                <field name="order_id" invisible="1"/>
+                                                <field name="accessory_id" widget="selection"/>
+                                                <field name="product_uom_qty"/>
+                                                <field name="serial"/>
+                                                <field name="note" nolabel="1" colspan="4"/>
+                                            </form>
+                                        </field>
+                                    </group>
+                                </group>
+                                <group colspan="4" col="4"
+                                       attrs="{ 'invisible': [ ('state', 'in', ['draft', 'confirmed'])] }">
+                                    <separator string="Items that needs to be Added/Replaced" colspan="4"/>
+                                    <field name="sale_id" groups="repair_center.group_repair_tech" />
+                                    <field name="order_date_sale_id" />
+                                    <field name="so_id" readonly="1" groups="repair_center.group_repair_tech"/>
+                                    <field name="so_lines" colspan="4" nolabel="1" context="{'is_free': under_warranty}"
+                                           attrs="{'readonly': [('state', 'not in', ['draft', 'ready', 'confirmed', 'analyzing'])]}">
+                                        <form string="Items">
+                                            <notebook>
+                                                <page string="Item">
+                                                    <field name="product_id" colspan="4"
+                                                           context="{'partner_id' : parent.customer_id,'quantity' : product_uom_qty, 'pricelist' : parent.pricelist_id, 'uom' : product_uom}"
+                                                           on_change="product_id_change(parent.pricelist_id, product_id, product_uom_qty, product_uom, product_uos_qty, product_uos, name, parent.customer_id, False, True, parent.order_date, product_packaging, False, False, context)"
+                                                            />
+                                                    <field name="product_uom_qty"
+                                                           context="{'partner_id' : parent.customer_id,'quantity' : product_uom_qty, 'pricelist' : parent.pricelist_id, 'uom' : product_uom}"
+                                                           on_change="product_id_change(parent.pricelist_id,product_id,product_uom_qty,product_uom,product_uos_qty,product_uos,name,parent.customer_id, False, True, parent.order_date, product_packaging, False, False, context)"
+                                                            />
+                                                    <field groups="product.group_uos" name="product_uos_qty"/>
+                                                    <field groups="product.group_uos" name="product_uos"/>
+                                                    <field name="product_uom"
+                                                           on_change="product_uom_change(parent.pricelist_id,product_id,product_uom_qty,product_uom,product_uos_qty,product_uos,name,parent.customer_id, False, False, parent.order_date)"/>
+                                                    <field name="product_packaging"
+                                                           context="{'partner_id' : parent.customer_id,'quantity' : product_uom_qty, 'pricelist' : parent.pricelist_id, 'uom' : product_uom}"
+                                                           on_change="product_id_change(parent.pricelist_id,product_id,product_uom_qty,product_uom,product_uos_qty,product_uos,name,parent.customer_id, False, True, parent.order_date, product_packaging, False, False, context)"
+                                                           domain="[('product_id','=',product_id)]"
+                                                           groups="base.group_extended"/>
+                                                    <field name="name" colspan="4"/>
+                                                    <field name="price_unit" attrs="{'readonly':[('is_free','=',True)]}"/>
+
+                                                    <group col="4" colspan="2">
+                                                        <field name="is_free" on_change="on_change_is_free(is_free)"/>
+                                                        <field name="discount"
+                                                               attrs="{'readonly':[('is_free','=',True)]}"/>
+                                                    </group>
+                                                    <field name="type" groups="base.group_extended"/>
+                                                    <field name="delay" groups="base.group_extended"/>
+                                                    <newline/>
+                                                    <separator colspan="5" string="Taxes"/>
+                                                    <field colspan="4" name="tax_id" nolabel="1"
+                                                           domain="[('parent_id','=',False),('type_tax_use','&lt;&gt;','purchase')]"
+                                                           widget="many2many_tags"/>
+                                                    <group colspan="4" col="5" groups="base.group_extended">
+                                                        <separator colspan="5" string="States"/>
+                                                        <field name="state"/>
+                                                        <field name="invoiced"/>
+                                                        <group attrs="{'invisible':[('invoiced','=',True)]}">
+                                                            <button colspan="1"
+                                                                    name="%(sale.action_view_sale_order_line_make_invoice)d"
+                                                                    states="confirmed"
+                                                                    string="Make Invoices"
+                                                                    type="action"
+                                                                    icon="terp-document-new"/>
+                                                        </group>
+                                                    </group>
+                                                </page>
+                                                <page groups="base.group_extended" string="Extra Info">
+                                                    <field name="th_weight"/>
+                                                    <field name="address_allotment_id"/>
+                                                    <field name="property_ids" colspan="4"/>
+                                                </page>
+                                                <page string="Notes">
+                                                    <field colspan="4" name="notes" nolabel="1"/>
+                                                </page>
+                                                <page string="History" groups="base.group_extended">
+                                                    <separator colspan="4" string="Invoice Lines"/>
+                                                    <field colspan="4" name="invoice_lines" nolabel="1"/>
+                                                    <separator colspan="4" string="Stock Moves"/>
+                                                    <field colspan="4" name="move_ids" nolabel="1" widget="many2many"/>
+                                                </page>
+                                            </notebook>
+                                        </form>
+                                        <tree string="Items" editable="top">
+                                            <field name="order_id" groups="repair_center.group_repair_tech"/>
+                                            <field name="product_id"
+                                                   context="{'partner_id' : parent.customer_id,'quantity' : product_uom_qty, 'pricelist' : parent.pricelist_id, 'uom' : product_uom}"
+                                                   on_change="product_id_change(parent.pricelist_id,product_id,product_uom_qty,product_uom,product_uos_qty,product_uos,name,parent.customer_id, False, True, parent.order_date, product_packaging, parent.so_id.fiscal_position, False)"
+                                                    />
+                                            <field name="product_uom_qty"
+                                                   context="{'partner_id' : parent.customer_id,'quantity' : product_uom_qty, 'pricelist' : parent.pricelist_id, 'uom' : product_uom}"
+                                                   on_change="product_id_change(parent.pricelist_id,product_id,product_uom_qty,product_uom,product_uos_qty,product_uos,name,parent.customer_id, False, True, parent.order_date, product_packaging, parent.so_id.fiscal_position, False)"
+                                                   string="Qty"/>
+                                            <field name="product_uom"
+                                                   on_change="product_uom_change(parent.pricelist_id,product_id,product_uom_qty,product_uom,product_uos_qty,product_uos,name,parent.customer_id, False, False, parent.order_date)"
+                                                   string="UoM"/>
+                                            <field name="product_uos_qty" invisible="1"/>
+                                            <field name="product_uos" invisible="1"/>
+                                            <field name="name" invisible="0"/>
+                                            <field name="is_free" on_change="on_change_is_free(is_free)"/>
+                                            <field name="discount" attrs="{'readonly':[('is_free','=',True)]}"/>
+
+                                            <field name="product_packaging" invisible="1"/>
+                                            <field name="cost_price"/>
+                                            <field name="price_unit" attrs="{'readonly':[('is_free','=',True)]}"/>
+                                            <field name="price_subtotal" sum="Total ammount"/>
+                                            <field name="notes" invisible="1"/>
+                                            <field name="delay" invisible="1"/>
+                                            <field name="tax_id" invisible="1"/>
+                                            <field name="type" invisible="1"/>
+                                            <field name="state" invisible="1"/>
+                                        </tree>
+
+                                    </field>
+                                    <newline/>
+                                </group>
+
+                                <button name="copy_quotation" states="under_repair, wait_delivery, wait_outgo"
+                                        attrs="{'invisible': [ ('state', 'not in', ['under_repair', 'wait_delivery', 'wait_outgo'])] }"
+                                        string="Copy Quotation to Order" type="object" icon="terp-camera_test"/>
+
+                                <group colspan="4" col="4"
+                                       attrs="{'invisible': [ ('state', 'in', ['draft', 'confirmed','analyzing', 'processed', 'wait_confirmation', 'ready'])] }">
+                                    <separator string="Items that were Added/Replaced" colspan="4"/>
+                                    <field name="order_date_temp_sale_id" />
+                                    <field name="temp_sale_id" groups="repair_center.group_repair_tech" />
+                                    <field name="temp_so_id" readonly="1" groups="repair_center.group_repair_tech"/>
+                                    <field name="temp_so_lines" colspan="4" mode="tree,form,graph" nolabel="1"
+                                           widget="one2many_list"
+                                           context="{'is_free': under_warranty}"
+                                           domain="[('product_id.type', '!=', 'service')]"
+                                           attrs="{'readonly': [ ('state', 'in', ['2binvoiced', 'done', 'cancel'])] }">
+                                        <form string="Items">
+                                            <notebook>
+                                                <page string="Item">
+                                                    <field name="product_id"
+                                                           context="{'partner_id': parent.customer_id, 'quantity': product_uom_qty, 'pricelist': parent.pricelist_id, 'uom': product_uom}"
+                                                           colspan="4"
+                                                           on_change="product_id_change(parent.pricelist_id, product_id, product_uom_qty, product_uom, product_uos_qty, product_uos, name, parent.customer_id, False, True, parent.order_date, product_packaging, False , False, context)"
+                                                            />
+                                                    <field name="product_uom_qty"
+                                                           context="{'partner_id': parent.customer_id,'quantity' : product_uom_qty, 'pricelist' : parent.pricelist_id, 'uom': product_uom}"
+                                                           on_change="product_id_change(parent.pricelist_id, product_id, product_uom_qty, product_uom, product_uos_qty, product_uos, name, parent.customer_id, False, True, parent.order_date, product_packaging, False, False, context)"
+                                                            />
+                                                    <field name="product_uos_qty" groups="product.group_uos"/>
+                                                    <field name="product_uos" groups="product.group_uos"/>
+                                                    <field name="product_uom"
+                                                           on_change="product_uom_change(parent.pricelist_id, product_id, product_uom_qty, product_uom, product_uos_qty, product_uos, name, parent.customer_id, False, False, parent.order_date)"/>
+                                                    <field name="product_packaging"
+                                                           context="{'partner_id': parent.customer_id, 'quantity': product_uom_qty, 'pricelist': parent.pricelist_id, 'uom': product_uom}"
+                                                           on_change="product_id_change(parent.pricelist_id, product_id, product_uom_qty, product_uom, product_uos_qty, product_uos, name, parent.customer_id, False, True, parent.order_date, product_packaging, False, False, context)"
+                                                           domain="[('product_id', '=', product_id)]"
+                                                           groups="base.group_extended"/>
+                                                    <field name="name" colspan="4"/>
+                                                    <field name="price_unit" attrs="{'readonly':[('is_free','=',True)]}"/>
+                                                    <group col="4" colspan="2">
+                                                        <field name="is_free" on_change="on_change_is_free(is_free)"/>
+                                                        <field name="discount"
+                                                               attrs="{'readonly':[('is_free','=',True)]}"/>
+                                                    </group>
+                                                    <field name="type" groups="base.group_extended"/>
+                                                    <field name="delay" groups="base.group_extended"/>
+                                                    <newline/>
+                                                    <separator colspan="5" string="Taxes"/>
+                                                    <field name="tax_id" colspan="4" nolabel="1"
+                                                           domain="[('parent_id', '=', False), ('type_tax_use', '&lt;&gt;', 'purchase')]"
+                                                           widget="many2many_tags"/>
+                                                    <group colspan="4" col="5" groups="base.group_extended">
+                                                        <separator colspan="5" string="States"/>
+                                                        <field name="state"/>
+                                                        <field name="invoiced"/>
+                                                        <group attrs="{'invisible': [('invoiced', '=', True)]}">
+                                                            <button name="%(sale.action_view_sale_order_line_make_invoice)d"
+                                                                    colspan="1"
+                                                                    states="confirmed"
+                                                                    string="Make Invoices"
+                                                                    type="action"
+                                                                    icon="terp-document-new"/>
+                                                        </group>
+                                                    </group>
+                                                </page>
+                                                <page string="Extra Info" groups="base.group_extended">
+                                                    <field name="th_weight"/>
+                                                    <field name="address_allotment_id"/>
+                                                    <field name="property_ids" colspan="4"/>
+                                                </page>
+                                                <page string="Notes">
+                                                    <field colspan="4" name="notes" nolabel="1"/>
+                                                </page>
+                                                <page string="History" groups="base.group_extended">
+                                                    <separator string="Invoice Lines" colspan="4"/>
+                                                    <field name="invoice_lines" colspan="4" nolabel="1"/>
+                                                    <separator string="Stock Moves" colspan="4"/>
+                                                    <field name="move_ids" colspan="4" nolabel="1" widget="many2many"/>
+                                                </page>
+                                            </notebook>
+                                        </form>
+                                        <tree string="Items" editable="top">
+                                            <field name="order_id" groups="repair_center.group_repair_tech"/>
+                                            <field name="product_id"
+                                                   context="{'partner_id' : parent.customer_id,'quantity' : product_uom_qty, 'pricelist' : parent.pricelist_id, 'uom' : product_uom}"
+                                                   on_change="product_id_change(parent.pricelist_id,product_id,product_uom_qty,product_uom,product_uos_qty,product_uos,name,parent.customer_id, False, True, parent.order_date, product_packaging, parent.so_id.fiscal_position, False)"
+                                                   domain="[('type', 'not in', ['service'])]"
+                                                    />
+                                            <field name="product_uom_qty"
+                                                   context="{'partner_id' : parent.customer_id,'quantity' : product_uom_qty, 'pricelist' : parent.pricelist_id, 'uom' : product_uom}"
+                                                   on_change="product_id_change(parent.pricelist_id,product_id,product_uom_qty,product_uom,product_uos_qty,product_uos,name,parent.customer_id, False, True, parent.order_date, product_packaging, parent.so_id.fiscal_position, False)"
+                                                   string="Qty"/>
+                                            <field name="product_uom"
+                                                   on_change="product_uom_change(parent.pricelist_id,product_id,product_uom_qty,product_uom,product_uos_qty,product_uos,name,parent.customer_id, False, False, parent.order_date)"
+                                                   string="UoM"/>
+                                            <field name="product_uos_qty" invisible="1"/>
+                                            <field name="product_uos" invisible="1"/>
+                                            <field name="name" invisible="0"/>
+                                            <field name="is_free" on_change="on_change_is_free(is_free)"/>
+                                            <field name="discount" attrs="{'readonly':[('is_free','=',True)]}"/>
+
+                                            <field name="product_packaging" invisible="1"/>
+                                            <field name="cost_price"/>
+                                            <field name="price_unit" attrs="{'readonly':[('is_free','=',True)]}"/>
+                                            <field name="price_subtotal" sum="Total ammount"/>
+                                            <field name="notes" invisible="1"/>
+                                            <field name="delay" invisible="1"/>
+                                            <field name="tax_id" invisible="1"/>
+                                            <field name="type" invisible="1"/>
+                                            <field name="state" invisible="1"/>
+                                        </tree>
+                                    </field>
+                                    <newline/>
+                                </group>
+                                <group col="4" colspan="2">
+                                    <!--<separator string=" " colspan="4" />-->
+                                    <group colspan="2" col="2">
+                                        <field name="invoice_method"/>
+                                    </group>
+                                </group>
+
+                                <group col="13" colspan="13">
+                                    <field name="state" widget="statusbar"
+                                           statusbar_visible="draft, analyzing, ready, under_repair, wait_outgo, done"
+                                           statusbar_colors='{}' colspan="13"/>
+                                    <separator string=" " colspan="13"/>
+                                    <button name="reception_confirm" states="draft" string="Confirm Reception"
+                                            type="object" icon="terp-camera_test"/>
+                                    <button name="start_analysis"
+                                            attrs="{'invisible': ['|', ('is_analized', '=', True), ('state', 'not in', 'confirmed')]}"
+                                            string="Start Examination" icon="terp-gtk-jump-to-ltr"/>
+                                    <button name="action_analyzing_end" states="analyzing" string="Finish Examination"
+                                            icon="gtk-convert"/>
+                                    <button name="%(action_norepair)d" states="analyzing" string="Not Repairable"
+                                            type="action" icon="terp-gtk-jump-to-ltr"/>
+                                    <!--<button name="action_send2supplier" states="sending2manu" string="Deliver" icon="terp-gtk-go-back-rtl"/>-->
+                                    <button name="action_wait_confirmation" states="processed" string="Ask Customer"
+                                            icon="gtk-convert"/>
+                                    <button name="action_confirmation" states="wait_confirmation"
+                                            string="Customer Confirmation" icon="gtk-convert"/>
+                                    <button name="action_repair_start" states="ready" string="Start Repair"
+                                            icon="terp-gtk-jump-to-ltr"/>
+                                    <button name="%(action_cancel_repair)d"
+                                            states="confirmed,2binvoiced,ready,under_repair,invoice_except"
+                                            string="Cancel Repair" type="action" icon="gtk-stop"/>
+                                    <button name="action_repair_end" states="under_repair" string="End Repair"
+                                            icon="terp-dialog-close"/>
+                                    <button name="action_deliver_to_customer" states="wait_delivery"
+                                            string="Deliver to Customer" icon="gtk-go-forward"/>
+                                    <button name="action_outgo" states="wait_outgo" string="Register Outgo"
+                                            icon="gtk-go-forward"/>
+                                    <button name="invoice_recreate" states="invoice_except" string="Recreate Invoice"
+                                            icon="terp-dolar"/>
+                                    <button name="invoice_corrected" states="invoice_except" string="Invoice Corrected"
+                                            icon="terp-emblem-important"/>
+                                    <button name="action_invoice_create" states="2binvoiced" string="Make Invoice"
+                                            type="object" icon="terp-dolar"/>
+                                    <!--<button name="action_reception" states="wait_reception" string="Received" icon="terp-gtk-go-back-rtl"/>-->
+                                    <button name="cancel" states="draft,wait_confirmation" string="Cancel Repair"
+                                            icon="gtk-stop"/>
+                                    <button name="action_cancel_draft" states="cancel" string="Set to Draft"
+                                            type="object" icon="gtk-convert"/>
+                                    <newline/>
+                                    <group>
+                                        <button name="%(sale.report_sale_order)d" string="Print Quotation" type="action"
+                                                icon="gtk-print" context="{'report_toprint_id': sale_id}"
+                                                attrs="{'invisible':[('sale_id','=', False)]}"/>
+                                        <button name="%(sale.report_sale_order)d" string="Print Sale" type="action"
+                                                icon="gtk-print" context="{'report_toprint_id': temp_sale_id}"
+                                                attrs="{'invisible':[('temp_sale_id','=', False)]}"/>
+                                        <button name="%(delivery.report_shipping)d" string="Delivery Order"
+                                                type="action" icon="gtk-print"
+                                                context="{'report_toprint_id': out_picking_id}"
+                                                attrs="{'invisible':[('out_picking_id','=', False)]}"/>
+                                    </group>
+                                    <group col="13" colspan="13" string="Connection Flow">
+                                        <button name="action_view_delivery" string="View Delivery Order" type="object"
+                                                attrs="{'invisible': ['|',('picking_ids','=',False),('picking_ids','=',[])]}"
+                                                groups="base.group_user"/>
+                                        <button name="action_view_invoice" string="View Invoice" type="object"
+                                                states="done"
+                                                groups="base.group_user"/>
+                                    </group>
+                                </group>
+                            </group>
+
+                        </page>
+                        <page string="Notes">
+                            <separator string="Note" colspan="4"/>
+                            <field name="internal_notes" nolabel="1" colspan="4"/>
+                        </page>              
+                        <page string="Labor" attrs="{ 'invisible': [ ('state', 'in', ['draft', 'confirmed','analyzing', 'processed', 'wait_confirmation', 'ready'])] }" >
+                            <separator string="Labor" colspan="4" />
+                            <field name="hr_analytic_timesheet_ids" nolabel="1" context="{'account_id': account_id, 'is_free': under_warranty}">
+                                <tree editable="top" string="Timesheet Lines">
+                                    <field name="date" on_change="on_change_date(date)"/>
+                                    <field name="user_id" on_change="on_change_user_id(user_id)" required="1"/>
+                                    <field name="journal_id" invisible="1"/>
+                                    <field name="name"/>
+                                    <field domain="[('type','=','normal')]" name="account_id" invisible="1"/>
+                                    <field name="product_id"
+                                           on_change="on_change_unit_amount(product_id, unit_amount, False, product_uom_id,journal_id)"
+                                           required="1" domain="[('type','=','service')]"/>
+                                    <field name="unit_amount"
+                                           on_change="on_change_unit_amount(product_id, unit_amount, False, product_uom_id,journal_id)"
+                                           sum="Total time" widget="float_time"/>
+                                    <field name="product_uom_id"
+                                           on_change="on_change_unit_amount(product_id, unit_amount, False, product_uom_id,journal_id)"
+                                           invisible="1"/>
+                                    <field name="amount" sum="Total cost"/>
+                                    <field name="general_account_id" invisible="1"/>
+                                    <field name="is_free"/>
+                                </tree>
+                            </field>
+                            <newline/>
+                            <group attrs="{'invisible': [('on_site', '=', False)]}">
+                                <separator string="On-site repair" colspan="4"/>
+                                <field name="on_site_ids" nolabel="1" colspan="4" widget="one2many_list">
+                                    <tree string="Trip" editable="top">
+                                        <field name="start_from"/>
+                                        <field name="start_time"/>
+                                        <field name="end_arrival"/>
+                                        <field name="end_time"/>
+                                        <field name="note"/>
+                                    </tree>
+                                </field>
+                                <field name="on_site_description"/>
+                            </group>
+                        </page>
+                        <page string="Delivery and Invoice">
+                            <separator string="Delivery" colspan="4"/>
+                            <!--<field name="warehouse_id" widget="selection" />-->
+                            <field name="in_picking_id" readonly="1"
+                                   context="{'form_view_ref':'stock.view_picking_in_form', 'tree_view_ref':'stock.view_picking_in_tree' }"/>
+                            <field name="out_picking_id" readonly="1"
+                                   context="{'form_view_ref':'stock.view_picking_out_form', 'tree_view_ref':'stock.view_picking_out_tree' }"/>
+                            <field name="out_picking2producer_id" readonly="1"
+                                   attrs="{'invisible': [('repairable','=',True)]}"
+                                   context="{'form_view_ref':'stock.view_picking_out_form', 'tree_view_ref':'stock.view_picking_out_tree' }"/>
+                            <field name="in_picking_producer_id" readonly="1"
+                                   attrs="{'invisible': [('repairable','=',True)]}"
+                                   context="{'form_view_ref':'stock.view_picking_in_form', 'tree_view_ref':'stock.view_picking_in_tree' }"/>
+                            <field name="picking_ids" nolabel="1" colspan="4" context="{'view_print': True, 'type':'out', 'form_view_ref':'stock.view_picking_out_form', 'tree_view_ref':'stock.view_picking_out_tree'}"/>
+                            <separator string="Invoices" colspan="4"/>
+                            <field name="invoice_ids" nolabel="1" colspan="4"
+                                   context="{'type':'out_invoice', 'form_view_ref':'account.invoice_form', 'tree_view_ref':'account.invoice_tree', 'show_type': True}"/>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_repair_order_filter2" model="ir.ui.view">
+            <field name="name">repair.order.select</field>
+            <field name="model">repair.order</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Repair Order">
+                    <filter domain="[('state', '=','draft')]" icon="terp-document-new" name="Quotation"
+                            string="Quotation"/>
+                    <filter domain="[('state', '=','analyzing')]" icon="STOCK_SELECT_COLOR" name="Under Examination"
+                            string="Under Examination"/>
+                    <filter domain="[('state', '=','under_repair')]" icon="terp-administration" name="Under Repair"
+                            string="Under Repair"/>
+                    <filter domain="[('state', '=','wait_delivery')]" icon="terp-stock"
+                            name="Waiting to deliver to Customer" string="Waiting to deliver to Customer"/>
+                    <filter domain="[('state', '=','2binvoiced')]" icon="terp-dolar" name="To Invoice"
+                            string="To Invoice"/>
+                    <filter domain="[('state', '=','done')]" icon="STOCK_YES" name="Done" string="Done"/>
+                    <newline/>
+                    <field name="name"/>
+                    <field name="order_date"/>
+                    <field name="product_id"/>
+                    <field name="machine_id"/>
+                    <field name="customer_ref"/>
+                    <field name="customer_id"/>
+                    <newline/>
+                    <!--<field name="contact_number" string="Contact Number" />-->
+                    <field name="name" string="Inventario / Matricola" filter_domain="['|', ('machine_id.inventario','ilike',self),('machine_id.telaio','ilike',self)]"/>
+                    <field name="email"/>
+                    <field name="on_site"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="view_repair_order_filter3" model="ir.ui.view">
+            <field name="name">repair.order.select</field>
+            <field name="model">repair.order</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Repair Order">
+                    <field name="name"/>
+                    <field name="order_date"/>
+                    <field name="product_id"/>
+                    <field name="customer_id"/>
+                    <!--<field name="contact_number" string="Contact Number" />-->
+                    <field name="serial"/>
+                    <field name="email"/>
+                    <field name="on_site"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_repair_order">
+            <field name="name">Repair Order</field>
+            <field name="res_model">repair.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar</field>
+            <field name="view_id" ref="view_repair_order_tree"/>
+            <field name="search_view_id" ref="view_repair_order_filter2"/>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_repair_order_ready_repair">
+            <field name="name">Ready for Quotation</field>
+            <field name="res_model">repair.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'nodelete': '1', 'nocreate': '1'}</field>
+            <field name="domain">[('state', '=','confirmed')]</field>
+            <field name="view_id" ref="view_repair_order_tree"/>
+            <field name="search_view_id" ref="view_repair_order_filter3"/>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_repair_order_examination">
+            <field name="name">Under Examination</field>
+            <field name="res_model">repair.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'nodelete': '1', 'nocreate': '1'}</field>
+            <field name="domain">[('state', '=','analyzing')]</field>
+            <field name="view_id" ref="view_repair_order_tree"/>
+            <field name="search_view_id" ref="view_repair_order_filter3"/>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_repair_order_processed">
+            <field name="name">Customer Validation</field>
+            <field name="res_model">repair.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'nodelete': '1', 'nocreate': '1'}</field>
+            <field name="domain">[('state', 'in', ['processed', 'wait_confirmation'])]</field>
+            <field name="view_id" ref="view_repair_order_tree"/>
+            <field name="search_view_id" ref="view_repair_order_filter3"/>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_repair_order_repair">
+            <field name="name">Under Repair</field>
+            <field name="res_model">repair.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'nodelete': '1', 'nocreate': '1'}</field>
+            <field name="domain">[('state', '=','under_repair')]</field>
+            <field name="view_id" ref="view_repair_order_tree"/>
+            <field name="search_view_id" ref="view_repair_order_filter3"/>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_repair_order_ready_start_repair">
+            <field name="name">Ready for Repair</field>
+            <field name="res_model">repair.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'nodelete': '1', 'nocreate': '1'}</field>
+            <field name="domain">[('state', '=','ready')]</field>
+            <field name="view_id" ref="view_repair_order_tree"/>
+            <field name="search_view_id" ref="view_repair_order_filter3"/>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_repair_order_delivery">
+            <field name="name">Waiting to deliver to Customer</field>
+            <field name="res_model">repair.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'nodelete': '1', 'nocreate': '1'}</field>
+            <field name="domain">[('state', '=','wait_delivery')]</field>
+            <field name="view_id" ref="view_repair_order_tree"/>
+            <field name="search_view_id" ref="view_repair_order_filter3"/>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_repair_order_invoice">
+            <field name="name">To Invoice</field>
+            <field name="res_model">repair.order</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'nodelete': '1', 'nocreate': '1'}</field>
+            <field name="domain">[('state', '=','2binvoiced')]</field>
+            <field name="view_id" ref="view_repair_order_tree"/>
+            <field name="search_view_id" ref="view_repair_order_filter3"/>
+        </record>
+
+        <menuitem name="Repair Orders" id="menu_repair_order_order" parent="menu_repair_center"
+                  sequence="3"/>
+
+        <menuitem name="Repair Orders" id="menu_action_repair_order_tree" parent="menu_repair_order_order"
+                  action="action_repair_order" sequence="4"/>
+
+        <menuitem name="Ready for Quotation" id="menu_action_repair_order_ready_repair" parent="menu_repair_order_order"
+                  action="action_repair_order_ready_repair" sequence="5"/>
+
+        <menuitem name="Under Examination" id="menu_action_repair_order_examination" parent="menu_repair_order_order"
+                  action="action_repair_order_examination" sequence="6"/>
+
+        <menuitem name="Customer Validation" id="menu_action_repair_order_processed" parent="menu_repair_order_order"
+                  action="action_repair_order_processed" sequence="7"/>
+
+        <menuitem name="Ready for Repair" id="menu_action_repair_order_ready_start_repair"
+                  parent="menu_repair_order_order"
+                  action="action_repair_order_ready_start_repair" sequence="8"/>
+
+        <menuitem name="Under Repair" id="menu_action_repair_order_repair" parent="menu_repair_order_order"
+                  action="action_repair_order_repair" sequence="9"/>
+
+        <menuitem name="Waiting to deliver to Customer" id="menu_action_repair_order_delivery"
+                  parent="menu_repair_order_order"
+                  action="action_repair_order_delivery" sequence="10"/>
+
+        <menuitem name="To Invoice" id="menu_action_repair_order_invoice" parent="menu_repair_order_order"
+                  action="action_repair_order_invoice" sequence="11"/>
+
+        <record id="view_product_condition_tree" model="ir.ui.view">
+            <field name="name">product.condition.tree</field>
+            <field name="model">product.condition</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Product Condition" editable="top">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+        <record id="view_product_condition_filter" model="ir.ui.view">
+            <field name="name">product.condition.select</field>
+            <field name="model">product.condition</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Product Condition">
+                    <field name="name"/>
+                </search>
+            </field>
+        </record>
+        <record model="ir.actions.act_window" id="action_product_condition">
+            <field name="name">Product Condition</field>
+            <field name="res_model">product.condition</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_product_condition_tree"/>
+            <field name="search_view_id" ref="repair_center.view_product_condition_filter"/>
+        </record>
+
+        <menuitem name="Configuration" id="menu_repair_center_conf" parent="menu_repair_center"
+                  sequence="5" groups="group_repair_manager"/>
+
+        <menuitem name="Product Condition" id="menu_repair_center_product_condition" parent="menu_repair_center_conf"
+                  sequence="5" action="action_product_condition" groups="group_repair_accessories"/>
+
+        <record id="view_product_accessory_tree" model="ir.ui.view">
+            <field name="name">product.accessory.tree</field>
+            <field name="model">product.accessory</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Product Accessory" editable="top">
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_product_accessory_filter" model="ir.ui.view">
+            <field name="name">product.accessory.select</field>
+            <field name="model">product.accessory</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Product Accessory">
+                    <field name="name"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_product_accessory">
+            <field name="name">Product Accessory</field>
+            <field name="res_model">product.accessory</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_product_accessory_tree"/>
+            <field name="search_view_id" ref="repair_center.view_product_accessory_filter"/>
+        </record>
+
+        <menuitem name="Product Accessory" id="menu_repair_center_product_accessory" parent="menu_repair_center_conf"
+                  sequence="4" action="action_product_accessory" groups="group_repair_accessories"/>
+
+        <record id="view_repair_machine_tree_smart" model="ir.ui.view">
+            <field name="name">repair.machine.tree.smart</field>
+            <field name="model">repair.machine</field>
+            <field name="type">tree</field>
+            <field name="priority">99</field>
+            <field name="arch" type="xml">
+                <tree string="Repair Machine" editable="bottom">
+                    <field name="asset_asset_id" on_change="on_change_asset_asset_id(asset_asset_id)"
+                           groups="material_asset.group_assets_user"/>
+                    <field name="product_id" on_change="on_change_product_id(product_id)"/>
+                    <field name="name"/>
+                    <field name="plate"/>
+                    <field name="manufacturer"/>
+                    <field name="model"/>
+                    <field name="telaio"/>
+                    <field name="date_start"/>
+                    <field name="description"/>
+                    <field name="customer_id"/>
+                    <field name="account_id" groups="analytic.group_analytic_accounting"
+                           context="{'partner_id': customer_id }"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_repair_machine_tree" model="ir.ui.view">
+            <field name="name">repair.machine.tree</field>
+            <field name="model">repair.machine</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Repair Machine">
+                    <field name="asset_asset_id" on_change="on_change_asset_asset_id(asset_asset_id)"
+                           groups="material_asset.group_assets_user"/>
+                    <field name="product_id" on_change="on_change_product_id(product_id)"/>
+                    <field name="name"/>
+                    <field name="plate"/>
+                    <field name="manufacturer"/>
+                    <field name="model"/>
+                    <field name="telaio"/>
+                    <field name="date_start"/>
+                    <field name="description"/>
+                    <field name="customer_id"/>
+                    <field name="account_id" groups="analytic.group_analytic_accounting"
+                           context="{'partner_id': customer_id }"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_repair_machine_form" model="ir.ui.view">
+            <field name="name">repair.machine.form</field>
+            <field name="model">repair.machine</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Repair Machine">
+                    <group colspan="4" col="6">
+                        <group colspan="4" col="4">
+
+                            <field name="asset_asset_id" on_change="on_change_asset_asset_id(asset_asset_id)"
+                                   groups="material_asset.group_assets_user"/>
+                            <field name="product_id" on_change="on_change_product_id(product_id, asset_asset_id)"/>
+                            <field name="name"/>
+                            <!-- <field name="machine" />-->
+                            <field name="plate"/>
+                            <field name="manufacturer"/>
+                            <field name="model"/>
+                            <field name="telaio"/>
+                        </group>
+                        <group colspan="2" col="2">
+                            <field name="date_start"/>
+                            <!-- readonly!!! -->
+                            <field name="description"/>
+                            <field name="customer_id"/>
+                            <field name="account_id" groups="analytic.group_analytic_accounting"
+                                   context="{'partner_id': customer_id }"/>
+                        </group>
+                    </group>
+                    <field name="repair_order_ids" nolabel="1">
+                        <tree string="Repair Orders"
+                              colors="grey:state=='done';blue:state=='draft';red:state=='confirmed';green:state=='wait_delivery';orange:state=='under_repair'">
+                            <field name="name"/>
+                            <field name="customer_ref"/>
+                            <field name="customer_id"/>
+                            <field name="email"/>
+                            <field name="order_date"/>
+                            <field name="state"/>
+                        </tree>
+                    </field>
+                    <field name="repair_product_ids" nolabel="1" readonly="1">
+                        <tree string="Items">
+                            <field name="repair_order_id"/>
+                            <field name="product_id"/>
+                            <field name="product_uom_qty" string="Qty"/>
+                            <field name="product_uom" string="UoM"/>
+                            <field name="product_uos_qty" invisible="1"/>
+                            <field name="product_uos" invisible="1"/>
+                            <field name="discount"/>
+                            <field name="is_free"/>
+
+                            <field name="product_packaging" invisible="1"/>
+                            <field name="cost_price"/>
+                            <field name="price_unit"/>
+                            <field name="price_subtotal" sum="Total ammount"/>
+                            <field name="notes" invisible="1"/>
+                            <field name="delay" invisible="1"/>
+                            <field name="tax_id" invisible="1"/>
+                            <field name="type" invisible="1"/>
+                            <field name="state" invisible="1"/>
+                        </tree>
+                    </field>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_repair_machine_calendar">
+            <field name="name">repair.machine.calendar</field>
+            <field name="model">repair.machine</field>
+            <field name="priority">100</field>
+            <field name="type">calendar</field>
+            <field name="arch" type="xml">
+                <calendar string="Repair Machine" date_start="date_start" date_stop="date_start" color="user_id">
+                    <field name="customer_id"/>
+                    <field name="asset_asset_id" on_change="on_change_asset_asset_id(asset_asset_id)"
+                           groups="material_asset.group_assets_user"/>
+                    <field name="product_id" on_change="on_change_product_id(product_id, asset_asset_id)"/>
+
+                    <field name="user_id"/>
+
+                </calendar>
+            </field>
+        </record>
+
+        <record id="view_repair_machine_filter" model="ir.ui.view">
+            <field name="name">repair.machine.select</field>
+            <field name="model">repair.machine</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Repair Machine">
+                    <field name="name"/>
+                    <!--                    <field name="machine" />-->
+                    <field name="plate"/>
+                    <field name="customer_id"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_repair_machine_smart">
+            <field name="name">Repair Machine Smart</field>
+            <field name="res_model">repair.machine</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar</field>
+            <field name="view_id" ref="view_repair_machine_tree_smart"/>
+            <field name="search_view_id" ref="repair_center.view_repair_machine_filter"/>
+        </record>
+
+        <menuitem name="Repair Machine Smart" id="menu_repair_center_repair_machine_smart"
+                  parent="menu_repair_center_conf"
+                  sequence="5" action="action_repair_machine_smart"/>
+
+        <record model="ir.actions.act_window" id="action_repair_machine">
+            <field name="name">Repair Machine</field>
+            <field name="res_model">repair.machine</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,calendar</field>
+            <field name="view_id" ref="view_repair_machine_tree"/>
+            <field name="search_view_id" ref="repair_center.view_repair_machine_filter"/>
+        </record>
+
+        <menuitem name="Repair Machine" id="menu_repair_center_repair_machine" parent="menu_repair_center_conf"
+                  sequence="6" action="action_repair_machine"/>
+
+        <record id="view_hr_analytic_timesheet_tree" model="ir.ui.view">
+            <field name="name">hr.analytic.timesheet.tree</field>
+            <field name="model">hr.analytic.timesheet</field>
+            <field name="priority">100</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree editable="bottom" string="Timesheet Lines">
+                    <field name="repair_order_id" on_change="on_change_repair_order(repair_order_id)" required="1"/>
+                    <field name="date" on_change="on_change_date(date)"/>
+                    <field name="user_id" on_change="on_change_user_id(user_id)" required="1"/>
+                    <field name="journal_id" invisible="1"/>
+                    <field name="name"/>
+                    <field domain="[('type', '=', 'normal')]" name="account_id" invisible="1"/>
+                    <field name="product_id"
+                           on_change="on_change_unit_amount(product_id, unit_amount, False, product_uom_id,journal_id)"
+                           required="1" domain="[('type','=','service')]"/>
+                    <field name="unit_amount"
+                           on_change="on_change_unit_amount(product_id, unit_amount, False, product_uom_id,journal_id)"
+                           sum="Total time" widget="float_time"/>
+                    <field name="product_uom_id"
+                           on_change="on_change_unit_amount(product_id, unit_amount, False, product_uom_id,journal_id)"
+                           invisible="1"/>
+                    <field name="amount" sum="Total cost"/>
+                    <field name="general_account_id" invisible="1"/>
+                    <field name="is_free"/>
+
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_hr_analytic_timesheet_form" model="ir.ui.view">
+            <field name="name">hr.analytic.timesheet.form</field>
+            <field name="model">hr.analytic.timesheet</field>
+            <field name="priority">100</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Timesheet Lines">
+                    <field name="repair_order_id" on_change="on_change_repair_order(repair_order_id)" required="1"/>
+                    <field name="date" on_change="on_change_date(date)"/>
+                    <field name="user_id" on_change="on_change_user_id(user_id)" required="1"/>
+                    <field name="journal_id" invisible="1"/>
+                    <field name="name" invisible="1"/>
+                    <field domain="[('type', '=', 'normal')]" name="account_id" invisible="1"/>
+                    <field name="product_id"
+                           on_change="on_change_unit_amount(product_id, unit_amount, False, product_uom_id,journal_id)"
+                           required="1" domain="[('type','=','service')]"/>
+                    <field name="unit_amount"
+                           on_change="on_change_unit_amount(product_id, unit_amount, False, product_uom_id,journal_id)"
+                           sum="Total time" widget="float_time"/>
+                    <field name="product_uom_id"
+                           on_change="on_change_unit_amount(product_id, unit_amount, False, product_uom_id,journal_id)"
+                           invisible="1"/>
+                    <field name="amount" sum="Total cost" invisible="1"/>
+                    <field name="general_account_id" invisible="1"/>
+                    <field name="is_free"/>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_hr_analytic_timesheet_calendar">
+            <field name="name">hr.analytic.timesheet.calendar</field>
+            <field name="model">hr.analytic.timesheet</field>
+            <field name="priority">100</field>
+            <field name="type">calendar</field>
+            <field name="arch" type="xml">
+                <calendar string="Labor" date_start="date" color="repair_order_id">
+                    <!--<field name="repair_order_id" />-->
+                    <field name="user_id"/>
+                    <field name="unit_amount"/>
+                </calendar>
+            </field>
+        </record>
+
+        <record id="view_hr_analytic_timesheet_filter" model="ir.ui.view">
+            <field name="name">hr.analytic.timesheet.filter</field>
+            <field name="model">hr.analytic.timesheet</field>
+            <field name="priority">100</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Repair Machine">
+                    <field name="repair_order_id"/>
+                    <field name="date"/>
+                    <field name="user_id"/>
+                    <field domain="[('type','=','normal')]" name="account_id"/>
+                    <field name="is_free"/>
+                </search>
+            </field>
+        </record>
+
+        <record model="ir.actions.act_window" id="action_repair_order_labor">
+            <field name="name">Labor</field>
+            <field name="res_model">hr.analytic.timesheet</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,calendar</field>
+            <field name="domain">[('repair_order_id', '!=', False)]</field>
+            <field name="context">{'update_repair_order': True}</field>
+            <field name="view_id" ref="view_hr_analytic_timesheet_tree"/>
+            <field name="search_view_id" ref="repair_center.view_hr_analytic_timesheet_filter"/>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="action_repair_order_labor_tree">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="view_hr_analytic_timesheet_tree"/>
+            <field name="act_window_id" ref="action_repair_order_labor"/>
+        </record>
+
+        <record model="ir.actions.act_window.view" id="action_repair_order_labor_form">
+            <field name="sequence" eval="10"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_hr_analytic_timesheet_form"/>
+            <field name="act_window_id" ref="action_repair_order_labor"/>
+        </record>
+
+        <menuitem name="Labor" id="menu_action_repair_labor" parent="menu_repair_order_order"
+                  action="action_repair_order_labor" sequence="15"/>
+
+    </data>
+</openerp>

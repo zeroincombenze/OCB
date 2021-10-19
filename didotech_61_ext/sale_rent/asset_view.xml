@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        
+        <record id="view_rentable_asset_category_form" model="ir.ui.view">
+            <field name="name">rentable.asset.category.form</field>
+            <field name="model">asset.category</field>
+            <field name="inherit_id" ref="material_asset.view_asset_category_form"/>      
+            <field name="arch" type="xml">
+            <field name="has_date_option" position="after">
+                <separator string="" colspan="4" />
+                <field name="rentable" />
+		    <field name="service_product_id" attrs="{'invisible': [('rentable', '=', False)], 'required': [('rentable', '=', True)]}" />
+			<group colspan="4" col="6" attrs="{'invisible': [('rentable', '=', False)], 'required': [('rentable', '=', True)]}">
+			<field name="exclude_saturday" />
+			<field name="exclude_sunday" />
+			<field name="exclude_holiday" />
+			</group>
+		    </field>
+            </field>
+        </record>
+	
+	<record id="view_rentable_asset_category_tree" model="ir.ui.view">
+            <field name="name">rentable.asset.category.form</field>
+            <field name="model">asset.category</field>
+            <field name="inherit_id" ref="material_asset.view_asset_category_list"/>      
+            <field name="arch" type="xml">
+                <field name="code" position="after">
+                    <field name="service_product_id" />
+                </field>
+            </field>
+        </record>
+    
+        <record id="view_rent_period_tree" model="ir.ui.view">
+            <field name="name">asset.rent.period.tree</field>
+            <field name="model">asset.rent.period</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Periods" editable="top">
+                    <field name="name" readonly="True" />
+                    <field name="date_start" />
+                    <field name="date_end" />
+                    <field name="confirmed"/>
+                </tree>
+            </field>
+        </record>
+        
+        <record id="view_rent_period_form" model="ir.ui.view">
+            <field name="name">asset.rent.period.form</field>
+            <field name="model">asset.rent.period</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Periods" col="4">
+                    <separator string="Partner" colspan="4" />
+                    <newline/>
+                    <field name="partner_id" required="True" colspan="4" on_change="onchange_partner_id(partner_id)" domain="[('customer','=',True)]" context="{'search_default_customer':1}" attrs="{'readonly': [('state', 'not in', ('draft', False))]}" />
+                    <field name="partner_shipping_id" required="True" attrs="{'invisible': [('partner_id', '=', False)], 'readonly': [('state', 'not in', ('draft', False))]}" domain="[('partner_id', '=', partner_id)]"/>
+                    <separator string="Sale Order" colspan="4"/>
+                    <newline/>
+                    <field name="order_id" attrs="{'readonly': [('state', 'not in', ('draft', False))], 'invisible': [('order_id', '=', False),('link_order', '=', False)], 'required': [('link_order', '=', True)]}" domain="[('partner_id', '=', partner_id), ('state', 'in', ('draft', ))]" />
+                    <field name="link_order" attrs="{'readonly': [('state', 'not in', ('draft', False))], 'invisible': [('order_id', '!=', False)]}"/>
+                    <separator string="Date" colspan="4"/>
+                    <newline/>
+                    <field name="date_start" on_change="onchange_date(date_start, date_end, asset_category_id, partner_shipping_id)" required="True" attrs="{'readonly': [('state', 'not in', ('draft', False))]}"/>
+                    <field name="date_end" on_change="onchange_date(date_start, date_end, asset_category_id, partner_shipping_id)" required="True" attrs="{'readonly': [('state', 'not in', ('draft', False))]}"/>
+                    <field name="pricelist_id" required="True" attrs="{'readonly': [('state', 'not in', ('draft', False))], 'invisible': [('partner_shipping_id', '=', False)]}" />
+                    <separator colspan="4"/>
+                    <newline/>
+                    <field name="asset_category_id" domain="[('rentable', '=', True)]" required="True" attrs="{'readonly': [('state', 'not in', ('draft', False))], 'invisible': ['|', ('date_start', '=', False), ('date_end', '=', False)]}" on_change="onchange_asset_category(date_start, date_end, asset_category_id, partner_shipping_id)"/>
+                    <field name="asset_id" required="True" attrs="{'readonly': [('state', 'not in', ('draft', False))], 'invisible': [('asset_category_id', '=', False)]}" on_change="onchange_asset_id(asset_category_id, partner_id)" context="{'date_start': date_start, 'date_end': date_end}"/>
+                    <field name="price_unit" attrs="{'readonly': [('state', 'not in', ('draft', False))], 'invisible': [('asset_id', '=', False)]}" />
+                    <field name="product_uom_qty" attrs="{'readonly': [('state', 'not in', ('draft', False))], 'invisible': [('asset_id', '=', False)]}" />
+                    <field name="discount" attrs="{'readonly': [('state', 'not in', ('draft', False))], 'invisible': [('asset_id', '=', False)]}" />
+                    <field name="confirmed" attrs="{'readonly': [('state', 'not in', ('draft', False))]}"/>
+                    <field name="state" invisible="True"/>
+                    <separator colspan="4"/>
+                    <button name="%(sale.report_sale_order)d" string="Print Quotation" type="action" icon="gtk-print" context="{'report_toprint_id': order_id}" attrs="{'invisible':[('order_id','=', False)]}"/>
+                </form>
+            </field>
+        </record>
+        
+        <record id="action_view_rent_periods" model="ir.actions.act_window">
+            <field name="name">Rent Periods</field>
+            <field name="res_model">asset.rent.period</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">calendar,tree,form</field>
+        </record>
+        
+        <menuitem id="renting" name="Renting" parent="material_asset.menu_asset" groups="material_asset.group_assets_manager" sequence="1" />
+        <menuitem id="menu_rent" name="Booking" parent="renting" action="action_view_rent_periods" />
+        
+        <record id="rent_period_calendar_view" model="ir.ui.view">
+            <field name="name">Renting Calendar</field>
+            <field name="model">asset.rent.period</field>
+            <field name="type">calendar</field>
+            <field name="priority" eval="2" />
+            <field name="arch" type="xml">
+                <calendar string="Renting" date_start="date_start" date_stop="date_end" color="asset_id">
+                    <field name="name" />
+                </calendar>
+            </field>
+        </record>
+        
+        <record id="rent_period_calendar_search" model="ir.ui.view">
+            <field name="name">Search Renting Calendar</field>
+            <field name="model">asset.rent.period</field>
+            <field name="type">search</field>
+            <field name="priority" eval="2" />
+            <field name="arch" type="xml">
+                <search string="Search Periods">
+                    <field name="asset_category_id" widget="selection" domain="[('rentable', '=', True)]"/>
+                </search>
+            </field>
+        </record>
+        
+        <record id="view_asset_asset_form" model="ir.ui.view">
+            <field name="name">asset.asset.form</field>
+            <field name="model">asset.asset</field>
+            <field name="inherit_id" ref="material_asset.view_asset_asset_form"/>
+            <field name="arch" type="xml">
+                <field name="asset_use_id" position="after">
+                    <field name="account_income_id" domain="[('user_type.code', '=', 'income')]"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_repair_order_create_invoice" model="ir.ui.view">
+            <field name="name">Repair Order Invoice</field>
+            <field name="model">repair.order.invoice</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+              <form string="Create invoice">
+                    <separator colspan="4" string="Create invoice" />
+                    <field name="journal_id"/>
+                    <newline/>
+                    <field name="group"/>
+                    <newline/>
+                    <field name="invoice_date" />
+                    <separator string="" colspan="4" />
+                    <button special="cancel" string="_Cancel" icon='gtk-cancel'/>
+                    <button name="open_invoice" string="Create" type="object" icon="terp-gtk-go-back-rtl"/>
+             </form>
+            </field>
+        </record>
+
+        <act_window name="Create invoice"
+            res_model="repair.order.invoice"
+            src_model="repair.order"
+            key2="client_action_multi"
+            multi="True"
+            view_mode="form"
+            view_type="form"
+            target="new"
+            view_id="view_repair_order_create_invoice"
+            id="action_repair_order_create_invoice"/>
+    </data>
+</openerp>

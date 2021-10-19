@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+  		<record id="view_repair_set_partner" model="ir.ui.view">
+            <field name="name">repair.set.partner.form</field>
+            <field name="model">repair.set.partner</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Set origin document">
+                	<group colspan="4" >
+                		<separator string="Set partner" colspan="4"/>
+              			<field name="partner_id" default_focus="1" on_change="on_change_partner(partner_id)" colspan="4"/>
+						<field name="address_contact_id" />
+						<field name="address_invoice_id" />
+                    </group>
+                    <separator string="" colspan="4" />
+                    <group colspan="4" col="6">
+                    	<button icon="gtk-cancel" special="cancel" string="Cancel" />
+                    	<button icon="gtk-save" string="Ok" name="set_partner" type="object" />
+                    </group>
+                </form>
+            </field>
+  		</record>
+    </data>
+</openerp>

@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+
+        <record id="sale_shop_form" model="ir.ui.view">
+            <field name="name">sale.shop.form</field>
+            <field name="model">sale.shop</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="point_of_sale.sale_shop_form_pos_view"/>
+            <field name="arch" type="xml">
+                <field name="product_customer_id" position="after">
+                    <button name="create_transfert_pos" string="Auto Create Product" type="object" attrs="{'invisible':[('transfert_product_id','!=', False)]}"/>
+                    <field name="inventory_product_id" />
+                    <field name="transfert_product_id" />
+                    <field name="transfert_journal_id" attrs="{'invisible':[('transfert_product_id','=', False)], 'required':[('transfert_product_id', '!=', False)]}"/>
+                    <field name="ddt_sequence" attrs="{'invisible':[('transfert_product_id','=', False)], 'required':[('transfert_product_id', '!=', False)]}"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>

@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- Cee Tables Views -->
+        <record id="view_account_cee_combined_nomenclature" model="ir.ui.view">
+            <field name="name">account.cee.combined.nomenclature.form</field>
+            <field name="model">account.cee.combined.nomenclature</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Combined Nomenclature">
+                    <group>
+                        <field name="code_number" required="1" />
+                        <field name="description" required="1" />
+                        <field name="add_entry" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_account_cee_service_codes" model="ir.ui.view">
+            <field name="name">account.cee.service.codes.form</field>
+            <field name="model">account.cee.service.codes</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Combined Nomenclature for Services">
+                    <group>
+                        <field name="code_number" required="1" />
+                        <field name="description" required="1" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_account_cee_intrastat_flows" model="ir.ui.view">
+            <field name="name">account.cee.intrastat.flows.form</field>
+            <field name="model">account.cee.intrastat.flows</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Intrastat Flows">
+                    <group>
+                        <field name="flow_number" required="1" />
+                        <field name="flow_year" required="1" />
+                        <field name="flow_month_quarter" required="1" />
+                        <field name="flow_period_type" required="1" />
+                        <field name="flow_type" required="1" />
+                        <field name="flow_rows_count1" required="1" />
+                        <field name="flow_total_1" required="1" />
+                        <field name="flow_rows_count2" required="1" />
+                        <field name="flow_total_2" required="1" />
+                        <field name="flow_rows_count3" required="1" />
+                        <field name="flow_total_3" required="1" />
+                        <field name="flow_rows_count4" required="1" />
+                        <field name="flow_total_4" required="1" />
+                        
+                        <field name="write_date" />
+                        <field name="write_uid" />
+                        <field name="create_date" />
+                        <field name="create_uid" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_account_cee_nat_of_trans" model="ir.ui.view">
+            <field name="name">account.cee.nat.of.trans.form</field>
+            <field name="model">account.cee.nat.of.trans</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Nature of transactions">
+                    <group>
+                        <field name="code_number" required="1" />
+                        <field name="code_alpha" required="1" />
+                        <field name="description" required="1" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_account_cee_payment_methods" model="ir.ui.view">
+            <field name="name">account.cee.payment.methods.form</field>
+            <field name="model">account.cee.payment.methods</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Payment methods">
+                    <group>
+                        <field name="code_alpha" required="1" />
+                        <field name="description" required="1" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_account_cee_way_of_freight" model="ir.ui.view">
+            <field name="name">account.cee.way.of.freight.form</field>
+            <field name="model">account.cee.way.of.freight</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Delivery Mode">
+                    <group>
+                        <field name="code_number" required="1" />
+                        <field name="description" required="1" />
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Cee Tables Lists -->
+        <record id="view_account_cee_combined_nomenclature_list" model="ir.ui.view">
+            <field name="name">account.cee.combined.nomenclature.list</field>
+            <field name="model">account.cee.combined.nomenclature</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Combined Nomenclature" toolbar="1">
+                    <field name="code_number" />
+                    <field name="description" />
+                    <field name="add_entry" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_account_cee_service_codes_list" model="ir.ui.view">
+            <field name="name">account.cee.service.codes.list</field>
+            <field name="model">account.cee.service.codes</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Combined Nomenclature for Services" toolbar="1">
+                    <field name="code_number" />
+                    <field name="description" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_account_cee_intrastat_flows_list" model="ir.ui.view">
+            <field name="name">account.cee.intrastat.flows.list</field>
+            <field name="model">account.cee.intrastat.flows</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Intrastat Flows" toolbar="1">
+                        <field name="flow_number" />
+                        <field name="flow_year" />
+                        <field name="flow_month_quarter" />
+                        <field name="flow_period_type" />
+                        <field name="flow_type" />
+                        <field name="flow_rows_count1" />
+                        <field name="flow_total_1" />
+                        <field name="flow_rows_count2" />
+                        <field name="flow_total_2" />
+                        <field name="flow_rows_count3" />
+                        <field name="flow_total_3" />
+                        <field name="flow_rows_count4" />
+                        <field name="flow_total_4" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_account_cee_nat_of_trans_list" model="ir.ui.view">
+            <field name="name">account.cee.nat.of.trans.list</field>
+            <field name="model">account.cee.nat.of.trans</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Nature of transactions" toolbar="1">
+                    <field name="code_number" />
+                    <field name="code_alpha" />
+                    <field name="description" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_account_cee_payment_methods_list" model="ir.ui.view">
+            <field name="name">account.cee.payment.methods.list</field>
+            <field name="model">account.cee.payment.methods</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Payment methods">
+                    <field name="code_alpha" />
+                    <field name="description" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_account_cee_way_of_freight_list" model="ir.ui.view">
+            <field name="name">account.cee.way.of.freight.list</field>
+            <field name="model">account.cee.way.of.freight</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Delivery Mode" toolbar="1">
+                    <field name="code_number" />
+                    <field name="description" />
+                </tree>
+            </field>
+        </record>
+
+        <!-- Actions -->
+        <record id="action_account_cee_combined_nomenclature" model="ir.actions.act_window">
+            <field name="name">Combined Nomenclature</field>
+            <field name="res_model">account.cee.combined.nomenclature</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_account_cee_combined_nomenclature_list"/>
+        </record>
+
+        <record id="action_account_cee_service_codes" model="ir.actions.act_window">
+            <field name="name">Combined Nomenclature for Services</field>
+            <field name="res_model">account.cee.service.codes</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_account_cee_service_codes_list"/>
+        </record>
+
+        <record id="action_account_cee_intrastat_flows" model="ir.actions.act_window">
+            <field name="name">Intrastat Flows</field>
+            <field name="res_model">account.cee.intrastat.flows</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_account_cee_intrastat_flows_list"/>
+        </record>
+
+        <record id="action_account_cee_nat_of_trans" model="ir.actions.act_window">
+            <field name="name">Nature of transactions</field>
+            <field name="res_model">account.cee.nat.of.trans</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_account_cee_nat_of_trans_list"/>
+        </record>
+
+        <record id="action_account_cee_payment_methods" model="ir.actions.act_window">
+            <field name="name">Payment methods</field>
+            <field name="res_model">account.cee.payment.methods</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_account_cee_payment_methods_list"/>
+        </record>
+
+        <record id="action_account_cee_way_of_freight" model="ir.actions.act_window">
+            <field name="name">Delivery Mode</field>
+            <field name="res_model">account.cee.way.of.freight</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_account_cee_way_of_freight_list"/>
+        </record>
+
+        <!-- Menu Items -->
+        <menuitem
+            id="account_cee_tables_folder"
+            name="Cee Tables"
+            parent="account.menu_configuration_misc"
+            groups="account_invoice_intrastat_group"/>
+        <menuitem
+			action="action_account_cee_combined_nomenclature"
+            id="account_cee_combined_nomenclature"
+            name="Combined Nomenclature"
+            parent="account_cee_tables_folder"
+            sequence="1"/>
+        <menuitem
+			action="action_account_cee_service_codes"
+            id="account_cee_service_codes"
+            name="Combined Nomenclature for Services"
+            parent="account_cee_tables_folder"
+            sequence="2"/>
+        <menuitem
+			action="action_account_cee_intrastat_flows"
+            id="account_cee_intrastat_flows"
+            name="Intrastat Flows"
+            parent="account_cee_tables_folder"
+            sequence="4"/>
+        <menuitem
+			action="action_account_cee_nat_of_trans"
+            id="account_cee_nat_of_trans"
+            name="Nature of transactions"
+            parent="account_cee_tables_folder"
+            sequence="5"/>
+        <menuitem
+			action="action_account_cee_payment_methods"
+            id="account_cee_payment_methods"
+            name="Payment methods"
+            parent="account_cee_tables_folder"
+            sequence="6"/>
+        <menuitem
+			action="action_account_cee_way_of_freight"
+            id="account_cee_way_of_freight"
+            name="Delivery Mode"
+            parent="account_cee_tables_folder"
+            sequence="7"/>
+
+     </data>
+</openerp>

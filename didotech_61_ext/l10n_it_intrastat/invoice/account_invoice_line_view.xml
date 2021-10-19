@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- Supplier invoice lines View -->
+        <record id="view_account_invoice_line_intrastat_supplier" model="ir.ui.view">
+            <field name="name">view.account.invoice.line.intrastat.supplier.form</field>
+            <field name="model">account.invoice.line</field>
+            <field name="inherit_id" ref="l10n_it_account.view_invoice_line_form_supplier"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/notebook/page[@string='Invoice Line']" position="after">
+                    <page string="Intrastat" groups="l10n_it_intrastat.account_invoice_intrastat_group">
+                        <field name="is_intracee" invisible="1" />
+                            <field name="combined_nomenclature"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="service_codes"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="unit_net_mass"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="total_net_mass"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="unit_statistical_value"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="total_statistical_value"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="uom_secondary"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="qty_uom_secondary"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="country_provenance"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="country_origin"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="province_destination"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="way_of_freight"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <!-- Customer invoice lines View -->
+        <record id="view_account_invoice_line_intrastat_customer" model="ir.ui.view">
+            <field name="name">view.account.invoice.line.intrastat.customer.form</field>
+            <field name="model">account.invoice.line</field>
+            <field name="inherit_id" ref="l10n_it_account.view_invoice_line_form_customer"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/notebook/page[@string='Invoice Line']" position="after">
+                    <page string="Intrastat" groups="l10n_it_intrastat.account_invoice_intrastat_group">
+                        <field name="is_intracee" invisible="1" />
+                            <field name="combined_nomenclature"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="service_codes"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="unit_net_mass"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="total_net_mass"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="unit_statistical_value"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="total_statistical_value"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="uom_secondary"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="qty_uom_secondary"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="country_provenance"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="country_origin"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="province_destination"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                            <field name="way_of_freight"
+                                   attrs="{'invisible': [('is_intracee','!=',True)]}" />
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+     </data>
+</openerp>

@@ -1,0 +1,242 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+
+        <!--point_of_sale.action_pos_order_line-->
+
+        <record model="ir.ui.view" id="view_pos_order_line_graph">
+            <field name="name">Pos History</field>
+            <field name="model">pos.order.line</field>
+            <field name="type">graph</field>
+            <field name="arch" type="xml">
+                <graph string="Vendite" type="bar">
+                    <field name="categ_id"/>
+                    <field name="price_subtotal" operator="+"/>
+                    <field name="shop_id" group="True"/>
+                </graph>
+
+            </field>
+        </record>
+
+        <!--<graph string="a" type="gauge">-->
+                    <!--<field name="shop_id"/>-->
+                    <!--<field name="amount_total" operator="+"/>-->
+                <!--</graph>-->
+
+
+
+        <record model="ir.ui.view" id="view_pos_history_graph">
+            <field name="name">Pos History</field>
+            <field name="model">pos.history</field>
+            <field name="type">graph</field>
+            <field name="arch" type="xml">
+                <graph string="Vendite" type="bar">
+                    <field name="date"/>
+                    <field name="amount_total" operator="+"/>
+                    <field name="shop_id" group="True"/>
+                </graph>
+                <graph string="Negozi" type="gauge">
+                    <field name="shop_id"/>
+                    <field name="amount_total" operator="+"/>
+                    <html>
+                        <graph-options>
+                            {
+
+                            max:30000,
+                            redFrom: 90, redTo: 100,
+                            yellowFrom:75, yellowTo: 90,
+                            minorTicks: 5
+                            }
+                        </graph-options>
+                    </html>
+                </graph>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_pos_history_graph_shop">
+            <field name="name">Pos History</field>
+            <field name="model">pos.history</field>
+            <field name="type">graph</field>
+            <field name="arch" type="xml">
+                <graph string="Negozi" type="gauge">
+                    <field name="shop_id"/>
+                    <field name="amount_total" operator="+"/>
+                    <html>
+                        <graph-options>
+                            {
+
+                            max:30000,
+                            redFrom: 90, redTo: 100,
+                            yellowFrom:75, yellowTo: 90,
+                            minorTicks: 5
+                            }
+                        </graph-options>
+                    </html>
+                </graph>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_pos_history_form">
+            <field name="name">pos.history</field>
+            <field name="model">pos.history</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="PoS History">
+                    <group col="7" colspan="4">
+                        <group col="2" colspan="2" >
+                            <field name="date"/>
+                        </group>
+                        <group col="2" colspan="2" string="Incasso Registratore di Cassa">
+                            <field name="amount_total"/>
+                            <field name="cash_register_amount"/>
+                            <field name="note"/>
+                        </group>
+                    </group>
+                    <notebook colspan="4">
+                        <page string="Sale Order">
+                            <field name="pos_order_ids" colspan="4" nolabel="1"/>
+                        </page>
+                        <page string="Payment">
+                            <field name="statement_ids" colspan="4" nolabel="1">
+                                <tree string="Statement">
+                                    <field name="name"/>
+                                    <field name="date"/>
+                                    <field name="journal_id"/>
+                                    <field name="total_entry_encoding" sum="Sum Balance"/>
+                                    <field name="state"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,valid"
+                           statusbar_colors="{&quot;cancel&quot;:&quot;red&quot;}"/>
+                    <button name="action_confirm" states="draft" string="Generate Entries" colspan="1" type="object"
+                            icon="gtk-ok"/>
+                </form>
+            </field>
+        </record>
+
+
+        <record model="ir.actions.act_window" id="action_pos_history_form">
+            <field name="name">PoS History</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">pos.history</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form,graph</field>
+            <field name="context">{'nodelete': '1', 'nocreate': '1', 'noduplicate': '1'}</field>
+            <field name="limit">200</field>
+            <field name="view_id" eval="False"/>
+            <field name="domain">[]</field>
+        </record>
+
+        <!--<record model="ir.actions.act_window" id="action_pos_history_graph_shop">-->
+            <!--<field name="name">PoS History Shop</field>-->
+            <!--<field name="type">ir.actions.act_window</field>-->
+            <!--<field name="res_model">pos.history</field>-->
+            <!--<field name="view_type">form</field>-->
+            <!--<field name="view_mode">graph</field>-->
+            <!--<field name="context">{'nodelete': '1', 'nocreate': '1', 'noduplicate': '1'}</field>-->
+            <!--<field name="limit">200</field>-->
+            <!--<field name="view_id" eval="False"/>-->
+            <!--<field name="domain">[]</field>-->
+        <!--</record>-->
+
+        <record model="ir.ui.view" id="view_pos_history_tree">
+            <field name="name">Sales</field>
+            <field name="model">pos.history</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="POS History"
+                      colors="aqua:row_color=='aqua';black:row_color=='black';blue:row_color=='blue';brown:row_color=='brown';cadetblue:row_color=='cadetblue';darkblue:row_color=='darkblue';fuchsia:row_color=='fuchsia';forestgreen:row_color=='forestgreen';orange:row_color=='orange';green:row_color=='green';grey:row_color=='grey';red:row_color=='red';">
+                    <field name="shop_id" invisible="context.get('group_by', False) in ['shop_id']"/>
+                    <field name="date"/>
+                    <field name="day_of_week" invisible="context.get('group_by', False) in ['day_of_week']"/>
+                    <field name="week_nbr" invisible="context.get('group_by', False) in ['day_of_week']"/>
+                    <field name="amount_untax" sum="Total Untax"/>
+                    <field name="amount_tax" sum="Total Tax"/>
+                    <field name="amount_total" sum="Total Amount"/>
+                    <field name="cash_register_amount" sum="Total Register Amount"/>
+                    <field name="amount_difference"/>
+                    <field name="number_sale" invisible="context.get('group_by', False) in ['day_of_week']"/>
+                    <field name="pce_sell" avg="Average" invisible="context.get('group_by', False) in ['day_of_week']"/>
+                    <field name="avarage_sale" avg="Average sale" invisible="context.get('group_by', False) in ['day_of_week']"/>
+                    <field name="avarage_line" avg="Average line" invisible="context.get('group_by', False) in ['day_of_week']"/>
+                    <field name="pos_discount" invisible="context.get('group_by', False) in ['day_of_week']"/>
+                    <field name="state" />
+                    <!--<field name="last_week_difference" />-->
+                    <field name="row_color" invisible="1"/>
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_pos_history_filter" model="ir.ui.view">
+            <field name="name">pos.history.list.select</field>
+            <field name="model">pos.history</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Search Sales Order">
+
+                    <filter icon="terp-go-month"
+                            string="Last Month"
+                            name="last_month"
+                            help="History of the last month"
+                            domain="[('date', '&lt;', datetime.date.today().strftime('%%Y-%%m-01 00:00:00')), ('date', '&gt;=', (datetime.date.today() - relativedelta(months=1)).strftime('%%Y-%%m-01 00:00:00'))]"
+                    />
+                    <filter icon="terp-go-month"
+                            string="Current Month"
+                            name="current_month"
+                            help="History of the current month"
+                            domain="[('date', '&lt;', (datetime.date.today() + relativedelta(months=1)).strftime('%%Y-%%m-01 00:00:00')), ('date', '&gt;=', (datetime.date.today()).strftime('%%Y-%%m-01 00:00:00'))]"
+                    />
+                    <separator orientation="vertical"/>
+                    <filter icon="terp-go-week"
+                            string="Last Week"
+                            name="last_week"
+                            help="History for last week"
+                            domain="[('date','&lt;=',(datetime.date.today()-relativedelta(weeks=1,weekday=6)).strftime('%%Y-%%m-%%d 23:59:59')),('date','&gt;=',(datetime.date.today()-relativedelta(weeks=2,weekday=0)).strftime('%%Y-%%m-%%d 00:00:00'))]"
+                    />
+                    <filter icon="terp-go-week"
+                            string="This Week"
+                            name="this_week"
+                            help="History of this week"
+                            domain="[('date','&lt;=',(datetime.date.today()-relativedelta(weekday=6)).strftime('%%Y-%%m-%%d 23:59:59')),('date','&gt;=',(datetime.date.today()-relativedelta(weeks=1,weekday=0)).strftime('%%Y-%%m-%%d 00:00:00'))]"
+                    />
+                    <separator orientation="vertical"/>
+                    <filter icon="STOCK_INDEX"
+                            string="To validate"
+                            domain="[('state','=','draft')]"
+                            name="pos history"
+                            help="Pos History still in draft state"
+                    />
+
+
+                    <separator orientation="vertical"/>
+                    <field name="date_from" filter_domain="[('date','&gt;=',self)]"/>
+                    <field name="date_to" filter_domain="[('date','&lt;=',self)]"/>
+                    <field name="day_of_week"/>
+                    <separator orientation="vertical"/>
+                    <field name="shop_id" widget="selection"/>
+                    <newline/>
+                    <group expand="0" string="Group By..." colspan="4" col="20" groups="base.group_extended">
+                        <filter string="Shop" name="shop" icon="gtk-network" domain="[]"
+                                context="{'group_by': 'shop_id'}"/>
+                        <filter string="Day of week" name="day" icon="terp-go-today" domain="[]"
+                                context="{'group_by': 'day_of_week'}"/>
+                        <filter string="Week Number" name="day" icon="terp-go-today" domain="[]"
+                                context="{'group_by': 'week_nbr'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+        <menuitem parent="point_of_sale.menu_point_of_sale" id="menu_point_ofsale_history"
+                  action="action_pos_history_form" sequence="100"
+                  groups="point_of_sale.group_pos_user,point_of_sale.group_pos_manager"/>
+
+        <!--<menuitem parent="point_of_sale.menu_point_of_sale" id="menu_point_ofsale_history_shop"-->
+                  <!--action="action_pos_history_graph_shop" sequence="110"-->
+                  <!--groups="point_of_sale.group_pos_user,point_of_sale.group_pos_manager"/>-->
+
+
+    </data>
+</openerp>

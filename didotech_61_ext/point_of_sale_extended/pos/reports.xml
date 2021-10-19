@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+
+        <report
+                auto="False"
+                id="pos_history"
+                model="pos.history"
+                name="pos.history"
+                rml="point_of_sale_extended/pos/templates/report.ods"
+                string="Distinta Prelievo"
+                attachment_use="False"
+                usage="default"
+                multi="False"
+                />
+
+        <record id="pos_history" model="ir.actions.report.xml">
+            <field name="report_type">aeroo</field>
+            <field name="tml_source">file</field>
+            <field name="in_format">oo-ods</field>
+            <field name="out_format" eval="ref('report_aeroo_ooo.report_mimetypes_xls_odt')"></field>
+            <field name="parser_state">loc</field>
+            <field name="parser_loc">point_of_sale_extended/pos/templates/pos.py</field>
+        </record>
+
+
+    </data>
+</openerp>
+

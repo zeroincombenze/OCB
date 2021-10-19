@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+
+        <record id="wizard_mrp_operations_view" model="ir.ui.view">
+            <field name="name">MRP Operations</field>
+            <field name="model">wizard.mrp.operations</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Select Task">
+                    <separator string="Choose an option"/>
+                    <group col="4" colspan="4">
+                        <button name="start_task" string="Start Operation" type="object"/>
+                        <button name="suspend_task" string="Pause Operation" type="object"/>
+                        <button name="end_task" string="End Operation" type="object"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="wizard_mrp_operations_all" model="ir.ui.view">
+            <field name="name">All Operation</field>
+            <field name="model">wizard.mrp.operations</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Choose Operation">
+                    <separator string="Choose Operation" colspan="4"/>
+                    <field name="operation_barcode" on_change="onchange_operation_barcode(operation_barcode, context)"
+                           placeholder="Work Orders..." nolabel="1" default_focus="1" colspan="4"/>
+                    <field name="user_id" colspan="4"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="production_id" colspan="4"
+                           context="{'complete_product_name': True}"
+                           required="True"
+                           string="Manufacturing Order"
+                           on_change="get_workcenters_list(production_id, operation_id, workcenter_id, 'start')"
+
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="operation_id" colspan="4"
+                           context="{'complete_product_name': True}"
+                           on_change="get_workcenters_id(operation_id,user_id,'start')"
+                           required="True"
+                           options="{'create': false, 'create_edit': false}"
+
+                    />
+                    <field name="workcenter_id" colspan="4" required="True"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="state" readonly="1" invisible="1"/>
+
+                    <button name="start_operation" string="Start Operation" type="object" colspan="4" states="draft" />
+                    <button name="suspend_operation" string="Pause Operation" type="object" colspan="4" states="startworking"/>
+                    <button name="resume_operation" string="Resume Operation" type="object" colspan="4" states="pause"/>
+                    <button name="stop_operation" string="End Operation" type="object" colspan="4" states="draft"
+                        confirm="You are Finishing an operation without start, you you sure?"/>
+                    <button name="stop_operation" string="End Operation" type="object" colspan="4" states="startworking"/>
+
+                </form>
+            </field>
+        </record>
+
+
+        <record id="wizard_mrp_operations_start" model="ir.ui.view">
+            <field name="name">Start Operation</field>
+            <field name="model">wizard.mrp.operations</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Start Operation">
+                    <separator string="Start Operation" colspan="4"/>
+                    <field name="operation_barcode" on_change="onchange_operation_barcode(operation_barcode, context)"
+                           placeholder="Work Orders..." nolabel="1" default_focus="1" colspan="4"/>
+                    <field name="user_id" colspan="4"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="production_id" colspan="4"
+                           context="{'complete_product_name': True}"
+                           required="True"
+                           string="Manufacturing Order"
+                           on_change="get_workcenters_list(production_id, operation_id, workcenter_id, 'start')"
+
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="operation_id" colspan="4"
+                           context="{'complete_product_name': True}"
+                           on_change="get_workcenters_id(operation_id,user_id,'start')"
+                           required="True"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="workcenter_id" colspan="4" required="True"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <button name="start_operation" string="Start Operation" type="object" colspan="4"/>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="wizard_mrp_operations_suspend" model="ir.ui.view">
+            <field name="name">Pause Operation</field>
+            <field name="model">wizard.mrp.operations</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Pause Operation">
+                    <separator string="Pause Operation" colspan="4"/>
+                    <field name="operation_barcode" on_change="onchange_operation_barcode(operation_barcode, context)"
+                           placeholder="Work Orders..." nolabel="1"/>
+
+                    <field name="user_id" colspan="4"/>
+                    <field name="production_id" colspan="4"
+                           context="{'complete_product_name': True}"
+                           required="True"
+                           on_change="get_workcenters_list(production_id, operation_id, workcenter_id, 'suspend')"
+                           domain="[('state','=','in_production')]"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="operation_id" colspan="4"
+                           context="{'complete_product_name': True}"
+                           required="True"
+                           domain="[('production_id', '=', production_id ) ,('state', 'in', ['startworking'])]"
+                           on_change="get_workcenters_id(operation_id,user_id,'suspend')"
+                           options="{'create': false, 'create_edit': false}"
+                           default_focus="1"
+                    />
+                    <field name="workcenter_id" colspan="4" required="True"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="message" readonly="True" placeholder="Messages..." nolabel="1" colspan="4"/>
+                    <button name="suspend_operation" string="Pause Operation" type="object" colspan="4"/>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="wizard_mrp_operations_resume" model="ir.ui.view">
+            <field name="name">Resume Operation</field>
+            <field name="model">wizard.mrp.operations</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Resume Operation">
+                    <field name="operation_barcode" on_change="onchange_operation_barcode(operation_barcode, context)"
+                           placeholder="Work Orders..." nolabel="1"/>
+                    <separator string="Resume Operation" colspan="4"/>
+                    <field name="user_id" colspan="4"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="production_id" colspan="4"
+                           context="{'complete_product_name': True}"
+                           required="True"
+                           on_change="get_workcenters_list(production_id, operation_id, workcenter_id, 'resume')"
+                           domain="[('state','=','in_production')]"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="operation_id" colspan="4"
+                           context="{'complete_product_name': True}"
+                           on_change="get_workcenters_id(operation_id,user_id,'resume')" required="True"
+                           options="{'create': false, 'create_edit': false}"
+                           default_focus="1"
+                    />
+                    <field name="workcenter_id" colspan="4" required="True"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <button name="resume_operation" string="Resume Operation" type="object" colspan="4"/>
+                </form>
+            </field>
+        </record>
+
+        <record id="wizard_mrp_operations_end" model="ir.ui.view">
+            <field name="name">End Operation</field>
+            <field name="model">wizard.mrp.operations</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="End Operation">
+                    <field name="operation_barcode" on_change="onchange_operation_barcode(operation_barcode, context)"
+                           placeholder="Work Orders..." nolabel="1"/>
+                    <field name="user_id" colspan="4"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="production_id" colspan="4"
+                           required="True"
+                           context="{'complete_product_name': True}"
+                           on_change="get_workcenters_list(production_id, operation_id, workcenter_id, 'end')"
+                           domain="[('state','=','in_production')]"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <field name="operation_id" colspan="4"
+                           context="{'complete_product_name': True}"
+                           required="True"
+                           domain="[('production_id', '=', production_id ) ,('state', 'in', ['pause','startworking'])]"
+                           on_change="get_workcenters_id(operation_id,user_id,'stop')"
+                           options="{'create': false, 'create_edit': false}"
+                           default_focus="1"
+                    />
+                    <field name="workcenter_id" required="True" colspan="4"
+                           options="{'create': false, 'create_edit': false}"
+                    />
+                    <button name="stop_operation" string="End Operation" type="object" colspan="4"/>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="action_mrp_operations" model="ir.actions.act_window">
+            <field name="name">MRP Operations</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.mrp.operations</field>
+            <field name="view_mode">form</field>
+            <field name="view_type">form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="view_id" ref="wizard_mrp_operations_view"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="action_mrp_operations_all" model="ir.actions.act_window">
+            <field name="name">All Operation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.mrp.operations</field>
+            <field name="view_mode">form</field>
+            <field name="view_type">form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="view_id" ref="wizard_mrp_operations_all"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="action_mrp_operations_start" model="ir.actions.act_window">
+            <field name="name">Start Operation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.mrp.operations</field>
+            <field name="view_mode">form</field>
+            <field name="view_type">form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="view_id" ref="wizard_mrp_operations_start"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="action_mrp_operations_suspend" model="ir.actions.act_window">
+            <field name="name">Pause Operation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.mrp.operations</field>
+            <field name="view_mode">form</field>
+            <field name="view_type">form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="view_id" ref="wizard_mrp_operations_suspend"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="action_mrp_operations_resume" model="ir.actions.act_window">
+            <field name="name">Resume Operation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.mrp.operations</field>
+            <field name="view_mode">form</field>
+            <field name="view_type">form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="view_id" ref="wizard_mrp_operations_resume"/>
+            <field name="target">new</field>
+        </record>
+
+        <record id="action_mrp_operations_end" model="ir.actions.act_window">
+            <field name="name">End Operation</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">wizard.mrp.operations</field>
+            <field name="view_mode">form</field>
+            <field name="view_type">form</field>
+            <field name="domain">[('user_id','=',uid)]</field>
+            <field name="view_id" ref="wizard_mrp_operations_end"/>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem name="MRP Operations"
+                  id="menu_mrp_operations"
+                  parent="mrp.menu_mrp_manufacturing"
+                  sequence="11"
+                  action="action_mrp_operations"/>
+
+        <menuitem name="Operations"
+                  id="menu_mrp_operations"
+                  parent="base.menu_mrp_root"/>
+
+         <menuitem name="All Operation"
+                  id="menu_mrp_operations_all"
+                  parent="mrp_operations_addon.menu_mrp_operations"
+                  action="action_mrp_operations_all"/>
+
+        <menuitem name="Start Operation"
+                  id="menu_mrp_operations_start"
+                  parent="mrp_operations_addon.menu_mrp_operations"
+                  action="action_mrp_operations_start"/>
+
+        <menuitem name="Pause Operation"
+                  id="menu_mrp_operations_suspend"
+                  parent="mrp_operations_addon.menu_mrp_operations"
+                  action="action_mrp_operations_suspend"/>
+
+        <menuitem name="Resume Operation"
+                  id="menu_mrp_operations_resume"
+                  parent="mrp_operations_addon.menu_mrp_operations"
+                  action="action_mrp_operations_resume"/>
+
+        <menuitem name="End Operation"
+                  id="menu_mrp_operations_stop"
+                  parent="mrp_operations_addon.menu_mrp_operations"
+                  action="action_mrp_operations_end"/>
+
+
+    </data>
+</openerp>

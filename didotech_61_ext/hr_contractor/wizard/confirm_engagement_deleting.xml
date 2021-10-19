@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+  		<record id="view_confirm_deleting" model="ir.ui.view">
+            <field name="name">confirm.deleting.form</field>
+            <field name="model">confirm.engagement.deleting</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Confirm deleting">
+					<label string="Attenzione! Tutte le attivita del contractor collegate al progetto verranno riportate in stato 'draft'" />
+					<separator string="" colspan="4" />
+                    <group colspan="4" col="6">
+                    	<button icon="gtk-cancel" special="cancel"
+                    		string="Cancel" />
+                    	<button icon="gtk-ok" string="Ok"
+                    		name="confirmation" type="object" />
+                    </group>
+                </form>
+            </field>
+  		</record>
+		
+		<act_window name="Delete Engagement"
+            res_model="confirm.engagement.deleting"
+            src_model="hr.engagement"
+            key2="client_action_multi"
+            multi="True"
+            view_mode="form"
+            view_type="form"
+            target="new"
+            id="action_confirm_engagement_deleting"/>
+    </data>
+</openerp>

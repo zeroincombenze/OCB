@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="wizard_import_invoice_2c" model="ir.ui.view">
+            <field name="name">Import Passive Invoice</field>
+            <field name="model">wizard.import.passive.invoice</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Move Template" >
+                    <group col="2" width="600" height="500">
+                        <group col="2">
+                            <field name="start_import_date" colspan="2" />
+                        </group>
+                        <group col="2">
+                            <button icon="gtk-ok" name="import_invoice_2c" string="Start Import" type="object" colspan="1" />
+                            <button icon="gtk-cancel" special="cancel" string="Cancel" colspan="1"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_import_e_invoice_2c" model="ir.actions.act_window">
+            <field name="name">Import Invoice from SDI</field>
+            <field name="res_model">wizard.import.passive.invoice</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="wizard_import_invoice_2c"/>
+            <field name="target">current</field>
+        </record>
+
+        <menuitem action="action_import_e_invoice_2c" id="menu_check_2c_invoice"
+                              parent="l10n_it_fatturapa.menu_fattura_pa_payables"/>
+
+    </data>
+</openerp>

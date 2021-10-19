@@ -1,0 +1,341 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_hr_contractor_filter" model="ir.ui.view">
+            <field name="name">hr.contractor.select</field>
+            <field name="model">hr.contractor</field>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <search string="Search Contractor">
+                    <filter icon="terp-personal+" domain="[('active','=',True)]" name="active" string="Active"/>
+                    <filter icon="terp-check" domain="[('fiscalcode','=',False)]" name="fiscalcode" string="Codice Fiscale non Presente"/>
+                    <filter icon="terp-emblem-important" domain="[('privacy','=',False)]" name="provacy" string="No Privacy"/>
+                    <filter icon="terp-check" domain="[('state','=','draft')]" name="draft" string="Draft" help="Collaboratore appena caricato"/>
+                    <filter icon="terp-check" domain="[('state','=','verified')]" name="verified" string="Verified" help="Collaboratore verificato"/>
+
+                    <separator orientation="vertical"/>
+                    <field name="fiscalcode_surname" colspan="2"/>
+                    <field name="name" />
+                    <field name="gender" />
+                    <field name="fiscalcode" />
+                    <field name="category_ids" widget="selection"/>
+                    <newline />
+                    <field name="province" widget="selection"/>
+                    <field name="city" />
+                    <separator orientation="vertical"/>
+                    <field name="r_province" string="Resident Provience" widget="selection"/>
+                    <field name="r_city" string="Città Residenza" />
+                    <separator orientation="vertical"/>
+                    <field name="project_id"/>
+                    <filter icon="terp-check" domain="[('waiting','=', True)]" name="waiting" string="Attesa di Risposta" />
+                 </search>
+            </field>
+        </record>
+
+        <delete model="ir.ui.view" id="base_contact.view_partner_form_inherit"/>
+
+        <record id="view_hr_contractor_kanban" model="ir.ui.view">
+            <field name="name">any name of ur  model</field>
+            <field name="model">hr.contractor</field>
+            <field name="type">kanban</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_employee_vignette">
+                                <div class="oe_employee_image">
+                                    <a type="edit"><img t-att-src="kanban_image('hr.contractor', 'photo', record.id.value)" class="oe_employee_picture"/></a>
+                                </div>
+                                <div class="oe_employee_details">
+                                    <h4><a type="edit"><field name="name"/> <field name="fiscalcode_surname"/></a></h4>
+                                    <ul>
+                                        <li t-if="record.fiscalcode.raw_value">C.F.: <field name="fiscalcode"/></li>
+                                        <li t-if="record.gender.raw_value">Telefono: <field name="mobile_phone"/></li>
+                                        <li t-if="record.gender.raw_value">Sesso: <field name="gender"/></li>
+                                        <li t-if="record.r_city.raw_value">Città: <field name="r_city"/></li>
+                                        <li t-if="record.age.raw_value">Età: <field name="age"/></li>
+                                        <!-- <li t-if="record.r_province.raw_value">Provincia: <field name="r_province"/></li> -->
+                                    </ul>
+                                </div>
+                            </div>
+                            <script>
+                                $('.oe_employee_picture').load(function() { if($(this).width() &gt; $(this).height()) { $(this).addClass('oe_employee_picture_wide') } });
+                            </script>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <record id="view_hr_contractor_form" model="ir.ui.view">
+            <field name="name">hr.contractor.form</field>
+            <field name="model">hr.contractor</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+            <form string="Contractors">
+                    <group colspan="4" col="8">
+                        <group colspan="6" col="6">
+                            <field name="fiscalcode_surname" colspan="2"/>
+                            <field colspan="2" name="name"/>
+                            <field name="active" colspan="1"/>
+                            <field name="privacy" colspan="1"/>
+                            <field name="company_id" widget="selection" groups="base.group_multi_company,base.group_extended" on_change="onchange_company(company_id)"/>
+                            <field name="is_contractor" invisible="1"/>
+                        </group>
+                        <group colspan="2" col="1">
+                            <field name="photo" widget="image" nolabel="1"/>
+                        </group>
+                    </group>
+                    <notebook colspan="6">
+                        <page string="Personal Information">
+                            <group col="2" colspan="2" groups="base.group_hr_user">
+                                <separator colspan="2" string="Social IDs"/>
+                                <group colspan="2" col="6">
+                                    <field name="identification_id" colspan="4"/><newline/>
+                                    <field name="fiscalcode" colspan="4"/>
+                                    <button name="compute_fiscal_code" type="object" icon="terp-personal+" colspan="2" attrs="{'invisible':[('fiscalcode','!=', False)]}"/>
+                                    <field name="vat" colspan="4"/>
+                                </group>
+                                <group colspan="2">
+                                <separator string="Communication" colspan="4" col="4"/>
+                                    <field name="work_phone" colspan="4"/>
+                                    <field name="mobile_phone" colspan="4"/>
+                                    <field name="mobile_phone_operator" colspan="4"/>
+                                    <field name="cellular_type" colspan="4"/>
+                                    <field name="work_email" widget="email" colspan="4"/>
+                                </group>
+                            </group>
+                            <group col="2" colspan="2" groups="base.group_hr_user">
+                                <separator string="Status" colspan="2"/>
+                                <field name="gender"/>
+                                <field name="birthday"/>
+                                <field name="birth_city"/>
+                                <field name="marital"/>
+                                <field name="height"/>
+                                <field name="weight"/>
+                                <field name="size"/>
+                            </group>
+                            <group colspan="2" col="4" string="Postal Address">
+                                <field name="street" colspan="4"/>
+                                <field name="street2" colspan="4"/>
+                                <field name="city" on_change="on_change_city(city)"/>
+                                <field name="zip"/>
+                                <field name="province" select="2"/>
+                                <field name="region"/>
+                                <field name="country_id" completion="1"/>
+                            </group>
+                            <group colspan="2" col="4" string="Residence Address">
+                              <field name="r_street" colspan="4"/>
+                              <field name="r_street2" colspan="4"/>
+                              <field name="r_city" on_change="on_change_r_city(r_city)"/>
+                              <field name="r_zip"/>
+                              <field name="r_province" select="2"/>
+                              <field name="r_region"/>
+                              <field name="r_country_id" completion="1"/>
+                            </group>
+                            <group string="Categories" groups="base.group_extended" colspan="2" col="4">
+
+                                <field colspan="4" name="category_ids" nolabel="1" widget="many2many_checkboxes"/>
+                            </group>
+                            <group groups="base.group_extended" colspan="2" col="4">
+                                <separator colspan="4" string="Indirizzo Spedizione"/>
+                                <field name="indirizzo_spedizione" colspan="4" nolabel="1"/>
+                                <separator colspan="4" string="Notes"/>
+                                <field colspan="4" nolabel="1" name="notes"/>
+                                <group colspan="4" col="4">
+                                    <separator colspan="4" string="Status"/>
+                                    <field colspan="2" name="state" nolabel="1"/>
+                                    <button name="button_verified" states="draft" string="Verified" icon="gtk-go-forward"/>
+                                    <button name="button_assigned" states="verified" string="Assigned" icon="gtk-go-forward"/>
+                                    <button name="button_released" states="assigned" string="Released" icon="gtk-go-forward"/>
+                                    <!-- <button name="button_draft" states="released" string="Draft" icon="gtk-go-forward"/> -->
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Payment Information" groups="base.group_hr_user">
+                            <group colspan="4" col="4">
+                                <field name="payment_type"/>
+                                <separator string="Bank Information" colspan="4"/>
+                                <field name="bank_iban" attrs="{'required':[('payment_type','=','bank')], 'readonly':[('payment_type','!=','bank')]}"/>
+                                <field name="bank" attrs="{'readonly':[('payment_type','!=','bank')]}"/>
+                                <field name="payment_due" />
+                            </group>
+                        </page>
+                        <page string="Extra Information" groups="base.group_hr_user">
+                            <group colspan="4" col="4">
+                                <field name="has_auto" colspan="2"/>
+                                <field name="transfert" colspan="2"/>
+                                <field name="transfert_distance" colspan="2" attrs="{'required':[('transfert','=',True)], 'readonly':[('transfert','!=',True)]}"/>
+                                <separator string="Car Information" colspan="4"/>
+                                <!--
+                                commentato 15 Maggio 2013 in quanto non è necessario
+                                <field name="car_plate" attrs="{'required':[('has_auto','=',True)], 'readonly':[('has_auto','!=',True)]}" />-
+                                <field name="car_model" attrs="{'required':[('has_auto','=',True)], 'readonly':[('has_auto','!=',True)]}"/>
+                                <field name="car_manufacturer" attrs="{'readonly':[('has_auto','!=',True)]}"/>
+                                <field name="car_refound_km" attrs="{'readonly':[('has_auto','!=',True)]}" />-->
+
+                                <field name="car_plate" attrs="{'readonly':[('has_auto','!=',True)]}"/>
+                                <field name="car_model" attrs="{'readonly':[('has_auto','!=',True)]}"/>
+                                <field name="car_manufacturer" attrs="{'readonly':[('has_auto','!=',True)]}"/>
+                                <field name="car_refound_km" attrs="{'readonly':[('has_auto','!=',True)]}"/>
+                            </group>
+                            <group colspan="4" col="4">
+                            <separator colspan="4" string="Phones"/>
+                            <field name="phone_ids" nolabel="1" colspan="4">
+                                <form string="Phone No">
+                                    <field name="type"/>
+                                    <field name="number"/>
+                                </form>
+                                <tree string="Phone No" editable="top">
+                                    <field name="type"/>
+                                    <field name="number"/>
+                                </tree>
+                            </field>
+                            </group>
+                        </page>
+                        <!--<page string="Gallery">-->
+                            <!--&lt;!&ndash;<field name="web_gallery_image_ids"/>&ndash;&gt;-->
+                            <!--&lt;!&ndash;<newline />-->
+                            <!--<field name="web_gallery_video_ids" />-->
+                            <!--<newline />-->
+                            <!--<field name="web_gallery_doc_ids" />&ndash;&gt;-->
+                        <!--</page>-->
+
+                        <page string="Engagement">
+
+                             <field name="engagement_line_ids" nolabel="1" >
+                                <tree string="Engagement" editable="top">
+
+                                    <field name="user_id" />
+                                    <field name="project_id" on_change="on_change_project(project_id)" domain="[('state', '=', 'open'),]"/>
+                                    <field name="contract_type_id"/>
+                                    <!--<field name="not_interested" on_change="on_change_flag('not_interested')"/>-->
+                                    <!--<field name="waiting" on_change="on_change_flag('waiting')"/>-->
+                                    <!--<field name="unsuitable" on_change="on_change_flag('unsuitable')"/>-->
+                                    <!--<field name="confermed" on_change="on_change_flag('confermed')"/>-->
+
+                                    <field name="not_interested" />
+                                    <button name="action_not_interested" string="Non Interessato" type="object" icon="gtk-apply"/>
+                                    <field name="waiting" />
+                                    <button name="action_waiting" string="Attesa" type="object" icon="gtk-apply"/>
+                                    <field name="unsuitable" />
+                                    <button name="action_unsuitable" string="Non Idoneo" type="object" icon="gtk-apply"/>
+                                    <field name="confermed" />
+                                    <button name="action_confermed" string="Confermato" type="object" icon="gtk-apply"/>
+
+                                    <field name="cancelled" attrs="{'readonly':[('confermed','!=',True)]}"/>
+                                    <field name="parttime_weekday" />
+                                    <field name="fulltime_weekday" />
+                                    <field name="parttime_holiday" />
+                                    <field name="fulltime_holiday" />
+                                    <field name="km_auto" />
+                                    <field name="km_auto_amount" />
+                                    <field name="date" />
+                                    <!--<button name="%(action_hr_contractor_assign_task)d" string="Task" type="action"-->
+                                            <!--icon="gtk-ok" attrs="{'readonly': [('waiting','=',False)]}" />-->
+                                    <button name="action_assign_task" string="Task" type="object"
+                                            icon="gtk-ok" attrs="{'readonly': [('waiting', '=', False)]}" />
+                                    <button name="%(action_confirm_engagement_deleting)d" string="Task" type="action" icon="gtk-cancel" attrs="{'readonly':[('waiting','=',False)]}"/>
+
+                                </tree>
+                             </field>
+                        </page>
+
+                    </notebook>
+                </form>
+
+            </field>
+        </record>
+        
+        <record id="view_hr_contractor_tree" model="ir.ui.view">
+            <field name="name">hr.contractor.tree</field>
+            <field name="model">hr.contractor</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="Employees" colors="red:privacy==False;black:privacy==True;">
+                    <field name="fiscalcode_surname"/>
+                    <field name="name"/>
+                    <field name="gender"/>
+                    <field name="birthday"/>
+                    <field name="age"/>
+                    <field name="fiscalcode"/>
+                    <field name="mobile_phone"/>
+                    <field name="province" select="2" invisible="1"/>
+                    <field name="r_city" />
+                    <field name="r_province" string="Resident Provience" widget="selection"/>
+                    <field name="work_email"/>
+                    <field name="privacy" invisible="1"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                    <field name="coach_id" invisible="1" />
+                    <field name="state" invisible="1" />
+                </tree>
+            </field>
+        </record>
+        <record id="open_view_hr_contractor_list_my" model="ir.actions.act_window">
+            <field name="name">Contractors</field>
+            <field name="res_model">hr.contractor</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">kanban,tree,form</field>
+            <field name="domain">[('is_contractor', '=', True)]</field>
+            <field name="context">{"search_default_department_id": department_id,"search_default_active":eval('True'),'active_test' : eval('False')}</field>
+            <field name="view_id" ref="view_hr_contractor_tree"/>
+            <field name="search_view_id" ref="view_hr_contractor_filter"/>
+        </record>
+        <menuitem action="open_view_hr_contractor_list_my" id="menu_open_view_hr_contractor_list_my" sequence="3" parent="hr.menu_hr_main"/>
+
+        <record id="hr.open_view_employee_list" model="ir.actions.act_window">
+            <field name="domain">[('is_contractor', '=', False)]</field>
+        </record>
+        
+        <!--
+            Contractor Images
+        -->
+<!--        <record id="view_contractor_image_form" model="ir.ui.view">
+            <field name="name">contractor.images.form</field>
+            <field name="model">contractor.images</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+            <form string="HR Contractor Images">
+                <notebook colspan="4">
+                    <page string="Image">
+                        <group col="4" colspan="4">
+                            <field name="name" colspan="2" />
+                            <field name="link" colspan="2" />
+                        </group>
+                        <group col="4" colspan="4" attrs="{'invisible':[('link','!=',0)]}">
+                            <field name="image" colspan="4" attrs="{'required':[('link','=', False)]}"/>
+                        </group>
+                        <group col="4" colspan="4" attrs="{'invisible':[('link','=',0)]}">
+                            <field name="filename" colspan="4" widget="url" attrs="{'required':[('link','=', True)]}"/>
+                        </group>
+                        <separator string="Preview (Only when saved)" colspan="4" />
+                        <field name="preview" widget="image" nolabel="1" colspan="4"/>
+                    </page>
+                    <page string="Comments">
+                        <field name="comments" nolabel="1" colspan="4" />
+                    </page>
+                </notebook>
+            </form>
+            </field>
+        </record>
+        <record id="view_contractor_image_tree" model="ir.ui.view">
+            <field name="name">contractor.images.tree</field>
+            <field name="model">contractor.images</field>
+            <field name="type">tree</field>
+            <field name="arch" type="xml">
+                <tree string="HR Contractor Images">
+                    <field name="name"  />
+                    <field name="link" />
+                    <field name="comments" />
+                </tree>
+            </field>
+        </record>
+        <act_window name="Images"
+            domain="[('contractor_id', '=', active_id)]"
+            context="{'default_contractor_id': active_id}"
+            res_model="contractor.images"
+            src_model="hr.contractor"
+            id="act_contractor_2_images"/>-->
+    </data>
+</openerp>

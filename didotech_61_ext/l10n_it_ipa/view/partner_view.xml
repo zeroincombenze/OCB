@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_partner_ipa_form" model="ir.ui.view">
+            <field name="name">res.partner.ipa.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+		    <field name="arch" type="xml">
+               <page string="Sales &amp; Purchases" position="inside">
+                    <group colspan="2" col="2" groups="base.group_extended">
+                        <separator string="Fatturazione PA" colspan="2"/>
+                        <field name="ipa_code"  />
+                        <field name="unique_office_code" />
+                    </group>
+		        </page>
+		    </field>
+        </record>
+
+        <record id="view_partner_address_ipa_form" model="ir.ui.view">
+            <field name="name">res.partner.address.ipa.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base_address_contacts.view_partner_form_inherit"/>
+		    <field name="arch" type="xml">
+               <field name="pec" position="after">
+                    <group colspan="2" col="2" groups="base.group_extended">
+                        <separator string="Fatturazione PA" colspan="2"/>
+                        <field name="ipa_code"  />
+                        <field name="unique_office_code" />
+                    </group>
+		        </field>
+		    </field>
+        </record>
+
+        <record id="view_partner_address_ipa_form2" model="ir.ui.view">
+            <field name="name">res.partner.address.ipa.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_address_form1"/>
+		    <field name="arch" type="xml">
+               <field name="email" position="after">
+                    <group colspan="2" col="2" groups="base.group_extended">
+                        <separator string="Fatturazione PA" colspan="2"/>
+                        <field name="ipa_code"  />
+                        <field name="unique_office_code" />
+                    </group>
+		        </field>
+		    </field>
+        </record>
+
+    </data>
+</openerp>

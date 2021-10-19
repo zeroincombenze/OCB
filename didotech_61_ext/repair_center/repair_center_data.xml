@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+
+        <!-- Sequences -->
+        <record id="seq_type_repair_order_name" model="ir.sequence.type">
+            <field name="name">Repair Order</field>
+            <field name="code">repair.order</field>
+        </record>
+
+        <record id="seq_repair_order" model="ir.sequence">
+            <field name="name">Repair Order</field>
+            <field name="code">repair.order</field>
+            <field name="prefix">OL/%(y)s/</field>
+            <field name="padding">5</field>
+        </record>
+
+        <record id="repair_product_category" model="product.category">
+            <field name="parent_id" ref="product.cat0"/>
+            <field name="name">Repairable</field>
+        </record>
+        <record id="product_product_repair_generic" model="product.product">
+            <field name="list_price">10.00</field>
+            <field name="standard_price">10.00</field>
+            <field name="uom_id" ref="product.product_uom_unit"/>
+            <field name="uom_po_id" ref="product.product_uom_unit"/>
+            <field name="type">product</field>
+            <field name="name">Generic Repair Product</field>
+            <field name="categ_id" ref="repair_product_category"/>
+        </record>
+        <record id="property_repair_product" forcecreate="True" model="ir.property">
+            <field name="name">property_repair_product_id</field>
+            <field name="fields_id" search="[('model', '=', 'res.company'), ('name', '=', 'property_repair_product_id')]"/>
+            <field eval="'product.product,' + str(product_product_repair_generic)" name="value"/>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+        
+        <record id="generic_repair_location" model="stock.location">
+            <field name="name">Repair</field>
+            <field name="location_id" ref="stock.stock_location_company"/>
+            <field name="usage">internal</field>
+            <field name="chained_location_type">none</field>
+            <field name="chained_auto_packing">manual</field>
+        </record>
+        <record id="property_repair_stock_location" forcecreate="True" model="ir.property">
+            <field name="name">repair_location_id</field>
+            <field name="fields_id" search="[('model', '=', 'res.company'), ('name', '=', 'repair_location_id')]"/>
+            <field eval="'stock.location,' + str(generic_repair_location)" name="value"/>
+            <field name="company_id" ref="base.main_company"/>
+        </record>
+        
+    </data>
+</openerp>

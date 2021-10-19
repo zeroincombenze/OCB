@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="picking_rule_all" model="ir.rule">
+            <field name="name">All picking</field>
+            <field model="ir.model" name="model_id" ref="stock.model_stock_picking"/>
+            <field name="groups" eval="[(4, ref('point_of_sale.group_pos_manager'))]"/>
+            <field name="domain_force">[(1,'=', 1)]</field>
+        </record>
+
+        <record id="picking_rule_only_own" model="ir.rule">
+            <field name="name">Only my picking</field>
+            <field model="ir.model" name="model_id" ref="stock.model_stock_picking"/>
+            <field name="groups" eval="[(4, ref('point_of_sale.group_pos_user'))]"/>
+            <field name="domain_force">['|', '|', ('stock_journal_id', '=', False), ('stock_journal_id.member_ids','in', [user.id]), ('stock_journal_id.member_ids','=', False) ]</field>
+        </record>
+
+        <record id="inventory_rule_all" model="ir.rule">
+            <field name="name">All Inventory</field>
+            <field model="ir.model" name="model_id" ref="stock.model_stock_inventory"/>
+            <field name="groups" eval="[(4, ref('stock.group_stock_manager'))]"/>
+            <field name="domain_force">[(1,'=', 1)]</field>
+        </record>
+
+        <record id="inventory_rule_only_own" model="ir.rule">
+            <field name="name">Only my inventory</field>
+            <field model="ir.model" name="model_id" ref="stock.model_stock_inventory"/>
+            <field name="groups" eval="[(4, ref('stock.group_stock_user'))]"/>
+            <field name="domain_force">['|', ('user_id', '=', False), ('user_id', '=', user.id)]</field>
+        </record>
+
+
+    </data>
+</openerp>

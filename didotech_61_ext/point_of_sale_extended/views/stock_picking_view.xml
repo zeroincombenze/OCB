@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- MODIFICA DEL DOMAIN E CONTEXT-->
+        <record id="stock.action_picking_tree" model="ir.actions.act_window">
+            <field name="name">Delivery Orders</field>
+            <field name="res_model">stock.picking</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="domain">[('type','=','out'), ('stock_journal_id', '!=', False)]</field>
+            <field name="context">{'default_type': 'out', 'contact_display': 'partner'}</field>
+        </record>
+
+        <record id="view_picking_out_form" model="ir.ui.view">
+            <field name="name">stock.picking.out.form</field>
+            <field name="model">stock.picking</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Delivery Orders">
+                    <group col="6" colspan="4">
+                        <group colspan="4" col="4">
+                            <field name="name" readonly="1"/>
+                            <field name="origin" readonly="1"/>
+                            <field name="address_id" on_change="onchange_partner_in(address_id)" context="{'contact_display':'partner'}" colspan="4"/>
+                            <field name="address_delivery_id" context="{'name_lenght': '180'}" colspan="6"/>
+                            <field name="goods_description_id" widget="selection"/>
+                            <field name="carriage_condition_id" widget="selection"/>
+                            <field name="transportation_condition_id" widget="selection"/>
+                            <field name="carrier_id"/>
+                            <field name="carrier_tracking_ref"/>
+                            <field name="number_of_packages"/>
+                            <field name="weight"/>
+                            <field name="weight_net"/>
+                            <field name="invoice_state" invisible="1"/>
+                            <field name="backorder_id" invisible="1"/>
+                        </group>
+                        <group colspan="2" col="2">
+                            <field name="date" invisible="1"/>
+                            <field name="ddt_date"/>
+                            <field name="ddt_number" readonly="1"/>
+                            <field name="stock_journal_id" widget="selection"/>
+                        </group>
+                    </group>
+                    <notebook colspan="4">
+                        <page string="Products">
+                            <field name="product_barcode" states="draft" placeholder="Product code for auto insert line" colspan="2" on_change="onchange_product_barcode(product_barcode, address_id, type, stock_journal_id, move_lines, context)"/>
+                            <field colspan="4" name="move_lines" nolabel="1" widget="one2many_list"
+                                   context="{'address_out_id': address_id, 'picking_type': type, 'stock_journal_id': stock_journal_id}">
+                                <tree string="Stock Moves" editable="top">
+                                    <field name="name" invisible="1"/>
+                                    <field name="product_id"
+                                           on_change="onchange_product_id(product_id,location_id,location_dest_id, parent.address_id)"/>
+                                    <field name="product_qty"
+                                           on_change="onchange_quantity(product_id, product_qty, product_uom, product_uos)"/>
+                                    <field name="product_uom" string="UoM"/>
+                                    <field name="location_id" domain="[('usage','=','internal')]"
+                                           groups="stock.group_locations"/>
+                                    <field name="location_dest_id" domain="[('usage','&lt;&gt;','view')]"
+                                           groups="stock.group_locations"/>
+                                    <field name="date"/>
+                                    <field name="state"/>
+                                </tree>
+
+                            </field>
+                            <group col="12" colspan="4">
+                                <field name="state" readonly="1" widget="statusbar"
+                                       statusbar_visible="draft,confirmed,assigned,done"
+                                       statusbar_colors="{&quot;auto&quot;:&quot;blue&quot;, &quot;confirmed&quot;:&quot;blue&quot;}"/>
+                                <button name="button_cancel" states="assigned,confirmed,draft" string="_Cancel"
+                                        icon="gtk-cancel"/>
+                                <button name="draft_force_assign" states="draft" string="Process Later" type="object"
+                                        icon="gtk-ok"/>
+                                <button name="draft_validate" states="draft" string="Process Now" type="object"
+                                        icon="gtk-yes"/>
+                                <button name="force_assign" states="confirmed" string="Force Availability" type="object"
+                                        icon="gtk-jump-to"/>
+                                <button name="action_process" states="assigned" string="Process" type="object"
+                                        icon="gtk-go-forward"/>
+                                <button name="action_reopen" type="object" states="done,cancel,assigned,confirmed" string="Reset To Draft"
+                                        icon="gtk-convert" />
+                            </group>
+                        </page>
+                        <page string="Additional info" groups="base.group_extended,base.group_multi_company">
+                            <field name="auto_picking" groups="base.group_extended"/>
+                            <field name="date_done" groups="base.group_extended"/>
+                            <field name="move_type" groups="base.group_extended"/>
+                            <field name="type" groups="base.group_extended"/>
+                            <field name="company_id" groups="base.group_multi_company" widget="selection"/>
+                        </page>
+                        <page string="Notes">
+                            <field colspan="4" name="note" nolabel="1"/>
+                        </page>
+                        <page string="Communication &amp; History" groups="base.group_extended">
+                            <field name="message_ids" colspan="4" nolabel="1" mode="tree" readonly="1">
+                                <tree string="History">
+                                    <field name="display_text" string="History Information"/>
+                                    <field name="email_from" invisible="1"/>
+                                    <button string="Reply" attrs="{'invisible': [('email_from', '=', False)]}"
+                                            name="109"
+                                            context="{'mail.compose.message.mode':'reply', 'message_id':active_id}"
+                                            icon="terp-mail-replied" type="action"/>
+                                </tree>
+                            </field>
+                            <button string="Send New Email"
+                                    name="%(mail.action_email_compose_message_wizard)d"
+                                    icon="terp-mail-message-new" type="action"/>
+                        </page>
+                    </notebook>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_picking_tree" model="ir.actions.act_window">
+            <field name="name">DDT</field>
+            <field name="res_model">stock.picking</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+            <field name="domain">[('type','=','out')]</field>
+            <field name="context">{'default_type': 'out', 'contact_display': 'partner_address', 'search_default_done': 1, 'search_default_have_ddt': 1, 'default_auto_picking': 1}</field>
+            <field name="search_view_id" ref="stock.view_picking_out_search"/>
+            <field name="help">Visualizza solo i DDT consegnati.</field>
+        </record>
+
+        <record id="action_picking_tree_out_view10_waiting" model="ir.actions.act_window.view">
+            <field eval="1" name="sequence"/>
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="stock.view_picking_out_tree"/>
+            <field name="act_window_id" ref="action_picking_tree"/>
+        </record>
+
+        <record id="action_picking_tree_out_view20_waiting" model="ir.actions.act_window.view">
+            <field eval="2" name="sequence"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_picking_out_form"/>
+            <field name="act_window_id" ref="action_picking_tree"/>
+        </record>
+
+        <menuitem action="action_picking_tree" id="menu_action_picking_tree" parent="point_of_sale.menu_point_of_sale"
+                  sequence="4"/>
+
+
+    </data>
+</openerp>

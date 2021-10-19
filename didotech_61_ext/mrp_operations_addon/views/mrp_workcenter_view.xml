@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="mrp_workcenter_user_view" model="ir.ui.view">
+            <field name="name">mrp.workcenter.user.form</field>
+            <field name="model">mrp.workcenter</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="mrp.mrp_workcenter_view" />
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                    <page string="Enabled Users">
+                        <separator colspan="4" string="Enabled Users"/>
+                        <field name="user_ids" colspan="4" nolabel="1" widget="many2many_checkboxes" />
+                    </page>
+                </notebook>
+            </field>
+        </record>
+
+    </data>
+</openerp>

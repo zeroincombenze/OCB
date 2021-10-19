@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+
+        <record model="ir.module.category" id="module_category_repair">
+            <field name="name">Repair</field>
+            <field name="description">Repair</field>
+            <field name="sequence">40</field>
+        </record>
+
+        <record model="res.groups" id="group_repair_user">
+        	<field name="name">Repair / User</field>
+            <field name="category_id" ref="module_category_repair"/>
+        </record>
+        
+        <record model="res.groups" id="group_repair_manager">
+        	<field name="name">Repair / Manager</field>
+            <field name="implied_ids" eval="[(4, ref('group_repair_user'))]"/>
+            <field name="category_id" ref="module_category_repair"/>
+        </record>
+
+        <record model="res.groups" id="group_repair_accessories">
+        	<field name="name">Repair / Accessories View</field>
+            <field name="category_id" ref="module_category_repair"/>
+        </record>
+
+        <record model="res.groups" id="group_repair_tech">
+        	<field name="name">Repair / Tech View</field>
+            <field name="category_id" ref="module_category_repair"/>
+        </record>
+	</data>
+</openerp>

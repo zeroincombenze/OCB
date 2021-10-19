@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+<data noupdate="1">
+    <!--BASIC COMMANDS-->
+    <record model="telegram.command" id="command_start">
+        <field name="name">/start</field>
+        <field name="description">Start here</field>
+        <field name="sequence" eval="900"/>
+        <field name="response_code">
+        </field>
+        <field name="response_template">
+            Welcome! Click /help command to get list of all available commands
+        </field>
+        <field name="group_ids" eval="[]"/>
+    </record>
+
+    <record model="telegram.command" id="help_command">
+        <field name="name">/help</field>
+        <field name="description">Get list of available commands</field>
+        <field name="sequence" eval="1000"/>
+        <field name="response_code">data = {'all_commands':'', 'model': 'sale.order'}
+all_commands = pool['telegram.command'].search(cr, uid, [])
+for command in pool['telegram.command'].browse(cr, uid, all_commands):
+    data['all_commands'] += str(command.name) + ' - ' + str(command.description)+ '\n'
+        </field>
+        <field name="response_template">
+Ciao ${user.name} i comandi disponibili per te sono:
+
+${data['all_commands']}
+        </field>
+        <field name="group_ids" eval="[]"/>
+    </record>
+
+    <record model="telegram.command" id="users_command">
+        <field name="name">/users</field>
+        <field name="description">Get list of database users and theirs last login time</field>
+        <field name="sequence" eval="800"/>
+        <field name="type">cacheable</field>
+        <field name="universal">True</field>
+        <field name="group_ids" eval="[(4, ref('base.group_erp_manager'))]" />
+        <field name="model_id" ref="base.model_res_users" />
+        <field name="response_code">
+user_ids = pool['res.users'].search(cr, uid, [])
+data['users'] = pool['res.users'].browse(cr, uid, user_ids)
+        </field>
+        <field name="response_template" >
+Ciao ${user.name}
+Lista Utenti:
+
+% for users in data['users']:
+  ${users.name} il ${users.date}
+% endfor
+        </field>
+    </record>
+
+    <record model="telegram.command" id="who_command">
+        <field name="name">/me</field>
+        <field name="description">Discover who you are</field>
+        <field name="sequence" eval="980"/>
+        <field name="response_template" >Ciao ${user.name} il tuo login ${user.login}</field>
+    </record>
+
+    <record model="telegram.command" id="invoice_command">
+        <field name="name">/fatture</field>
+        <field name="description">Get list of invoice of current month</field>
+        <field name="sequence" eval="100"/>
+        <field name="group_ids" eval="[(4, ref('account.group_customer_account_invoice'))]" />
+        <field name="model_id" ref="account.model_account_invoice" />
+        <field name="response_code">
+account_invoice_obj = pool['account.invoice']
+#pdb.set_trace()
+from_date =  (datetime.date.today()).strftime('%Y-%m-01 00:00:00')
+to_date = (datetime.date.today() + dateutil.relativedelta.relativedelta(months=1)).strftime('%Y-%m-01 00:00:00')
+fatturato = {}
+account_invoice_ids = account_invoice_obj.search(cr, uid, [('date_invoice', '&gt;', from_date), ('date_invoice', '&lt;', to_date), ('state', 'not in', ['draft', 'cancel']), ('type', 'in', ['out_invoice', 'out_refund'])], context=context)
+
+fatturato_totale = 0.0
+
+for fattura in account_invoice_obj.browse(cr, uid, account_invoice_ids, context):
+    if fattura.type == 'out_invoice':
+        sign = 1
+    else:
+        sign = -1
+    if fatturato.get(fattura.partner_id.name):
+        fatturato[fattura.partner_id.name]['amount_total'] += sign * fattura.amount_total
+    else:
+        fatturato.update({fattura.partner_id.name: {'amount_total': sign * fattura.amount_total}})
+
+    fatturato_totale += sign * fattura.amount_total
+
+if fatturato == {}:
+    fatturato = {'NESSUNA VENDITA': {'amount_total': 0}}
+data['from_date'] = from_date
+data['to_date'] = to_date
+data['fatturato'] = OrderedDict(sorted(fatturato.items(), key=lambda t: t[0]))
+data['fatturato_totale'] = fatturato_totale
+        </field>
+        <field name="response_template" ><![CDATA[
+Il fatturato del mese diviso per cliente è
+
+% for cliente in data['fatturato'].keys():
+* <b>${cliente}</b> - ${data['fatturato'][cliente]['amount_total']} €
+% endfor
+
+TOTALE: <b>${data['fatturato_totale']}</b> €
+
+]]>
+        </field>
+    </record>
+
+    <record model="telegram.command" id="specific_invoice_command">
+        <field name="name">/fattura</field>
+        <field name="description">Get invoice</field>
+        <field name="sequence" eval="100"/>
+        <field name="group_ids" eval="[(4, ref('account.group_customer_account_invoice'))]" />
+        <field name="model_id" ref="account.model_account_invoice" />
+        <field name="response_code">
+account_invoice_obj = pool['account.invoice']
+
+data['invoice_number'] = False
+if user_input:
+    data['invoice_number'] = user_input[0]
+    account_invoice_ids = account_invoice_obj.search(cr, uid, [('number', '=', data['invoice_number']), ('type', 'in', ['out_invoice', 'out_refund'])], context=context)
+
+data['fattura'] = False
+if account_invoice_ids:
+    res_id = account_invoice_ids[0]
+    data['fattura'] = account_invoice_obj.browse(cr, uid, res_id, context)
+else:
+    account_invoice_ids = account_invoice_obj.search(cr, uid, [('number', 'like', data['invoice_number']), ('type', 'in', ['out_invoice', 'out_refund'])], context=context)
+    data['fatture'] = account_invoice_obj.browse(cr, uid, account_invoice_ids, context)
+        </field>
+        <field name="response_template" ><![CDATA[
+
+% if data['fattura']:
+La fattura è
+<b>${data['fattura'].partner_id.name}</b> - ${data['fatturato'].amount_total} €
+% endif
+% if not data['fattura']:
+Non sono riusciro a trovare la fattura numero ${data['invoice_number']}
+
+Ma ci sono le seguenti fatture simili:
+
+% for fattura in data['fatture']:
+*<b>${fattura.number}</b> ${fattura.partner_id.name} -  : ${fattura.amount_total} €
+% endfor
+% endif
+
+]]>
+        </field>
+        <field name="report_template" ref="account.account_invoices"/>
+    </record>
+
+    <record model="telegram.command" id="invoice_last_month_command">
+        <field name="name">/fatturemesescorso</field>
+        <field name="description">Get list of invoice of last month</field>
+        <field name="sequence" eval="100"/>
+        <field name="group_ids" eval="[(4, ref('account.group_customer_account_invoice'))]" />
+        <field name="model_id" ref="account.model_account_invoice" />
+        <field name="response_code">
+account_invoice_obj = pool['account.invoice']
+#pdb.set_trace()
+from_date =  (datetime.date.today() - dateutil.relativedelta.relativedelta(months=1)).strftime('%Y-%m-01 00:00:00')
+to_date = datetime.date.today().strftime('%Y-%m-01 00:00:00')
+fatturato = {}
+account_invoice_ids = account_invoice_obj.search(cr, uid, [('date_invoice', '&gt;', from_date), ('date_invoice', '&lt;', to_date), ('state', 'not in', ['draft', 'cancel']), ('type', 'in', ['out_invoice', 'out_refund'])], context=context)
+
+fatturato_totale = 0.0
+
+for fattura in account_invoice_obj.browse(cr, uid, account_invoice_ids, context):
+    if fatturato.get(fattura.partner_id.name):
+        fatturato[fattura.partner_id.name]['amount_total'] += fattura.amount_total
+    else:
+        fatturato.update({fattura.partner_id.name: {'amount_total': fattura.amount_total}})
+
+    fatturato_totale += fattura.amount_total
+
+if fatturato == {}:
+    fatturato = {'NESSUNA VENDITA': {'amount_total': 0}}
+data['from_date'] = from_date
+data['to_date'] = to_date
+data['fatturato'] = OrderedDict(sorted(fatturato.items(), key=lambda t: t[0]))
+data['fatturato_totale'] = fatturato_totale
+        </field>
+        <field name="response_template" >
+            <![CDATA[
+Il fatturato del mese scorso diviso per cliente è
+
+% for cliente in data['fatturato'].keys():
+* <b>${cliente}</b>: ${data['fatturato'][cliente]['amount_total']} €
+% endfor
+
+TOTALE: ${data['fatturato_totale']} €
+
+]]>
+        </field>
+    </record>
+
+    <record model="telegram.command" id="last_invoice_command">
+        <field name="name">/ultimafattura</field>
+        <field name="description">Get Last Invoice</field>
+        <field name="sequence" eval="100"/>
+        <field name="group_ids" eval="[(4, ref('account.group_customer_account_invoice'))]" />
+        <field name="model_id" ref="account.model_account_invoice" />
+        <field name="response_code">
+account_invoice_obj = pool['account.invoice']
+data['invoice'] = False
+res_id = account_invoice_obj.search(cr, uid, [('type','=','out_invoice'), ('state', 'not in', ['draft', 'cancel'])], limit=1, context=context)
+if res_id:
+    data['invoice'] = account_invoice_obj.browse(cr, uid, res_id, context=context)[0]
+
+        </field>
+        <field name="response_template" >
+% if data['invoice']:
+L'ultima fattura è il numero <b>${data['invoice'].number}</b> al cliente ${data['invoice'].partner_id.name} per € ${data['invoice'].amount_untaxed}
+
+        </field>
+        <field name="report_template" ref="account.account_invoices"/>
+    </record>
+
+    <record model="telegram.command" id="last_sale_order_command">
+        <field name="name">/ultimaofferta</field>
+        <field name="description">Get last sale order</field>
+        <field name="sequence" eval="100"/>
+        <field name="group_ids" eval="[(4, ref('base.group_sale_salesman'))]" />
+        <field name="model_id" ref="sale.model_sale_order" />
+        <field name="response_code">
+sale_order_obj = pool['sale.order']
+data['sale_order'] = False
+res_id = sale_order_obj.search(cr, uid, [('state', 'in', ['draft'])], limit=1, context=context)
+if res_id:
+    data['sale_order'] = sale_order_obj.browse(cr, uid, res_id, context=context)[0]
+
+        </field>
+        <field name="response_template" >
+% if data['sale_order']:
+L'ultima preventivo è il numero ${data['sale_order'].name} al cliente ${data['sale_order'].partner_id.name} per € ${data['sale_order'].amount_untaxed}
+% endif
+        </field>
+        <field name="report_template" ref="sale.report_sale_order"/>
+    </record>
+
+
+    <record model="telegram.command" id="specific_sale_command">
+        <field name="name">/offerta</field>
+        <field name="description">Get sale order</field>
+        <field name="sequence" eval="100"/>
+        <field name="group_ids" eval="[(4, ref('base.group_sale_salesman'))]" />
+        <field name="model_id" ref="sale.model_sale_order" />
+        <field name="response_code">
+sale_order_obj = pool['sale.order']
+sale_order_ids = False
+data['order_number'] = False
+if user_input:
+    data['order_number'] = user_input[0]
+    sale_order_ids = sale_order_obj.search(cr, uid, [('name', '=', data['order_number'])], context=context)
+
+data['ordine'] = False
+if sale_order_ids:
+    res_id = sale_order_ids[0]
+    data['ordine'] = sale_order_obj.browse(cr, uid, res_id, context)
+else:
+    sale_order_ids = sale_order_obj.search(cr, uid, [('name', 'like', data['order_number'])], context=context)
+    data['ordini'] = sale_order_obj.browse(cr, uid, sale_order_ids, context)
+        </field>
+        <field name="response_template" ><![CDATA[
+
+% if data['ordine']:
+L'ordine è
+<b>${data['ordine'].partner_id.name}</b> - ${data['ordine'].amount_total} €
+% endif
+% if not data['ordine']:
+Non sono riusciro a trovare l'ordine numero ${data['order_number']}
+
+Ma ci sono i seguenti simili:
+
+% for ordine in data['ordini']:
+*<b>${ordine.name}</b> ${ordine.partner_id.name} -  : ${ordine.amount_total} €
+% endfor
+% endif
+
+]]>
+        </field>
+        <field name="report_template" ref="sale.report_sale_order"/>
+    </record>
+
+
+</data>
+</openerp>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="purchase_order_form_intrastat_inherit" model="ir.ui.view">
+            <field name="name">purchase.order.form.intrastat.inherit</field>
+            <field name="model">purchase.order</field>
+            <field name="inherit_id" ref="purchase.purchase_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/notebook/page[@string='Notes']" position="before" >
+                    <page string="Intrastat" groups="l10n_it_intrastat.account_invoice_intrastat_group">
+                        <field name="country_provenance" />
+                        <field name="province_destination" />
+                        <field name="way_of_freight" />
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>

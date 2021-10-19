@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="res_user_telegram" model="ir.ui.view">
+            <field name="name">res.users.form.telegram</field>
+            <field name="model">res.users</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="base.view_users_form"/>
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                    <page string="Telegram">
+                        <group colspan="2" col="1">
+                            <field name="telegram_id"/>
+                            <field name="telegram_username"/>
+                        </group>
+                        <group colspan="2" col="1">
+                            <field name="latitude" readonly="1"/>
+                            <field name="longitude" readonly="1"/>
+                        </group>
+                    </page>
+                </notebook>
+            </field>
+        </record>
+
+    </data>
+
+</openerp>

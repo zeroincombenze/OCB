@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_fiscal_position_form" model="ir.ui.view">
+            <field name="name">account.fiscal.position.form</field>
+            <field name="model">account.fiscal.position</field>
+            <field name="inherit_id" ref="l10n_it_account.view_account_position_exemption_form"/>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                    <page string="E-Fattura">
+                        <group>
+                            <field name="virtual_stamp"/>
+                            <field name="stamp_amount"
+                                   attrs="{'required': [('virtual_stamp', '!=', False)], 'invisible': [('virtual_stamp', '=', False)]}"/>
+                        </group>
+                    </page>
+                </notebook>
+            </field>
+        </record>
+
+        <record id="view_fiscal_position_fatturapa_form" model="ir.ui.view">
+            <field name="name">account.fiscal.position.form</field>
+            <field name="model">account.fiscal.position</field>
+            <field name="inherit_id" ref="account.view_account_position_form"/>
+            <field name="priority">20</field>
+            <field name="arch" type="xml">
+                <field name="customer" position="after">
+                    <field name="fattura_pa" attrs="{'invisible': [('customer', '=', False)]}"/>
+                    <group>
+                        <field name="virtual_stamp"/>
+                        <field name="stamp_amount"
+                               attrs="{'required': [('virtual_stamp', '!=', False)], 'invisible': [('virtual_stamp', '=', False)]}"/>
+                    </group>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</openerp>

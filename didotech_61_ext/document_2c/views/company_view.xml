@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_document_config" model="ir.ui.view">
+            <field name="name">view_document_config</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <notebook position="inside">
+                    <page string="Document 2C">
+                        <group name="fatturapa_settings">
+                            <field name="document_host" />
+                            <newline />
+                            <field name="document_company_id" attrs="{'required': [('document_host', '!=', False)]}" />
+                            <field name="document_user_id" attrs="{'required': [('document_host', '!=', False)]}" />
+                            <newline />
+                            <field name="document_username" attrs="{'required': [('document_host', '!=', False)]}" />
+                            <field name="document_password" attrs="{'required': [('document_host', '!=', False)]}" />
+                            <newline />
+                            <field name="document_root" attrs="{'required': [('document_host', '!=', False)]}" />
+                        </group>
+                        <newline />
+                        <field name="document_models" nolabel="1" context="{'default_company_id': active_id}" >
+                            <tree>
+                                <field name="name" />
+                                <field name="description" />
+                            </tree>
+                            <form>
+                                <field name="name" />
+                                <field name="code" />
+                                <field name="description" />
+                                <field name="document_type" />
+                                <!--<field name="company_id" />-->
+                            </form>
+                        </field>
+                    </page>
+                </notebook>
+            </field>
+        </record>
+
+	</data>
+</openerp>

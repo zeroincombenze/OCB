@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- Product View -->
+        <record id="view_product_product_intrastat" model="ir.ui.view">
+            <field name="name">view.product.intrastat.form</field>
+            <field name="model">product.product</field>
+            <field name="inherit_id" ref="product.product_normal_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/notebook/page[@string='Descriptions']" position="after">     
+                    <page string="Intrastat" groups="l10n_it_intrastat.account_invoice_intrastat_group">
+                        <group>
+                            <field name="combined_nomenclature" />
+                            <field name="service_codes" />
+                            <field name="net_mass" />
+                            <field name="statistical_value" />
+                            <field name="uom_secondary" on_change="onchange_uom_secondary(uom_id,uom_po_id,uom_secondary)" />
+                            <field name="uom_secondary_coeff" />
+                            <field name="country_origin" />
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+     </data>
+</openerp>

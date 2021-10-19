@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!--<record id="sale.trans_wait_ship_ship" model="workflow.transition">-->
+            <!--<field name="act_from" ref="act_wait_ship"/>-->
+            <!--<field name="act_to" ref="act_ship"/>-->
+            <!--<field name="condition">(order_policy!='prepaid') or invoiced</field>-->
+            <!--<field name="signal">action_picking_create</field>-->
+        <!--</record>-->
+
+        <record id="act_rent_select" model="workflow.activity">
+            <field name="wkf_id" ref="sale.wkf_sale"/>
+            <field name="name">rent_select</field>
+            <field name="kind">function</field>
+            <field name="action">write({'state': 'rent_selection'})</field>
+        </record>
+
+        <record id="trans_ship_rent_select" model="workflow.transition">
+            <field name="act_from" ref="sale.act_ship"/>
+            <field name="act_to" ref="act_rent_select"/>
+            <field name="condition">test_rent()</field>
+        </record>
+
+        <record id="trans_rent_select" model="workflow.transition">
+            <field name="act_from" ref="act_rent_select"/>
+            <field name="act_to" ref="sale.act_ship_end"/>
+            <field name="signal">rent_selected</field>
+        </record>
+
+    </data>
+</openerp>

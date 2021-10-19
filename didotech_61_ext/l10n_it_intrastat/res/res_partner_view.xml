@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- Partner View -->
+        <record id="view_res_partner_intrastat" model="ir.ui.view">
+            <field name="name">view.res.partner.intrastat.form</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <page string="Sales &amp; Purchases" position="after">
+                    <page string="Intrastat" groups="l10n_it_intrastat.account_invoice_intrastat_group">
+                        <group>
+                            <group>
+                                <field name="incoterm_id" />
+                                <field name="way_of_freight" />
+                                <field name="payment_methods" />
+                            </group>
+                            <group>
+                                <field name="country_provenance" />
+                                <field name="province_destination" />
+                            </group>
+                        </group>
+                    </page>
+                </page>
+            </field>
+        </record>
+     </data>
+</openerp>

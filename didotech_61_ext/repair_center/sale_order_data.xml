@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data >
+
+        <!-- Action -->
+        <record id="sale.action_order_form" model="ir.actions.act_window">
+            <field name="domain">[('repair_order_id', '=', False)]</field>
+        </record>
+
+        <record id="sale_order_confirm.action_order_form_quotation_smart" model="ir.actions.act_window">
+            <field name="domain">[('state','in', ('draft','send_to_customer','wait_customer_validation')), ('repair_order_id', '=', False) ]</field>
+        </record>
+
+        <record id="sale_order_confirm.action_order_form_quotation" model="ir.actions.act_window">
+            <field name="domain">[('state','in', ('draft','send_to_customer','wait_customer_validation')), ('repair_order_id', '=', False) ]</field>
+        </record>
+        
+    </data>
+</openerp>

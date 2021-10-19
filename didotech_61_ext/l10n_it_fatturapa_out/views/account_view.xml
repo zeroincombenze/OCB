@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_account_invoice_filter_e-invoice" model="ir.ui.view">
+            <field name="name">account.invoice.filter.e-invoice</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+            <field name="type">search</field>
+            <field name="priority">1</field>
+            <field name="arch" type="xml">
+                <filter name="unpaid" position="after">
+                    <filter icon="STOCK_GOTO_BOTTOM"
+                        string="Export Invoice"
+                        name="last_month"
+                        help="Invoices to export"
+                        domain="[('fatturapa_attachment_out_id', '=', False)]"
+                    />
+                </filter>
+            </field>
+        </record>
+
+        <record id="l10n_it_account.view_account_invoice_cig_filter" model="ir.ui.view">
+            <field name="name">account.invoice.cig.filter</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <field name="partner_id" position="after">
+                    <field name="cig_function" />
+                </field>
+            </field>
+        </record>
+
+        <record id="view_invoice_form_fatturapa" model="ir.ui.view">
+            <field name="name">account.invoice.fatturapa</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+	            <button name="invoice_proforma2" position="before">
+	                <button name="%(action_wizard_export_fatturapa)d" type="action" states="open,paid"
+	                        string="Export E-invoice" class="oe_highlight" />
+                    <button name="action_move_force_recreate" states="open" string="Recreate Entry" icon="gtk-go-forward" type="object" groups="account.group_recreate_invoice_entry"/>
+                </button>
+	            <field name="partner_id" position="after">
+	                <field name="electronic_invoice_subjected" invisible="1"/>
+	            </field>
+	            <!--<field name="invoice_line_tax_id" position="after">-->
+	                <!--<field name="admin_ref"/>-->
+	            <!--</field>-->
+                <separator string="Additional Information" position="before">
+                    <separator colspan="4" string="Fattura Elettronica"/>
+                    <field name="doc_type" />
+                </separator>
+                <xpath expr="//notebook" position="inside">
+                    <page string="Related Documents ">
+                        <group string="Related Documents">
+                            <field name="related_documents" nolabel="1" attrs="{'readonly':[('fatturapa_attachment_out_id', '!=', False)]}">
+                                <tree editable="bottom" string="Related Documents">
+                                    <field name="type"/>
+                                    <field name="name"/>
+                                    <field name="lineRef" readonly="1"/>
+                                    <field name="date"/>
+                                    <field name="numitem"/>
+                                    <field name="code"/>
+                                    <field name="cig"/>
+                                    <field name="cup"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </page>
+	                <!--<page string="Electronic Invoice" attrs="{'invisible': [('electronic_invoice_subjected', '=', False)]}">-->
+                    <page string="Electronic Invoice">
+                        <group string="Results">
+                            <field name="fatturapa_attachment_out_id"/>
+                            <field name="has_pdf_invoice_print"
+                                   invisible="1"/>
+                        </group>
+                        <newline/>
+                        <field name="xml_preview" widget="text_WYSIWYG" nolabel="1" readonly="1"/>
+                    </page>
+                    <!--<page string="Electronic Invoice attachments" attrs="{'invisible': [('electronic_invoice_subjected', '=', False)]}"> -->
+                    <page string="Electronic Invoice attachments" attrs="{'invisible': False}">
+                        <group string="Attachments">
+                            <field name="fatturapa_doc_attachments" nolabel="1" attrs="{'readonly':[('fatturapa_attachment_out_id', '!=', False)]}">
+                                <tree string="Attachments">
+                                    <field name="ir_attachment_id"/>
+                                    <field name="datas_fname"/>
+                                    <field name="description"/>
+                                    <field name="is_pdf_invoice_print" invisible="1"/>
+                                </tree>
+                                <form string="Attachments">
+                                    <group>
+                                        <group>
+                                            <field name="name"/>
+                                            <field name="description"/>
+                                            <field name="is_pdf_invoice_print" invisible="1"/>
+                                        </group>
+                                        <group>
+                                            <field name="datas" filename="datas_fname" />
+                                            <field name="datas_fname"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>

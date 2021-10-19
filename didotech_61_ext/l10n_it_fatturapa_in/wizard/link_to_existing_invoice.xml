@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="wizard_link_supplier_invoice" model="ir.ui.view">
+            <field name="name">wizard_link_supplier_invoice</field>
+            <field name="model">wizard.link.to.invoice</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Link to existing supplier invoice" >
+                    <group colspan="4" col="4">
+                        <group string="XML Invoice Data" colspan="4" col="4">
+                            <field name="supplier_id" readonly="True" />
+                            <field name="type" readonly="True" />
+                            <field name="source_invoice_total" readonly="True" />
+                            <field name="dest_invoice_total" readonly="True" />
+                            <field name="difference_total" readonly="True" colspan="4" />
+                        </group>
+                        <group colspan="4" col="4">
+                            <field name="invoice_id" default_focus="1" colspan="4" on_change="onchange_invoice_id(invoice_id, source_invoice_total, context)"
+                                   domain="[('state', '=', 'draft'), ('type', 'in', ('in_invoice', 'in_refund')), ('fatturapa_attachment_in_id', '=', False), ('partner_id', '=', supplier_id)]"
+                                   context="{'form_view_ref': 'account.invoice_supplier_form', 'tree_view_ref': 'account.invoice_tree', 'name_extended_for_xml_invoice_in': True}"
+                            />
+                        </group>
+                        <group colspan="4" col="4">
+                            <button special="cancel" string="Cancel"/>
+                            <button name="link" string="Link" type="object" attrs="{'invisible': [('show_idiot_proof_button','!=',False)]}"/>
+                            <button name="link" string="Link Difference" type="object" attrs="{'invisible': [('show_idiot_proof_button','=',False)]}" confirm="Sei sicuro? C'è una differenza!" />
+                            <field name="show_idiot_proof_button" invisible="1"/>
+                        </group>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <act_window name="Link to existing supplier invoice"
+            res_model="wizard.link.to.invoice"
+            src_model="fatturapa.attachment.in"
+            view_mode="form"
+            target="new"
+            key2="client_action_multi"
+            id="action_wizard_link_supplier_invoice"
+            view_id="wizard_link_supplier_invoice"/>
+
+    </data>
+</openerp>
+
+<!--domain="[('type', 'in', ('in_invoice', 'in_refund')), ('state', 'in', ('draft', 'proforma', 'proforma2')), ('fatturapa_attachment_in_id', '=', False)]"-->
+

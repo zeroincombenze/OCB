@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_account_config_settings" model="ir.ui.view">
+            <field name="name">view_account_config_settings</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="/form/notebook/page[@string='General Information']" position="after">
+                    <page string="Fattura PA">
+                        <group name="fatturapa_settings" colspan="2" col="2">
+                            <field name="fatturapa_fiscal_position_id" required="1"/>
+                            <field name="fatturapa_format_id" required="1"/>
+                            <field name="fatturapa_sequence_id" required="1"/>
+                            <field name="fatturapa_art73"/>
+                            <field name="fatturapa_tax_representative"/>
+                            <field name="fatturapa_sender_partner"/>
+                            <field name="fatturapa_rea_office"/>
+                            <field name="fatturapa_rea_number"/>
+                            <field name="fatturapa_rea_capital"/>
+                            <field name="fatturapa_rea_partner"/>
+                            <field name="fatturapa_rea_liquidation"/>
+                            <field name="style_sheet_mode"/>
+                            <field name="product_stamp_ids" >
+                                <tree>
+                                    <field name="default_code"/>
+                                    <field name="name" />
+                                    <field name="lst_price"/>
+                                </tree>
+                            </field>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+    </data>
+</openerp>

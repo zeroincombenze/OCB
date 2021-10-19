@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+    
+        <record id="select_rent_asset" model="ir.ui.view">
+            <field name="name">select.rent.asset.view</field>
+            <field name="model">select.rent.asset</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <field name="partner_id" invisible="True" />
+                <field name="rent_line_ids" nolabel="1" colspan="4" >
+                    <tree string="Periods" editable="top">
+                        <field name="name" readonly="True" />
+                        <field name="complete_name" readonly="True" />
+                        <field name="asset_id" required="True" domain="[('id', 'in', free_asset_ids[0][2])]" context="{'date_start': date_start, 'date_end': date_end}"/>
+                        <field name="date_start" />
+                        <field name="date_end" />
+                        <field name="free_asset_ids" invisible="True" />
+                    </tree>
+                </field>
+                <separator string="" colspan="4" />
+                <group colspan="4" col="6">
+                    <button icon="gtk-cancel" special="cancel"
+                        string="Cancel" />
+                    <button icon="gtk-save" string="Reserve Asset"
+                        name="reserve_asset" type="object"/>
+                </group>
+            </field>
+        </record>
+    
+    </data>
+</openerp>

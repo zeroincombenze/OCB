@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+	<data>
+
+		<record model="ir.ui.view" id="hr_employee_auto_employee">
+			<field name="name">hr.employee.form.inh</field>
+			<field name="model">hr.employee</field>
+			<field name="type">form</field>
+			<field name="inherit_id" ref="hr.view_employee_form" />
+			<field name="arch" type="xml">
+				<field name="user_id" position="after">
+					<button name="create_employee_pos" string="Create Employee" type="object" colspan="2" attrs="{'invisible': [('user_id', '=',True), ('product_id', '=',True)]}" groups="base.group_system"/>
+                </field>
+			</field>
+		</record>
+
+	</data>
+</openerp>

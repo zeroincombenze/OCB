@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="view_hr_contractor_assign" model="ir.ui.view">
+            <field name="name">Contractor Assign Task</field>
+            <field name="model">hr.contractor.assign.task</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+                <form string="Assign Task">
+                    <field name="project_id" invisible="1"/>
+                    <field name="tasks_ids"
+                           domain="[('state','=','draft'), ('project_id','=',project_id), ('is_activity','=',True)]"
+                           nolabel="1" colspan="4"
+                           context="{'nodelete': '1', 'nocreate': '1', 'noduplicate': '1', 'search_view_ref': 'profile_welld.view_partner_task_filter', 'form_view_ref': 'profile_welld.view_partner_task_form', 'tree_view_ref': 'profile_welld.view_partner_task_tree'}">
+                        <!--<tree string="Tasks" editable="top">-->
+                        <!--<field name="name" />-->
+                        <!--<field name="project_id" />-->
+                        <!--<field name="partner_id" />-->
+                        <!--<field name="employee_category" />-->
+                        <!--<field name="pos_id" />-->
+                        <!--<field name="pos_phone" />-->
+                        <!--<field name="date_start" />-->
+                        <!--<field name="work_time" />-->
+                        <!--<field name="km_auto_amount" />-->
+                        <!--</tree>-->
+                    </field>
+                    <newline/>
+                    <button special="cancel" string="_Cancel" icon='gtk-cancel'/>
+                    <button name="assign_task" string="Assign" type="object" icon="terp-gtk-go-back-rtl"/>
+                </form>
+            </field>
+        </record>
+
+        <act_window name="Assign Task"
+                    res_model="hr.contractor.assign.task"
+                    src_model="hr.engagement"
+                    key2="client_action_multi"
+                    multi="True"
+                    view_mode="form"
+                    view_type="form"
+                    target="new"
+                    id="action_hr_contractor_assign_task"/>
+
+    </data>
+</openerp>

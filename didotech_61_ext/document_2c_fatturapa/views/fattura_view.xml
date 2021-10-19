@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record id="view_fatturapa_out_state" model="ir.ui.view">
+            <field name="name">fatturapa.attachment.out.state</field>
+            <field name="model">fatturapa.attachment.out</field>
+            <field name="type">tree</field>
+            <field name="inherit_id" ref="l10n_it_fatturapa_out.view_fatturapa_out_attachment_tree"/>
+            <field name="arch" type="xml">
+                <tree position="attributes">
+                    <attribute name="colors">red:state in ('NS', 'EC_RIFIUTO'));blue:state=='draft';orange: state=='sent';green: state in ('RC', 'MC')</attribute>
+                </tree>
+                <field name="invoice_partner_id" position="after">
+                    <field name="fpa_idsdi" readonly="True" />
+                    <field name="fpa_sdi_send_date" readonly="True" />
+                    <field name="state" readonly="True" />
+                </field>
+            </field>
+        </record>
+
+        <record id="view_fatturapa_out_state_form" model="ir.ui.view">
+            <field name="name">fatturapa.attachment.out.state.form</field>
+            <field name="model">fatturapa.attachment.out</field>
+            <field name="inherit_id" ref="l10n_it_fatturapa_out.view_fatturapa_out_attachment_form"/>
+            <field name="arch" type="xml">
+                <field name="name" position="after">
+                    <field name="state" />
+                    <newline/>
+                    <group  attrs="{'invisible': [('state','!=','draft')]}">
+                        <button name="action_send_invoice" string="Send invoice to SDI" type="object" icon="gtk-go-up" attrs="{'invisible': [('xml_error', '=', True)]}"/>
+                        <button name="action_send_invoice" string="Send invoice to SDI Warning" type="object" icon="gtk-go-up" attrs="{'invisible': [('xml_error', '!=', True)]}" confirm="Attenzione stai inviando nonostante l'anomalia"/>
+                    </group>
+                </field>
+            </field>
+        </record>
+
+        <record id="view_fatturapa_out_attachment_state_search" model="ir.ui.view">
+            <field name="name">fatturapa.attachment.out.search</field>
+            <field name="model">fatturapa.attachment.out</field>
+            <field name="type">search</field>
+            <field name="inherit_id" ref="l10n_it_fatturapa_out.view_fatturapa_out_attachment_search"/>
+            <field name="arch" type="xml">
+                <field name="name" position="before">
+                    <filter name="to_transmitted" icon="gtk-network" string="Da trasmettere" domain="[('state','=','draft')]" help="Invoices To Transmitted to SDI"/>
+                    <filter name="error" icon="gtk-dialog-error" string="Errore" domain="[('state','=','NS')]"/>
+                    <filter name="transmitted" icon="gtk-ok" string="Ricevuta" domain="[('state','=','RC')]"/>
+                    <filter name="no_delivered" icon="terp-mail_delete" string="Mancata Consegna" domain="[('state','=','MC')]"/>
+                </field>
+            </field>
+        </record>
+
+        <record id="action_send_e_invoice_2c" model="ir.actions.server">
+            <field name="name">Send E-invoices to SDI</field>
+            <field name="model_id" ref="model_fatturapa_attachment_out"/>
+            <field name="state">code</field>
+            <field name="code">self.action_send_invoice(cr, uid, [], context=context)</field>
+        </record>
+<!--
+        <record id="menu_send_e_invoice_in_2c" model="ir.values">
+            <field name="object" eval="True" />
+            <field name="name">Send E-invoice Menu</field>
+            <field name="key2">client_action_multi</field>
+            <field name="value" eval="'ir.actions.server,%d'%action_send_e_invoice_2c" />
+            <field name="key">action</field>
+            <field name="model">fatturapa.attachment.out</field>
+        </record>
+-->
+    </data>
+</openerp>

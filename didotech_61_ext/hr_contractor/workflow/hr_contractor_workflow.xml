@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="workflow" id="wkf_hr_contractor">
+            <field name="name">hr.contractor.select</field>
+            <field name="osv">hr.contractor</field>
+            <field name="on_create">True</field>
+        </record>
+    <!--
+        Activity
+    -->
+        <record model="workflow.activity" id="hr_contractor_act_wc_draft">
+            <field name="wkf_id" ref="wkf_hr_contractor"/>
+            <field name="flow_start">True</field>
+            <field name="name">draft</field>
+        </record>
+        <record model="workflow.activity" id="hr_contractor_act_wc_verified">
+            <field name="wkf_id" ref="wkf_hr_contractor"/>
+            <field name="name">verified</field>
+            <field name="kind">function</field>
+            <field name="action">action_verified()</field>
+        </record>
+        <record model="workflow.activity" id="hr_contractor_act_wc_assigned">
+            <field name="wkf_id" ref="wkf_hr_contractor"/>
+            <field name="name">assigned</field>
+            <field name="kind">function</field>
+            <field name="action">action_assigned()</field>
+        </record>
+        <record model="workflow.activity" id="hr_contractor_act_wc_released">
+            <field name="wkf_id" ref="wkf_hr_contractor"/>
+            <field name="name">released</field>
+            <field name="kind">function</field>
+            <field name="action">action_released()</field>
+        </record>
+        
+        <!--
+        Transition
+        -->
+        <record model="workflow.transition" id="hr_contractor_trans_wc_draft_verified">
+            <field name="act_from" ref="hr_contractor_act_wc_draft"/>
+            <field name="act_to" ref="hr_contractor_act_wc_verified"/>
+            <field name="signal">button_verified</field>
+        </record>
+        <record model="workflow.transition" id="hr_contractor_trans_wc_verified_assigned">
+            <field name="act_from" ref="hr_contractor_act_wc_verified"/>
+            <field name="act_to" ref="hr_contractor_act_wc_assigned"/>
+            <field name="signal">button_assigned</field>
+        </record>
+        <record model="workflow.transition" id="hr_contractor_trans_wc_assigned_released">
+            <field name="act_from" ref="hr_contractor_act_wc_assigned"/>
+            <field name="act_to" ref="hr_contractor_act_wc_released"/>
+            <field name="signal">button_released</field>
+        </record>
+        <!--<record model="workflow.transition" id="hr_contractor_trans_wc_draft_released">
+            <field name="act_from" ref="hr_contractor_act_wc_draft"/>
+            <field name="act_to" ref="hr_contractor_act_wc_released"/>
+            <field name="signal">button_released</field>
+        </record>-->
+    </data>
+</openerp>

@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+
+        <delete id="point_of_sale.menu_open_statement" model="ir.ui.menu" />
+        <delete id="point_of_sale.menu_close_statement" model="ir.ui.menu" />
+        <delete id="point_of_sale.menu_wizard_enter_jrnl" model="ir.ui.menu" />
+        <delete id="point_of_sale.menu_wizard_enter_jrnl2" model="ir.ui.menu" />
+        <delete id="point_of_sale.menu_point_root_touchscreen" model="ir.ui.menu" />
+        <delete id="point_of_sale.products_for_input_operations" model="ir.ui.menu" />
+        <delete id="point_of_sale.products_for_output_operations" model="ir.ui.menu" />
+
+        <record id="view_pos_order_filter" model="ir.ui.view">
+            <field name="name">pos.order.filter.product</field>
+            <field name="model">pos.order</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_order_filter"/>
+            <field name="type">search</field>
+            <field name="arch" type="xml">
+                <field name="name" position="after" >
+                    <field name="product_id" />
+                </field>
+            </field>
+        </record>
+
+        <record id="point_sale_cancel_form" model="ir.ui.view">
+            <field name="name">pos.order.cancel.form</field>
+            <field name="model">pos.order</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_pos_form"/>
+            <field name="arch" type="xml">
+                <field name="name" position="attributes">
+                    <attribute name="readonly">True</attribute>
+                </field>
+                <!--<field name="name" position="after">-->
+                    <!--<field name="hashcode_barcode" widget="image" nolabel="1" readonly="1"/>-->
+                <!--</field>-->
+                <field name="date_order" position="after">
+                    <newline/>
+                </field>
+                <button name="action_invoice" position="after">
+                    <field name="shop_transfert_id" attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('partner_id', '!=', False)]}" widget="selection"/>
+                    <button name="transfert_pos_order" string="Transfert Product" type="object" attrs="{'invisible': [('shop_transfert_id', '=', False), ('state', '!=', 'draft'),]}"/>
+                </button>
+                <button name="button_dummy" position="after">
+                    <button name="cancel_pos_order" string="Cancel Pos Order" type="object" groups="point_of_sale_extended.group_pos_order_cancel"/>
+                </button>
+                <field name="picking_id" position="attributes">
+                    <attribute name="context">{'type':'out', 'form_view_ref':'stock.view_picking_out_form', 'tree_view_ref':'stock.view_picking_out_tree'}</attribute>
+                </field>
+                <field name="lines" position="before">
+                    <field nolabel="1" name="product_barcode" placeholder="Product code for auto insert line" colspan="2" default_focus="1"
+                           on_change="onchange_product_barcode(product_barcode, partner_id, shop_id, pricelist_id, lines, context)"/>
+                </field>
+                <button name="refund" position="replace" />
+                <button string="Reprint" position="replace" />
+            </field>
+        </record>
+
+        <record id="point_pos_order_line_form" model="ir.ui.view">
+            <field name="name">pos.order.line.form</field>
+            <field name="model">pos.order.line</field>
+            <field name="inherit_id" ref="point_of_sale.view_pos_order_line"/>
+            <field name="arch" type="xml">
+                <field name="date_order" position="before">
+                    <field name="order_id" invisible="not context.get('pos_line_extended', False)"/>
+                </field>
+
+            </field>
+        </record>
+
+
+
+    </data>
+</openerp>

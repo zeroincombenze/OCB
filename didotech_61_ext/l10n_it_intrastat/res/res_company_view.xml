@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <!-- Company View -->
+        <record id="view_res_company_intrastat" model="ir.ui.view">
+            <field name="name">view.res.company.intrastat.form</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//form/notebook/page[@string='General Information']" position="after">
+                    <page string="Intrastat">
+                        <group>
+                            <field name="code_ua" />
+                            <field name="period_purchase_goods" />
+                            <field name="period_purchase_services" />
+                            <field name="period_disposals_goods" />
+                            <field name="period_disposals_services" />
+                            <field name="province_origin" />
+                            <field name="province_destination" />
+                            <field name="vat_delegated_person" />
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+     </data>
+</openerp>

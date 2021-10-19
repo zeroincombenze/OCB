@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="pos_history_print_form">
+            <field name="name">pos.history.print.form</field>
+            <field name="model">pos.history.print</field>
+            <field name="arch" type="xml">
+                <form string="Print Report">
+
+                    <group col="5" fill="0" height="100" states="choose">
+                        <field invisible="1" name="state"/>
+                        <group colspan="4">
+                            <field name="month"/>
+                            <field name="year"/>
+                            <field name="shop_id" widget="selection"/>
+                        </group>
+                        <separator colspan="4"/>
+                        <group colspan="4">
+                            <button icon="gtk-cancel" special="cancel" string="Cancel"/>
+                            <button icon="gtk-print" string="Print" name="print_report" type="object"/>
+                        </group>
+                    </group>
+                    <group col="6" fill="0" states="get">
+                        <separator colspan="5" string="Export done"/>
+                        <field name="data" filename="name"/>
+                        <field name="name" select="1" invisible="1"/>
+                    </group>
+
+                </form>
+            </field>
+        </record>
+
+        <record id="action_pos_history_print" model="ir.actions.act_window">
+            <field name="name">Print PoS History</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">pos.history.print</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem
+                parent="point_of_sale.menu_point_open_config"
+                action="action_pos_history_print"
+                id="menu_wizard_pos_history_print" sequence="8"
+        />
+
+    </data>
+</openerp>

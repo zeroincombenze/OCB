@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <record model="ir.ui.view" id="pos_history_creation_form">
+            <field name="name">pos.history.creation.form</field>
+            <field name="model">pos.history.creation</field>
+            <field name="arch" type="xml">
+                <form string="Confirm or Set Draft Asset">
+                    <group>
+                        <separator colspan="4"/>
+                        <group>
+                            <field name="shop_id" widget="selection" groups="point_of_sale.group_pos_manager"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <button string="Confirm Creation" name="confirm" type="object"/>
+                            <button string="Cancel" special="cancel"/>
+                        </group>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_pos_history_creation" model="ir.actions.act_window">
+            <field name="name">Create PoS History</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">pos.history.creation</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">form</field>
+            <field name="target">new</field>
+        </record>
+
+        <menuitem
+                parent="point_of_sale.menu_point_open_config"
+                action="action_pos_history_creation"
+                id="menu_wizard_pos_history_creation" sequence="8"
+        />
+
+    </data>
+</openerp>

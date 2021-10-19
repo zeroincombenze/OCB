@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="view_partner_property_form">
+			<field name="name">res.partner.product.property.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="type">form</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="arch" type="xml">
+                <page string="Sales &amp; Purchases" position="inside">
+                    <group colspan="2" col="2" name="brand_alias">
+                        <separator string="Internal Properties" colspan="2"/>
+                        <field name="brand_alias"/>
+                    </group>
+                </page>
+            </field>
+        </record>
+        
+        <!--<record model="ir.ui.view" id="view_product_internal_code_form">-->
+        <!--    <field name="name">product.normal.form.inherit</field>-->
+        <!--    <field name="model">product.product</field>-->
+        <!--    <field name="type">form</field>-->
+        <!--    <field name="inherit_id" ref="product.product_normal_form_view"/>-->
+        <!--    <field name="arch" type="xml">-->
+        <!--        <group colspan="1" col="2">-->
+        <!--            <field name="internal_code"/>-->
+        <!--        </group>-->
+        <!--    </field>-->
+        <!--</record>    -->
+        
+		<!-- Voce di menu per avviare il wizard -->
+		<menuitem 
+			parent="profile_welld.menu_welld_config"
+			name="Import Pricelist file"
+			action="action_pricelist_import"
+			id="menu_purchases_pricelists_importPricelist"
+		/>
+    </data>
+</openerp>
