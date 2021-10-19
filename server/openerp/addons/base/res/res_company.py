@@ -26,7 +26,7 @@ from openerp import SUPERUSER_ID, tools
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
 from openerp.tools.safe_eval import safe_eval as eval
-
+  
 class multi_company_default(osv.osv):
     """
     Manage multi company default value
@@ -243,10 +243,10 @@ class res_company(osv.osv):
         return super(res_company, self).write(cr, *args, **argv)
 
     def _get_euro(self, cr, uid, context=None):
-        # [antoniov: 2018-02-17] search actual euro currency
-        rate_obj = self.pool.get('res.currency.rate')
-        rate_id = rate_obj.search(cr, uid, [('rate', '=', 1)], context=context)
-        return rate_id and rate_obj.browse(cr, uid, rate_id[0], context=context).currency_id.id or False
+        try:
+            return self.pool.get('res.currency').search(cr, uid, [])[0]
+        except:
+            return False
 
     def _get_logo(self, cr, uid, ids):
         return open(os.path.join( tools.config['root_path'], 'addons', 'base', 'res', 'res_company_logo.png'), 'rb') .read().encode('base64')

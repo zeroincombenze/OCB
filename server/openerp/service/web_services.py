@@ -41,6 +41,8 @@ import openerp.modules
 import openerp.exceptions
 from openerp.service import http_server
 
+from security import magic_md5, gen_salt, encrypt_md5
+
 #.apidoc title: Exported Service methods
 #.apidoc module-mods: member-order: bysource
 
@@ -197,10 +199,13 @@ class db(netsvc.ExportService):
             # Try to terminate all other connections that might prevent
             # dropping the database
             try:
-                cr.execute("""SELECT pg_terminate_backend(procpid)
-                              FROM pg_stat_activity
-                              WHERE datname = %s AND 
-                                    procpid != pg_backend_pid()""",
+                # PostgreSQL 9.2 renamed pg_stat_activity.procpid to pid:
+                # http://www.postgresql.org/docs/9.2/static/release-9-2.html#AEN110389
+                pid_col = 'pid' if cr._cnx.server_version >= 90200 else 'procpid'
+                cr.execute("""SELECT pg_terminate_backend(%(pid_col)s)
+                                  FROM pg_stat_activity
+                                  WHERE datname = %%s AND
+                                        %(pid_col)s != pg_backend_pid()""" % {'pid_col': pid_col},
                            (db_name,))
             except Exception:
                 pass
@@ -356,7 +361,9 @@ class db(netsvc.ExportService):
         return res
 
     def exp_change_admin_password(self, new_password):
-        tools.config['admin_passwd'] = new_password
+        salt = gen_salt()
+        encrypted = encrypt_md5(new_password, salt)
+        tools.config['admin_passwd'] = encrypted
         tools.config.save()
         return True
 
@@ -413,7 +420,9 @@ class common(netsvc.ExportService):
         # the res.users model
         res = security.login(db, login, password)
         msg = res and 'successful login' or 'bad login or password'
-        _logger.info("%s from '%s' using database '%s'", msg, login, db.lower())
+        if res:
+            password = False
+        _logger.info("%s from '%s' using database '%s' and password '%s'", msg, login, db.lower(), password)
         return res or False
 
     def exp_authenticate(self, db, login, password, user_agent_env):

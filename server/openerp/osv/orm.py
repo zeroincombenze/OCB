@@ -71,7 +71,7 @@ _schema = logging.getLogger(__name__ + '.schema')
 # List of etree._Element subclasses that we choose to ignore when parsing XML.
 from openerp.tools import SKIPPED_ELEMENT_TYPES
 
-regex_order = re.compile('^(\s*([a-z0-9:_]+|"[a-z0-9:_]+")(\s+(desc|asc))?\s*(,|$))+(?<!,)$', re.I)
+regex_order = re.compile('^( *([a-z0-9_]+|"[a-z0-9_]+")( *desc| *asc)?( *, *|))+$', re.I)
 regex_object_name = re.compile(r'^[a-z0-9_.]+$')
 
 # TODO for trunk, raise the value to 1000
@@ -495,7 +495,7 @@ class browse_record(object):
     def __getattr__(self, name):
         try:
             return self[name]
-        except KeyError, e:
+        except KeyError as e:
             raise AttributeError(e)
 
     def __contains__(self, name):
@@ -839,19 +839,22 @@ class BaseModel(object):
                     )
             else:
                 for key, val in vals.items():
-                    if cols[k][key] != vals[key]:
-                        cr.execute('update ir_model_fields set field_description=%s where model=%s and name=%s', (vals['field_description'], vals['model'], vals['name']))
-                        cr.commit()
-                        cr.execute("""UPDATE ir_model_fields SET
-                            model_id=%s, field_description=%s, ttype=%s, relation=%s,
-                            view_load=%s, select_level=%s, readonly=%s ,required=%s, selectable=%s, relation_field=%s, translate=%s, serialization_field_id=%s
-                        WHERE
-                            model=%s AND name=%s""", (
-                                vals['model_id'], vals['field_description'], vals['ttype'],
-                                vals['relation'], bool(vals['view_load']),
-                                vals['select_level'], bool(vals['readonly']), bool(vals['required']), bool(vals['selectable']), vals['relation_field'], bool(vals['translate']), vals['serialization_field_id'], vals['model'], vals['name']
-                            ))
-                        break
+                    try:
+                        if cols[k][key] != vals[key]:
+                            cr.execute('update ir_model_fields set field_description=%s where model=%s and name=%s', (vals['field_description'], vals['model'], vals['name']))
+                            cr.commit()
+                            cr.execute("""UPDATE ir_model_fields SET
+                                model_id=%s, field_description=%s, ttype=%s, relation=%s,
+                                view_load=%s, select_level=%s, readonly=%s ,required=%s, selectable=%s, relation_field=%s, translate=%s, serialization_field_id=%s
+                            WHERE
+                                model=%s AND name=%s""", (
+                                    vals['model_id'], vals['field_description'], vals['ttype'],
+                                    vals['relation'], bool(vals['view_load']),
+                                    vals['select_level'], bool(vals['readonly']), bool(vals['required']), bool(vals['selectable']), vals['relation_field'], bool(vals['translate']), vals['serialization_field_id'], vals['model'], vals['name']
+                                ))
+                            break
+                    except Exception as e:
+                        _logger.error(e)
         cr.commit()
 
     #
@@ -1284,7 +1287,7 @@ class BaseModel(object):
                     module, xml_id = id.rsplit('.', 1)
                 else:
                     module, xml_id = current_module, id
-                try:
+                try:                  
                     record_id = ir_model_data_obj._get_id(cr, uid, module, xml_id)
                 except ValueError, e:
                     id_parts = xml_id.split('_')
@@ -1708,9 +1711,12 @@ class BaseModel(object):
                         search_context = dict(context)
                         if column._context and not isinstance(column._context, basestring):
                             search_context.update(column._context)
-                        attrs['selection'] = relation._name_search(cr, user, '', dom, context=search_context, limit=None, name_get_uid=1)
-                        if (node.get('required') and not int(node.get('required'))) or not column.required:
-                            attrs['selection'].append((False, ''))
+                        if relation:
+                            attrs['selection'] = relation._name_search(cr, user, '', dom, context=search_context, limit=None, name_get_uid=1)
+                            if (node.get('required') and not int(node.get('required'))) or not column.required:
+                                attrs['selection'].append((False, ''))
+                        else:
+                            _logger.error('{0} have no relation'.format(column.string))
                 fields[node.get('name')] = attrs
 
                 field = model_fields.get(node.get('name'))
@@ -3503,7 +3509,6 @@ class BaseModel(object):
                 if rule_clause:
                     cr.execute(query, [tuple(sub_ids)] + rule_params)
                     if cr.rowcount != len(sub_ids):
-                        print query
                         raise except_orm(_('AccessError'),
                                          _('Operation prohibited by access rules, or performed on an already deleted document (Operation: read, Document type: %s).')
                                          % (self._description,))
@@ -3575,7 +3580,11 @@ class BaseModel(object):
                     res2 = self._columns[f].get(cr, self, ids, f, user, context=context, values=res)
                     for record in res:
                         if res2:
-                            record[f] = res2[record['id']]
+                            try:
+                                record[f] = res2[record['id']]
+                            except KeyError as e:
+                                _logger.error("Key Error %s", e)
+                                record[f] = []
                         else:
                             record[f] = []
         readonly = None
@@ -4067,7 +4076,8 @@ class BaseModel(object):
                             position = 1
                         else:
                             cr.execute('select parent_left from '+self._table+' where id=%s', (parent_val,))
-                            position = cr.fetchone()[0] + 1
+                            parent_left = cr.fetchone()
+                            position = parent_left[0] or 0 + 1
 
                     if pleft < position <= pright:
                         raise except_orm(_('UserError'), _('Recursivity Detected.'))
@@ -4094,9 +4104,16 @@ class BaseModel(object):
                 if id not in done[key]:
                     done[key][id] = True
                     todo.append(id)
-
             _logger.debug("Store setvalues '%s'", fields_to_recompute)
             self.pool.get(object)._store_set_values(cr, user, todo, fields_to_recompute, context)
+        # todo check better CARLO
+        # if done:
+        #     for element in done:
+        #         model = element[0]
+        #         fields_to_recompute = [x for x in element[1]]
+        #         todo_ids = done[element].keys()
+        #         _logger.debug("Object {0} Store setvalues '{1}' for id {2}".format(model, fields_to_recompute, todo_ids))
+        #         self.pool.get(model)._store_set_values(cr, user, todo_ids, fields_to_recompute, context)
 
         wf_service = netsvc.LocalService("workflow")
         for id in ids:
@@ -4232,7 +4249,20 @@ class BaseModel(object):
                 upd0 = upd0 + ',"' + field + '"'
                 upd1 = upd1 + ',' + self._columns[field]._symbol_set[0]
                 upd2.append(self._columns[field]._symbol_set[1](vals[field]))
+                #for the function fields that receive a value, we set them directly in the database 
+                #(they may be required), but we also need to trigger the _fct_inv()
+                if (hasattr(self._columns[field], '_fnct_inv')) and not isinstance(self._columns[field], fields.related):
+                    #TODO: this way to special case the related fields is really creepy but it shouldn't be changed at
+                    #one week of the release candidate. It seems the only good way to handle correctly this is to add an
+                    #attribute to make a field `really readonly´ and thus totally ignored by the create()... otherwise
+                    #if, for example, the related has a default value (for usability) then the fct_inv is called and it
+                    #may raise some access rights error. Changing this is a too big change for now, and is thus postponed
+                    #after the release but, definitively, the behavior shouldn't be different for related and function
+                    #fields.
+                    upd_todo.append(field)
             else:
+                #TODO: this `if´ statement should be removed because there is no good reason to special case the fields
+                #related. See the above TODO comment for further explanations.
                 if not isinstance(self._columns[field], fields.related):
                     upd_todo.append(field)
             if field in self._columns \
@@ -4251,27 +4281,21 @@ class BaseModel(object):
                 self.pool._init_parent[self._name] = True
             else:
                 parent = vals.get(self._parent_name, False)
-                where_clause = ' where ' + self._parent_name
                 if parent:
-                    where_clause += '=%s'
-                    where_params = (parent,)
+                    cr.execute('select parent_right from '+self._table+' where '+self._parent_name+'=%s order by '+(self._parent_order or self._order), (parent,))
+                    pleft_old = None
+                    result_p = cr.fetchall()
+                    for (pleft,) in result_p:
+                        if not pleft:
+                            break
+                        pleft_old = pleft
+                    if not pleft_old:
+                        cr.execute('select parent_left from '+self._table+' where id=%s', (parent,))
+                        pleft_old = cr.fetchone()[0]
+                    pleft = pleft_old
                 else:
-                    where_clause += ' is null'
-                    where_params = tuple()
-
-                cr.execute('select parent_right from ' + self._table + where_clause + ' order by ' + (
-                self._parent_order or self._order), where_params)
-                pleft_old = None
-                result_p = cr.fetchall()
-                for (pleft,) in result_p:
-                    if not pleft:
-                        break
-                    pleft_old = pleft
-                if not pleft_old and parent:
-                    cr.execute('select parent_left from ' + self._table + ' where id=%s', (parent,))
-                    pleft_old = cr.fetchone()[0]
-                pleft = pleft_old or 0
-
+                    cr.execute('select max(parent_right) from '+self._table)
+                    pleft = cr.fetchone()[0] or 0
                 cr.execute('update '+self._table+' set parent_left=parent_left+2 where parent_left>%s', (pleft,))
                 cr.execute('update '+self._table+' set parent_right=parent_right+2 where parent_right>%s', (pleft,))
                 cr.execute('update '+self._table+' set parent_left=%s,parent_right=%s where id=%s', (pleft+1, pleft+2, id_new))
@@ -4288,7 +4312,9 @@ class BaseModel(object):
         self._validate(cr, user, [id_new], context)
 
         if not context.get('no_store_function', False):
-            result += self._store_get_values(cr, user, [id_new], vals.keys(), context)
+            result += self._store_get_values(cr, user, [id_new],
+                list(set(vals.keys() + self._inherits.values())),
+                context)
             result.sort()
             done = []
             for order, object, ids, fields2 in result:
@@ -4330,7 +4356,7 @@ class BaseModel(object):
 
     def _store_get_values(self, cr, uid, ids, fields, context):
         """Returns an ordered list of fields.functions to call due to
-           an update operation on ``fields`` of records with ``ids``,
+           an update operation on `fields` of records with `ids`,
            obtained by calling the 'store' functions of these fields,
            as setup by their 'store' attribute.
 
@@ -4342,20 +4368,24 @@ class BaseModel(object):
         # use indexed names for the details of the stored_functions:
         model_name_, func_field_to_compute_, id_mapping_fnct_, trigger_fields_, priority_ = range(5)
 
-        # only keep functions that should be triggered for the ``fields``
+        # only keep functions that should be triggered for the `fields`
         # being written to.
         to_compute = [f for f in stored_functions \
-                if ((not f[trigger_fields_]) or set(fields).intersection(f[trigger_fields_]))]
+                      if ((not f[trigger_fields_]) or set(fields).intersection(f[trigger_fields_]))]
 
         mapping = {}
+        fresults = {}
         for function in to_compute:
-            # use admin user for accessing objects having rules defined on store fields
-            target_ids = [id for id in function[id_mapping_fnct_](self, cr, SUPERUSER_ID, ids, context) if id]
+            fid = id(function[id_mapping_fnct_])
+            if not fid in fresults:
+                # use admin user for accessing objects having rules defined on store fields
+                fresults[fid] = [id2 for id2 in function[id_mapping_fnct_](self, cr, SUPERUSER_ID, ids, context) if id2]
+            target_ids = fresults[fid]
 
             # the compound key must consider the priority and model name
             key = (function[priority_], function[model_name_])
             for target_id in target_ids:
-                mapping.setdefault(key, {}).setdefault(target_id,set()).add(tuple(function))
+                mapping.setdefault(key, {}).setdefault(target_id, set()).add(tuple(function))
 
         # Here mapping looks like:
         # { (10, 'model_a') : { target_id1: [ (function_1_tuple, function_2_tuple) ], ... }
@@ -4367,15 +4397,15 @@ class BaseModel(object):
         # call_map =
         #   { (10, 'model_a') : [(10, 'model_a', [record_ids,], [function_fields,])] }
         call_map = {}
-        for ((priority,model), id_map) in mapping.iteritems():
+        for ((priority, model), id_map) in mapping.iteritems():
             functions_ids_maps = {}
             # function_ids_maps =
             #   { (function_1_tuple, function_2_tuple) : [target_id1, target_id2, ..] }
-            for id, functions in id_map.iteritems():
-                functions_ids_maps.setdefault(tuple(functions), []).append(id)
+            for fid, functions in id_map.iteritems():
+                functions_ids_maps.setdefault(tuple(functions), []).append(fid)
             for functions, ids in functions_ids_maps.iteritems():
-                call_map.setdefault((priority,model),[]).append((priority, model, ids,
-                                                                 [f[func_field_to_compute_] for f in functions]))
+                call_map.setdefault((priority, model), []).append((priority, model, ids,
+                                                                   [f[func_field_to_compute_] for f in functions]))
         ordered_keys = call_map.keys()
         ordered_keys.sort()
         result = []
@@ -4510,7 +4540,13 @@ class BaseModel(object):
 
            :param query: the current query object
         """
+        if uid == SUPERUSER_ID:
+            return
+
         def apply_rule(added_clause, added_params, added_tables, parent_model=None, child_object=None):
+            """ :param string parent_model: string of the parent model
+                :param model child_object: model object, base of the rule application
+            """
             if added_clause:
                 if parent_model and child_object:
                     # as inherited rules are being applied, we need to add the missing JOIN
@@ -4785,8 +4821,9 @@ class BaseModel(object):
                 # as foreseen in copy_data()
                 old_children = sorted(old_record[field_name])
                 new_children = sorted(new_record[field_name])
-                for (old_child, new_child) in zip(old_children, new_children):
-                    target_obj.copy_translations(cr, uid, old_child, new_child, context=context)
+                if old_children != new_children:
+                    for (old_child, new_child) in zip(old_children, new_children):
+                        target_obj.copy_translations(cr, uid, old_child, new_child, context=context)
             # and for translatable fields we keep them for copy
             elif field_def.get('translate'):
                 trans_name = ''
@@ -4805,7 +4842,6 @@ class BaseModel(object):
             del record['id']
             record['res_id'] = new_id
             trans_obj.create(cr, uid, record, context=context)
-
 
     def copy(self, cr, uid, id, default=None, context=None):
         """
