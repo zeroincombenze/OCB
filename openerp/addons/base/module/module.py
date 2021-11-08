@@ -183,6 +183,7 @@ class module(osv.osv):
                     'doctitle_xform': False,
                     'output_encoding': 'unicode',
                     'xml_declaration': False,
+                    'file_insertion_enabled': False,
                 }
                 # [antoniov 2018-08-31] Avoid translation error
                 try:

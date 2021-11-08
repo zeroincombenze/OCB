@@ -37,6 +37,7 @@ from openerp.osv import fields, osv
 from openerp.osv.orm import browse_record
 import openerp.report.interface
 from openerp.report.report_sxw import report_sxw, report_rml
+from openerp.tools import wrap_module
 from openerp.tools.safe_eval import safe_eval as eval
 from openerp.tools.translate import _
 import openerp.workflow
