@@ -1,28 +1,36 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import ast
+import logging
+
 from odoo import exceptions
-from odoo.tests.common import TransactionCase, ADMIN_USER_ID
+from odoo.addons.base.tests.common import TransactionCaseWithUserDemo
+from odoo.tests.common import TransactionCase, ADMIN_USER_ID, tagged
 
-def noid(d):
+_logger = logging.getLogger(__name__)
+
+def noid(seq):
     """ Removes values that are not relevant for the test comparisons """
-    d.pop('id', None)
-    d.pop('action_id', None)
-    return d
+    for d in seq:
+        d.pop('id', None)
+        d.pop('action_id', None)
+    return seq
 
 
-class FiltersCase(TransactionCase):
+class FiltersCase(TransactionCaseWithUserDemo):
+    def setUp(self):
+        super(FiltersCase, self).setUp()
+        self.USER_NG = self.env['res.users'].name_search('demo')[0]
+        self.USER_ID = self.USER_NG[0]
+
     def build(self, model, *args):
-        Model = self.env[model].sudo(ADMIN_USER_ID)
+        Model = self.env[model].with_user(ADMIN_USER_ID)
         for vals in args:
             Model.create(vals)
 
 
 class TestGetFilters(FiltersCase):
-    def setUp(self):
-        super(TestGetFilters, self).setUp()
-        self.USER_NG = self.env['res.users'].name_search('demo')[0]
-        self.USER_ID = self.USER_NG[0]
 
     def test_own_filters(self):
         self.build(
@@ -32,9 +40,9 @@ class TestGetFilters(FiltersCase):
             dict(name='c', user_id=self.USER_ID, model_id='ir.filters'),
             dict(name='d', user_id=self.USER_ID, model_id='ir.filters'))
 
-        filters = self.env['ir.filters'].sudo(self.USER_ID).get_filters('ir.filters')
+        filters = self.env['ir.filters'].with_user(self.USER_ID).get_filters('ir.filters')
 
-        self.assertItemsEqual(map(noid, filters), [
+        self.assertItemsEqual(noid(filters), [
             dict(name='a', is_default=False, user_id=self.USER_NG, domain='[]', context='{}', sort='[]'),
             dict(name='b', is_default=False, user_id=self.USER_NG, domain='[]', context='{}', sort='[]'),
             dict(name='c', is_default=False, user_id=self.USER_NG, domain='[]', context='{}', sort='[]'),
@@ -50,9 +58,9 @@ class TestGetFilters(FiltersCase):
             dict(name='d', user_id=False, model_id='ir.filters'),
         )
 
-        filters = self.env['ir.filters'].sudo(self.USER_ID).get_filters('ir.filters')
+        filters = self.env['ir.filters'].with_user(self.USER_ID).get_filters('ir.filters')
 
-        self.assertItemsEqual(map(noid, filters), [
+        self.assertItemsEqual(noid(filters), [
             dict(name='a', is_default=False, user_id=False, domain='[]', context='{}', sort='[]'),
             dict(name='b', is_default=False, user_id=False, domain='[]', context='{}', sort='[]'),
             dict(name='c', is_default=False, user_id=False, domain='[]', context='{}', sort='[]'),
@@ -67,26 +75,22 @@ class TestGetFilters(FiltersCase):
             dict(name='c', user_id=self.USER_ID, model_id='ir.filters'),
             dict(name='d', user_id=ADMIN_USER_ID, model_id='ir.filters')  )
 
-        filters = self.env['ir.filters'].sudo(self.USER_ID).get_filters('ir.filters')
+        filters = self.env['ir.filters'].with_user(self.USER_ID).get_filters('ir.filters')
 
-        self.assertItemsEqual(map(noid, filters), [
+        self.assertItemsEqual(noid(filters), [
             dict(name='a', is_default=False, user_id=False, domain='[]', context='{}', sort='[]'),
             dict(name='c', is_default=False, user_id=self.USER_NG, domain='[]', context='{}', sort='[]'),
         ])
 
 
 class TestOwnDefaults(FiltersCase):
-    def setUp(self):
-        super(TestOwnDefaults, self).setUp()
-        self.USER_NG = self.env['res.users'].name_search('demo')[0]
-        self.USER_ID = self.USER_NG[0]                 
 
     def test_new_no_filter(self):
         """
         When creating a @is_default filter with no existing filter, that new
         filter gets the default flag
         """
-        Filters = self.env['ir.filters'].sudo(self.USER_ID)
+        Filters = self.env['ir.filters'].with_user(self.USER_ID)
         Filters.create_or_replace({
             'name': 'a',
             'model_id': 'ir.filters',
@@ -95,7 +99,7 @@ class TestOwnDefaults(FiltersCase):
         })
         filters = Filters.get_filters('ir.filters')
 
-        self.assertItemsEqual(map(noid, filters), [
+        self.assertItemsEqual(noid(filters), [
             dict(name='a', user_id=self.USER_NG, is_default=True,
                  domain='[]', context='{}', sort='[]')
         ])
@@ -111,7 +115,7 @@ class TestOwnDefaults(FiltersCase):
             dict(name='b', user_id=self.USER_ID, model_id='ir.filters'),
         )
 
-        Filters = self.env['ir.filters'].sudo(self.USER_ID)
+        Filters = self.env['ir.filters'].with_user(self.USER_ID)
         Filters.create_or_replace({
             'name': 'c',
             'model_id': 'ir.filters',
@@ -120,7 +124,7 @@ class TestOwnDefaults(FiltersCase):
         })
         filters = Filters.get_filters('ir.filters')
 
-        self.assertItemsEqual(map(noid, filters), [
+        self.assertItemsEqual(noid(filters), [
             dict(name='a', user_id=self.USER_NG, is_default=False, domain='[]', context='{}', sort='[]'),
             dict(name='b', user_id=self.USER_NG, is_default=False, domain='[]', context='{}', sort='[]'),
             dict(name='c', user_id=self.USER_NG, is_default=True, domain='[]', context='{}', sort='[]'),
@@ -137,7 +141,7 @@ class TestOwnDefaults(FiltersCase):
             dict(name='b', is_default=True, user_id=self.USER_ID, model_id='ir.filters'),
         )
 
-        Filters = self.env['ir.filters'].sudo(self.USER_ID)
+        Filters = self.env['ir.filters'].with_user(self.USER_ID)
         Filters.create_or_replace({
             'name': 'c',
             'model_id': 'ir.filters',
@@ -146,7 +150,7 @@ class TestOwnDefaults(FiltersCase):
         })
         filters = Filters.get_filters('ir.filters')
 
-        self.assertItemsEqual(map(noid, filters), [
+        self.assertItemsEqual(noid(filters), [
             dict(name='a', user_id=self.USER_NG, is_default=False, domain='[]', context='{}', sort='[]'),
             dict(name='b', user_id=self.USER_NG, is_default=False, domain='[]', context='{}', sort='[]'),
             dict(name='c', user_id=self.USER_NG, is_default=True, domain='[]', context='{}', sort='[]'),
@@ -163,7 +167,7 @@ class TestOwnDefaults(FiltersCase):
             dict(name='b', is_default=True, user_id=self.USER_ID, model_id='ir.filters'),
         )
 
-        Filters = self.env['ir.filters'].sudo(self.USER_ID)
+        Filters = self.env['ir.filters'].with_user(self.USER_ID)
         Filters.create_or_replace({
             'name': 'a',
             'model_id': 'ir.filters',
@@ -172,17 +176,13 @@ class TestOwnDefaults(FiltersCase):
         })
         filters = Filters.get_filters('ir.filters')
 
-        self.assertItemsEqual(map(noid, filters), [
+        self.assertItemsEqual(noid(filters), [
             dict(name='a', user_id=self.USER_NG, is_default=True, domain='[]', context='{}', sort='[]'),
             dict(name='b', user_id=self.USER_NG, is_default=False, domain='[]', context='{}', sort='[]'),
         ])
 
 
 class TestGlobalDefaults(FiltersCase):
-    def setUp(self):
-        super(TestGlobalDefaults, self).setUp()
-        self.USER_NG = self.env['res.users'].name_search('demo')[0]
-        self.USER_ID = self.USER_NG[0]
 
     def test_new_filter_not_default(self):
         """
@@ -195,7 +195,7 @@ class TestGlobalDefaults(FiltersCase):
             dict(name='b', user_id=False, model_id='ir.filters'),
         )
 
-        Filters = self.env['ir.filters'].sudo(self.USER_ID)
+        Filters = self.env['ir.filters'].with_user(self.USER_ID)
         Filters.create_or_replace({
             'name': 'c',
             'model_id': 'ir.filters',
@@ -204,7 +204,7 @@ class TestGlobalDefaults(FiltersCase):
         })
         filters = Filters.get_filters('ir.filters')
 
-        self.assertItemsEqual(map(noid, filters), [
+        self.assertItemsEqual(noid(filters), [
             dict(name='a', user_id=False, is_default=False, domain='[]', context='{}', sort='[]'),
             dict(name='b', user_id=False, is_default=False, domain='[]', context='{}', sort='[]'),
             dict(name='c', user_id=False, is_default=True, domain='[]', context='{}', sort='[]'),
@@ -221,8 +221,8 @@ class TestGlobalDefaults(FiltersCase):
             dict(name='b', is_default=True, user_id=False, model_id='ir.filters'),
         )
 
-        Filters = self.env['ir.filters'].sudo(self.USER_ID)
-        with self.assertRaises(exceptions.Warning):
+        Filters = self.env['ir.filters'].with_user(self.USER_ID)
+        with self.assertRaises(exceptions.UserError):
             Filters.create_or_replace({
                 'name': 'c',
                 'model_id': 'ir.filters',
@@ -241,8 +241,8 @@ class TestGlobalDefaults(FiltersCase):
             dict(name='b', is_default=True, user_id=False, model_id='ir.filters'),
         )
 
-        Filters = self.env['ir.filters'].sudo(self.USER_ID)
-        with self.assertRaises(exceptions.Warning):
+        Filters = self.env['ir.filters'].with_user(self.USER_ID)
+        with self.assertRaises(exceptions.UserError):
             Filters.create_or_replace({
                 'name': 'a',
                 'model_id': 'ir.filters',
@@ -260,7 +260,7 @@ class TestGlobalDefaults(FiltersCase):
             dict(name='b', is_default=True, user_id=False, model_id='ir.filters'),
         )
 
-        Filters = self.env['ir.filters'].sudo(self.USER_ID)
+        Filters = self.env['ir.filters'].with_user(self.USER_ID)
         context_value = "{'some_key': True}"
         Filters.create_or_replace({
             'name': 'b',
@@ -271,7 +271,7 @@ class TestGlobalDefaults(FiltersCase):
         })
         filters = Filters.get_filters('ir.filters')
 
-        self.assertItemsEqual(map(noid, filters), [
+        self.assertItemsEqual(noid(filters), [
             dict(name='a', user_id=False, is_default=False, domain='[]', context='{}', sort='[]'),
             dict(name='b', user_id=False, is_default=True, domain='[]', context=context_value, sort='[]'),
         ])
@@ -294,3 +294,37 @@ class TestReadGroup(TransactionCase):
 
         res = Filters.read_group([], ['name', 'user_id'], ['user_id'])
         self.assertTrue(any(val['user_id'] == False for val in res), "At least one group must contain val['user_id'] == False.")
+
+
+@tagged('post_install', '-at_install', 'migration')
+class TestAllFilters(TransactionCase):
+    def check_filter(self, name, model, domain, fields, groupby, order, context):
+        if groupby:
+            try:
+                self.env[model].with_context(context).read_group(domain, fields, groupby, orderby=order)
+            except ValueError as e:
+                raise self.failureException("Test filter '%s' failed: %s" % (name, e)) from None
+            except KeyError as e:
+                raise self.failureException("Test filter '%s' failed: field or aggregate %s does not exist"% (name, e)) from None
+        elif domain:
+            try:
+                self.env[model].with_context(context).search(domain, order=order)
+            except ValueError as e:
+                raise self.failureException("Test filter '%s' failed: %s" % (name, e)) from None
+        else:
+            _logger.info("No domain or group by in filter %s with model %s and context %s", name, model, context)
+
+    def test_filters(self):
+        for filter_ in self.env['ir.filters'].search([]):
+            with self.subTest(name=filter_.name):
+                context = ast.literal_eval(filter_.context)
+                groupby = context.get('group_by')
+                self.check_filter(
+                    name=filter_.name,
+                    model=filter_.model_id,
+                    domain=filter_._get_eval_domain(),
+                    fields=[field.split(':')[0] for field in (groupby or [])],
+                    groupby=groupby,
+                    order=','.join(ast.literal_eval(filter_.sort)),
+                    context=context,
+                )

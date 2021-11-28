@@ -3,42 +3,56 @@
 
 from odoo import api, fields, models
 
-import odoo.addons.decimal_precision as dp
 
 
 class StockMove(models.Model):
     _inherit = 'stock.move'
 
-    def _default_uom(self):
-        uom_categ_id = self.env.ref('product.product_uom_categ_kgm').id
-        return self.env['product.uom'].search([('category_id', '=', uom_categ_id), ('factor', '=', 1)], limit=1)
-
-    weight = fields.Float(compute='_cal_move_weight', digits=dp.get_precision('Stock Weight'), store=True)
-    weight_uom_id = fields.Many2one('product.uom', string='Weight Unit of Measure', required=True, readonly=True, help="Unit of Measure (Unit of Measure) is the unit of measurement for Weight", default=_default_uom)
+    weight = fields.Float(compute='_cal_move_weight', digits='Stock Weight', store=True, compute_sudo=True)
 
     @api.depends('product_id', 'product_uom_qty', 'product_uom')
     def _cal_move_weight(self):
-        for move in self.filtered(lambda moves: moves.product_id.weight > 0.00):
+        moves_with_weight = self.filtered(lambda moves: moves.product_id.weight > 0.00)
+        for move in moves_with_weight:
             move.weight = (move.product_qty * move.product_id.weight)
+        (self - moves_with_weight).weight = 0
 
-    @api.multi
-    def action_confirm(self):
+    def _get_new_picking_values(self):
+        vals = super(StockMove, self)._get_new_picking_values()
+        vals['carrier_id'] = self.mapped('sale_line_id.order_id.carrier_id').id
+        return vals
+
+    def _key_assign_picking(self):
+        keys = super(StockMove, self)._key_assign_picking()
+        return keys + (self.sale_line_id.order_id.carrier_id,)
+
+class StockMoveLine(models.Model):
+    _inherit = 'stock.move.line'
+
+    sale_price = fields.Float(compute='_compute_sale_price')
+
+    @api.depends('qty_done', 'product_uom_id', 'product_id', 'move_id.sale_line_id', 'move_id.sale_line_id.price_reduce_taxinc', 'move_id.sale_line_id.product_uom')
+    def _compute_sale_price(self):
+        for move_line in self:
+            if move_line.move_id.sale_line_id:
+                unit_price = move_line.move_id.sale_line_id.price_reduce_taxinc
+                qty = move_line.product_uom_id._compute_quantity(move_line.move_id.sale_line_id.product_qty, move_line.move_id.sale_line_id.product_uom)
+            else:
+                unit_price = move_line.product_id.list_price
+                qty = move_line.product_uom_id._compute_quantity(move_line.qty_done, move_line.product_id.uom_id)
+            move_line.sale_price = unit_price * qty
+        super(StockMoveLine, self)._compute_sale_price()
+
+    def _get_aggregated_product_quantities(self, **kwargs):
+        """Returns dictionary of products and corresponding values of interest + hs_code
+
+        Unfortunately because we are working with aggregated data, we have to loop through the
+        aggregation to add more values to each datum. This extension adds on the hs_code value.
+
+        returns: dictionary {same_key_as_super: {same_values_as_super, hs_code}, ...}
         """
-            Pass the carrier to the picking from the sales order
-            (Should also work in case of Phantom BoMs when on explosion the original move is deleted)
-        """
-        procs_to_check = []
-        for move in self:
-            if move.procurement_id and move.procurement_id.sale_line_id and move.procurement_id.sale_line_id.order_id.carrier_id:
-                procs_to_check += [move.procurement_id]
-        res = super(StockMove, self).action_confirm()
-        for proc in procs_to_check:
-            pickings = (proc.move_ids.mapped('picking_id')).filtered(lambda record: not record.carrier_id)
-            if pickings:
-                pickings.write({
-                    'carrier_id': proc.sale_line_id.order_id.carrier_id.id,
-                })
-                # Get correct carrier price
-                for picking in pickings:
-                    picking.onchange_carrier()
-        return res
+        aggregated_move_lines = super()._get_aggregated_product_quantities(**kwargs)
+        for aggregated_move_line in aggregated_move_lines:
+            hs_code = aggregated_move_lines[aggregated_move_line]['product'].product_tmpl_id.hs_code
+            aggregated_move_lines[aggregated_move_line]['hs_code'] = hs_code
+        return aggregated_move_lines

@@ -1,55 +1,61 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-import cgi
+import base64
+import collections
 import logging
-import lxml.html.clean as clean
+from lxml.html import clean
 import random
 import re
 import socket
 import threading
 import time
 
-from email.header import decode_header
-from email.utils import getaddresses, formataddr
+from email.utils import getaddresses
 from lxml import etree
+from werkzeug import urls
+import idna
 
 import odoo
 from odoo.loglevels import ustr
+from odoo.tools import misc
 
 _logger = logging.getLogger(__name__)
-
 
 #----------------------------------------------------------
 # HTML Sanitizer
 #----------------------------------------------------------
 
-tags_to_kill = ["script", "head", "meta", "title", "link", "style", "frame", "iframe", "base", "object", "embed"]
+tags_to_kill = ['base', 'embed', 'frame', 'head', 'iframe', 'link', 'meta',
+                'noscript', 'object', 'script', 'style', 'title']
+
 tags_to_remove = ['html', 'body']
 
 # allow new semantic HTML5 tags
-allowed_tags = clean.defs.tags | frozenset('article section header footer hgroup nav aside figure main'.split() + [etree.Comment])
+allowed_tags = clean.defs.tags | frozenset('article bdi section header footer hgroup nav aside figure main'.split() + [etree.Comment])
 safe_attrs = clean.defs.safe_attrs | frozenset(
     ['style',
      'data-o-mail-quote',  # quote detection
      'data-oe-model', 'data-oe-id', 'data-oe-field', 'data-oe-type', 'data-oe-expression', 'data-oe-translation-id', 'data-oe-nodeid',
      'data-publish', 'data-id', 'data-res_id', 'data-interval', 'data-member_id', 'data-scroll-background-ratio', 'data-view-id',
+     'data-class', 'data-mimetype', 'data-original-src', 'data-original-id', 'data-gl-filter', 'data-quality', 'data-resize-width',
      ])
 
 
 class _Cleaner(clean.Cleaner):
 
-    _style_re = re.compile('''([\w-]+)\s*:\s*((?:[^;"']|"[^"]*"|'[^']*')+)''')
+    _style_re = re.compile(r'''([\w-]+)\s*:\s*((?:[^;"']|"[^";]*"|'[^';]*')+)''')
 
     _style_whitelist = [
-        'font-size', 'font-family', 'font-weight',
-        'background-color', 'color', 'float', 'vertical-align',
-        'line-height', 'text-align', 'text-decoration',
+        'font-size', 'font-family', 'font-weight', 'background-color', 'color', 'text-align',
+        'line-height', 'letter-spacing', 'text-transform', 'text-decoration', 'opacity',
+        'float', 'vertical-align', 'display',
         'padding', 'padding-top', 'padding-left', 'padding-bottom', 'padding-right',
         'margin', 'margin-top', 'margin-left', 'margin-bottom', 'margin-right',
+        'white-space',
         # box model
-        'border', 'border-color', 'border-style', 'border-radius', 'border-width',
-        'height', 'margin', 'padding', 'width', 'max-width', 'min-width',
+        'border', 'border-color', 'border-radius', 'border-style', 'border-width', 'border-top', 'border-bottom',
+        'height', 'width', 'max-width', 'min-width', 'min-height',
         # tables
         'border-collapse', 'border-spacing', 'caption-side', 'empty-cells', 'table-layout']
 
@@ -85,7 +91,7 @@ class _Cleaner(clean.Cleaner):
             new_node.text = text
             new_node.tail = tail
             if attrs:
-                for key, val in attrs.iteritems():
+                for key, val in attrs.items():
                     new_node.set(key, val)
             return new_node
 
@@ -148,46 +154,36 @@ class _Cleaner(clean.Cleaner):
         attributes = el.attrib
         styling = attributes.get('style')
         if styling:
-            valid_styles = {}
+            valid_styles = collections.OrderedDict()
             styles = self._style_re.findall(styling)
             for style in styles:
                 if style[0].lower() in self._style_whitelist:
                     valid_styles[style[0].lower()] = style[1]
             if valid_styles:
-                el.attrib['style'] = '; '.join('%s:%s' % (key, val) for (key, val) in valid_styles.iteritems())
+                el.attrib['style'] = '; '.join('%s:%s' % (key, val) for (key, val) in valid_styles.items())
             else:
                 del el.attrib['style']
 
-    def allow_element(self, el):
-        if el.tag == 'object' and el.get('type') == "image/svg+xml":
-            return True
-        return super(_Cleaner, self).allow_element(el)
 
-
-def html_sanitize(src, silent=True, sanitize_tags=True, sanitize_attributes=False, sanitize_style=False, strip_style=False, strip_classes=False):
+def html_sanitize(src, silent=True, sanitize_tags=True, sanitize_attributes=False, sanitize_style=False, sanitize_form=True, strip_style=False, strip_classes=False):
     if not src:
         return src
     src = ustr(src, errors='replace')
     # html: remove encoding attribute inside tags
     doctype = re.compile(r'(<[^>]*\s)(encoding=(["\'][^"\']*?["\']|[^\s\n\r>]+)(\s[^>]*|/)?>)', re.IGNORECASE | re.DOTALL)
-    src = doctype.sub(r"", src)
+    src = doctype.sub(u"", src)
 
     logger = logging.getLogger(__name__ + '.html_sanitize')
 
-    # html encode email tags
-    part = re.compile(r"(<(([^a<>]|a[^<>\s])[^<>]*)@[^<>]+>)", re.IGNORECASE | re.DOTALL)
-    # remove results containing cite="mid:email_like@address" (ex: blockquote cite)
-    # cite_except = re.compile(r"^((?!cite[\s]*=['\"]).)*$", re.IGNORECASE)
-    src = part.sub(lambda m: ('cite=' not in m.group(1) and 'alt=' not in m.group(1)) and cgi.escape(m.group(1)) or m.group(1), src)
     # html encode mako tags <% ... %> to decode them later and keep them alive, otherwise they are stripped by the cleaner
-    src = src.replace('<%', cgi.escape('<%'))
-    src = src.replace('%>', cgi.escape('%>'))
+    src = src.replace(u'<%', misc.html_escape(u'<%'))
+    src = src.replace(u'%>', misc.html_escape(u'%>'))
 
     kwargs = {
         'page_structure': True,
         'style': strip_style,              # True = remove style tags/attrs
         'sanitize_style': sanitize_style,  # True = sanitize styling
-        'forms': True,                     # True = remove form tags
+        'forms': sanitize_form,            # True = remove form tags
         'remove_unknown_tags': False,
         'comments': False,
         'processing_instructions': False
@@ -222,40 +218,68 @@ def html_sanitize(src, silent=True, sanitize_tags=True, sanitize_attributes=Fals
         # some corner cases make the parser crash (such as <SCRIPT/XSS SRC=\"http://ha.ckers.org/xss.js\"></SCRIPT> in test_mail)
         cleaner = _Cleaner(**kwargs)
         cleaned = cleaner.clean_html(src)
+        assert isinstance(cleaned, str)
         # MAKO compatibility: $, { and } inside quotes are escaped, preventing correct mako execution
-        cleaned = cleaned.replace('%24', '$')
-        cleaned = cleaned.replace('%7B', '{')
-        cleaned = cleaned.replace('%7D', '}')
-        cleaned = cleaned.replace('%20', ' ')
-        cleaned = cleaned.replace('%5B', '[')
-        cleaned = cleaned.replace('%5D', ']')
-        cleaned = cleaned.replace('%7C', '|')
-        cleaned = cleaned.replace('&lt;%', '<%')
-        cleaned = cleaned.replace('%&gt;', '%>')
+        cleaned = cleaned.replace(u'%24', u'$')
+        cleaned = cleaned.replace(u'%7B', u'{')
+        cleaned = cleaned.replace(u'%7D', u'}')
+        cleaned = cleaned.replace(u'%20', u' ')
+        cleaned = cleaned.replace(u'%5B', u'[')
+        cleaned = cleaned.replace(u'%5D', u']')
+        cleaned = cleaned.replace(u'%7C', u'|')
+        cleaned = cleaned.replace(u'&lt;%', u'<%')
+        cleaned = cleaned.replace(u'%&gt;', u'%>')
         # html considerations so real html content match database value
-        cleaned.replace(u'\xa0', '&nbsp;')
-    except etree.ParserError, e:
+        cleaned.replace(u'\xa0', u'&nbsp;')
+    except etree.ParserError as e:
         if 'empty' in str(e):
-            return ""
+            return u""
         if not silent:
             raise
-        logger.warning('ParserError obtained when sanitizing %r', src, exc_info=True)
-        cleaned = '<p>ParserError when sanitizing</p>'
+        logger.warning(u'ParserError obtained when sanitizing %r', src, exc_info=True)
+        cleaned = u'<p>ParserError when sanitizing</p>'
     except Exception:
         if not silent:
             raise
-        logger.warning('unknown error obtained when sanitizing %r', src, exc_info=True)
-        cleaned = '<p>Unknown error when sanitizing</p>'
+        logger.warning(u'unknown error obtained when sanitizing %r', src, exc_info=True)
+        cleaned = u'<p>Unknown error when sanitizing</p>'
 
     # this is ugly, but lxml/etree tostring want to put everything in a 'div' that breaks the editor -> remove that
-    if cleaned.startswith('<div>') and cleaned.endswith('</div>'):
+    if cleaned.startswith(u'<div>') and cleaned.endswith(u'</div>'):
         cleaned = cleaned[5:-6]
 
     return cleaned
 
-#----------------------------------------------------------
+# ----------------------------------------------------------
 # HTML/Text management
-#----------------------------------------------------------
+# ----------------------------------------------------------
+
+URL_REGEX = r'(\bhref=[\'"](?!mailto:|tel:|sms:)([^\'"]+)[\'"])'
+TEXT_URL_REGEX = r'https?://[a-zA-Z0-9@:%._\+~#=/-]+(?:\?\S+)?'
+# retrieve inner content of the link
+HTML_TAG_URL_REGEX = URL_REGEX + r'([^<>]*>([^<>]+)<\/)?'
+
+
+def validate_url(url):
+    if urls.url_parse(url).scheme not in ('http', 'https', 'ftp', 'ftps'):
+        return 'http://' + url
+
+    return url
+
+
+def is_html_empty(html_content):
+    """Check if a html content is empty. If there are only formatting tags or
+    a void content return True. Famous use case if a '<p><br></p>' added by
+    some web editor.
+
+    :param str html_content: html content, coming from example from an HTML field
+    :returns: bool, True if no content found or if containing only void formatting tags
+    """
+    if not html_content:
+        return True
+    tag_re = re.compile(r'\<\s*\/?(?:p|div|span|br|b|i)\s*/?\s*\>')
+    return not bool(re.sub(tag_re, '', html_content).strip())
+
 
 def html_keep_url(text):
     """ Transform the url into clickable link with <a/> tag """
@@ -264,10 +288,11 @@ def html_keep_url(text):
     link_tags = re.compile(r"""(?<!["'])((ftp|http|https):\/\/(\w+:{0,1}\w*@)?([^\s<"']+)(:[0-9]+)?(\/|\/([^\s<"']))?)(?![^\s<"']*["']|[^\s<"']*</a>)""")
     for item in re.finditer(link_tags, text):
         final += text[idx:item.start()]
-        final += '<a href="%s" target="_blank">%s</a>' % (item.group(0), item.group(0))
+        final += '<a href="%s" target="_blank" rel="noreferrer noopener">%s</a>' % (item.group(0), item.group(0))
         idx = item.end()
     final += text[idx:]
     return final
+
 
 def html2plaintext(html, body_id=None, encoding='utf-8'):
     """ From an HTML text, convert the HTML to plain text.
@@ -280,7 +305,7 @@ def html2plaintext(html, body_id=None, encoding='utf-8'):
 
     html = ustr(html)
 
-    if not html:
+    if not html.strip():
         return ''
 
     tree = etree.fromstring(html, parser=etree.HTMLParser())
@@ -330,11 +355,11 @@ def html2plaintext(html, body_id=None, encoding='utf-8'):
             html += '\n\n'
         html += ustr('[%s] %s\n') % (i + 1, url)
 
-    return html
+    return html.strip()
 
 def plaintext2html(text, container_tag=False):
     """ Convert plaintext into html. Content of the text is escaped to manage
-        html entities, using cgi.escape().
+        html entities, using misc.html_escape().
         - all \n,\r are replaced by <br />
         - enclose content into <p>
         - convert url into clickable link
@@ -343,7 +368,7 @@ def plaintext2html(text, container_tag=False):
         :param string container_tag: container of the html; by default the
             content is embedded into a <div>
     """
-    text = cgi.escape(ustr(text))
+    text = misc.html_escape(ustr(text))
 
     # 1. replace \n and \r
     text = text.replace('\n', '<br/>')
@@ -388,14 +413,14 @@ def append_content_to_html(html, content, plaintext=True, preserve=False, contai
     """
     html = ustr(html)
     if plaintext and preserve:
-        content = u'\n<pre>%s</pre>\n' % ustr(content)
+        content = u'\n<pre>%s</pre>\n' % misc.html_escape(ustr(content))
     elif plaintext:
         content = '\n%s\n' % plaintext2html(content, container_tag)
     else:
         content = re.sub(r'(?i)(</?(?:html|body|head|!\s*DOCTYPE)[^>]*>)', '', content)
         content = u'\n%s\n' % ustr(content)
     # Force all tags to lowercase
-    html = re.sub(r'(</?)\W*(\w+)([ >])',
+    html = re.sub(r'(</?)(\w+)([ >])',
         lambda m: '%s%s%s' % (m.group(1), m.group(2).lower(), m.group(3)), html)
     insert_location = html.find('</body>')
     if insert_location == -1:
@@ -403,6 +428,20 @@ def append_content_to_html(html, content, plaintext=True, preserve=False, contai
     if insert_location == -1:
         return '%s%s' % (html, content)
     return '%s%s%s' % (html[:insert_location], content, html[insert_location:])
+
+
+def prepend_html_content(html_body, html_content):
+    """Prepend some HTML content at the beginning of an other HTML content."""
+    html_content = re.sub(r'(?i)(</?(?:html|body|head|!\s*DOCTYPE)[^>]*>)', '', html_content)
+    html_content = html_content.strip()
+
+    insert_index = next(re.finditer(r'<body[^>]*>', html_body), None)
+    if insert_index is None:
+        insert_index = next(re.finditer(r'<html[^>]*>', html_body), None)
+
+    insert_index = insert_index.end() if insert_index else 0
+
+    return html_body[:insert_index] + html_content + html_body[insert_index:]
 
 #----------------------------------------------------------
 # Emails
@@ -414,16 +453,9 @@ email_re = re.compile(r"""([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63})""",
 # matches a string containing only one email
 single_email_re = re.compile(r"""^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$""", re.VERBOSE)
 
-# update command in emails body
-command_re = re.compile("^Set-([a-z]+) *: *(.+)$", re.I + re.UNICODE)
-
-# Updated in 7.0 to match the model name as well
-# Typical form of references is <timestamp-openerp-record_id-model_name@domain>
-# group(1) = the record ID ; group(2) = the model (if any) ; group(3) = the domain
-reference_re = re.compile("<.*-open(?:object|erp)-(\\d+)(?:-([\w.]+))?[^>]*@([^>]*)>", re.UNICODE)
-discussion_re = re.compile("<.*-open(?:object|erp)-private[^>]*@([^>]*)>", re.UNICODE)
-
 mail_header_msgid_re = re.compile('<[^<>]+>')
+
+email_addr_escapes_re = re.compile(r'[\\"]')
 
 
 def generate_tracking_message_id(res_id):
@@ -437,7 +469,7 @@ def generate_tracking_message_id(res_id):
     except NotImplementedError:
         rnd = random.random()
     rndstr = ("%.15f" % rnd)[2:]
-    return "<%.15f.%s-openerp-%s@%s>" % (time.time(), rndstr, res_id, socket.gethostname())
+    return "<%s.%.15f-openerp-%s@%s>" % (rndstr, time.time(), res_id, socket.gethostname())
 
 def email_send(email_from, email_to, subject, body, email_cc=None, email_bcc=None, reply_to=False,
                attachments=None, message_id=None, references=None, openobject_id=False, debug=False, subtype='plain', headers=None,
@@ -479,56 +511,132 @@ def email_send(email_from, email_to, subject, body, email_cc=None, email_bcc=Non
             cr.close()
     return res
 
-def email_split(text):
-    """ Return a list of the email addresses found in ``text`` """
+def email_split_tuples(text):
+    """ Return a list of (name, email) addresse tuples found in ``text``"""
     if not text:
         return []
-    return [addr[1] for addr in getaddresses([text])
+    return [(addr[0], addr[1]) for addr in getaddresses([text])
                 # getaddresses() returns '' when email parsing fails, and
                 # sometimes returns emails without at least '@'. The '@'
                 # is strictly required in RFC2822's `addr-spec`.
                 if addr[1]
                 if '@' in addr[1]]
+
+def email_split(text):
+    """ Return a list of the email addresses found in ``text`` """
+    if not text:
+        return []
+    return [email for (name, email) in email_split_tuples(text)]
 
 def email_split_and_format(text):
     """ Return a list of email addresses found in ``text``, formatted using
     formataddr. """
     if not text:
         return []
-    return [formataddr((addr[0], addr[1])) for addr in getaddresses([text])
-                # getaddresses() returns '' when email parsing fails, and
-                # sometimes returns emails without at least '@'. The '@'
-                # is strictly required in RFC2822's `addr-spec`.
-                if addr[1]
-                if '@' in addr[1]]
+    return [formataddr((name, email)) for (name, email) in email_split_tuples(text)]
 
-def email_references(references):
-    ref_match, model, thread_id, hostname, is_private = False, False, False, False, False
-    if references:
-        ref_match = reference_re.search(references)
-    if ref_match:
-        model = ref_match.group(2)
-        thread_id = int(ref_match.group(1))
-        hostname = ref_match.group(3)
-    else:
-        ref_match = discussion_re.search(references)
-        if ref_match:
-            is_private = True
-    return (ref_match, model, thread_id, hostname, is_private)
+def email_normalize(text):
+    """ Sanitize and standardize email address entries.
+        A normalized email is considered as :
+        - having a left part + @ + a right part (the domain can be without '.something')
+        - being lower case
+        - having no name before the address. Typically, having no 'Name <>'
+        Ex:
+        - Possible Input Email : 'Name <NaMe@DoMaIn.CoM>'
+        - Normalized Output Email : 'name@domain.com'
+    """
+    emails = email_split(text)
+    if not emails or len(emails) != 1:
+        return False
+    return emails[0].lower()
 
-# was mail_message.decode()
-def decode_smtp_header(smtp_header):
-    """Returns unicode() string conversion of the given encoded smtp header
-    text. email.header decode_header method return a decoded string and its
-    charset for each decoded par of the header. This method unicodes the
-    decoded header and join them in a complete string. """
-    if smtp_header:
-        text = decode_header(smtp_header.replace('\r', ''))
-        # The joining space will not be needed as of Python 3.3
-        # See https://hg.python.org/cpython/rev/8c03fe231877
-        return ' '.join([ustr(x[0], x[1]) for x in text])
-    return u''
+def email_escape_char(email_address):
+    """ Escape problematic characters in the given email address string"""
+    return email_address.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_')
+
+
+def email_domain_extract(email):
+    """Return the domain of the given email."""
+    if not email:
+        return
+
+    email_split = getaddresses([email])
+    if not email_split or not email_split[0]:
+        return
+
+    _, _, domain = email_split[0][1].rpartition('@')
+    return domain
 
 # was mail_thread.decode_header()
 def decode_message_header(message, header, separator=' '):
-    return separator.join(map(decode_smtp_header, filter(None, message.get_all(header, []))))
+    return separator.join(h for h in message.get_all(header, []) if h)
+
+def formataddr(pair, charset='utf-8'):
+    """Pretty format a 2-tuple of the form (realname, email_address).
+
+    If the first element of pair is falsy then only the email address
+    is returned.
+
+    Set the charset to ascii to get a RFC-2822 compliant email. The
+    realname will be base64 encoded (if necessary) and the domain part
+    of the email will be punycode encoded (if necessary). The local part
+    is left unchanged thus require the SMTPUTF8 extension when there are
+    non-ascii characters.
+
+    >>> formataddr(('John Doe', 'johndoe@example.com'))
+    '"John Doe" <johndoe@example.com>'
+
+    >>> formataddr(('', 'johndoe@example.com'))
+    'johndoe@example.com'
+    """
+    name, address = pair
+    local, _, domain = address.rpartition('@')
+
+    try:
+        domain.encode(charset)
+    except UnicodeEncodeError:
+        # rfc5890 - Internationalized Domain Names for Applications (IDNA)
+        domain = idna.encode(domain).decode('ascii')
+
+    if name:
+        try:
+            name.encode(charset)
+        except UnicodeEncodeError:
+            # charset mismatch, encode as utf-8/base64
+            # rfc2047 - MIME Message Header Extensions for Non-ASCII Text
+            name = base64.b64encode(name.encode('utf-8')).decode('ascii')
+            return f"=?utf-8?b?{name}?= <{local}@{domain}>"
+        else:
+            # ascii name, escape it if needed
+            # rfc2822 - Internet Message Format
+            #   #section-3.4 - Address Specification
+            name = email_addr_escapes_re.sub(r'\\\g<0>', name)
+            return f'"{name}" <{local}@{domain}>'
+    return f"{local}@{domain}"
+
+
+def encapsulate_email(old_email, new_email):
+    """Change the FROM of the message and use the old one as name.
+
+    e.g.
+    * Old From: "Admin" <admin@gmail.com>
+    * New From: notifications@odoo.com
+    * Output:   "Admin (admin@gmail.com)" <notifications@odoo.com>
+    """
+    old_email_split = getaddresses([old_email])
+    if not old_email_split or not old_email_split[0]:
+        return old_email
+
+    new_email_split = getaddresses([new_email])
+    if not new_email_split or not new_email_split[0]:
+        return
+
+    if old_email_split[0][0]:
+        name_part = '%s (%s)' % old_email_split[0]
+    else:
+        name_part = old_email_split[0][1]
+
+    return formataddr((
+        name_part,
+        new_email_split[0][1],
+    ))

@@ -2,47 +2,27 @@ odoo.define('pos_restaurant.multiprint', function (require) {
 "use strict";
 
 var models = require('point_of_sale.models');
-var screens = require('point_of_sale.screens');
 var core = require('web.core');
-var Session = require('web.Session');
+var Printer = require('point_of_sale.Printer').Printer;
 
 var QWeb = core.qweb;
-var mixins = core.mixins;
 
-var Printer = core.Class.extend(mixins.PropertiesMixin,{
-    init: function(parent,options){
-        mixins.PropertiesMixin.init.call(this,parent);
-        options = options || {};
-        var url = options.url || 'http://localhost:8069';
-        this.connection = new Session(undefined,url, { use_cors: true});
-        this.host       = url;
-        this.receipt_queue = [];
-    },
-    print: function(receipt){
-        var self = this;
-        if(receipt){
-            this.receipt_queue.push(receipt);
+models.PosModel = models.PosModel.extend({
+    create_printer: function (config) {
+        var url = config.proxy_ip || '';
+        if(url.indexOf('//') < 0) {
+            url = window.location.protocol + '//' + url;
         }
-        function send_printing_job(){
-            if(self.receipt_queue.length > 0){
-                var r = self.receipt_queue.shift();
-                self.connection.rpc('/hw_proxy/print_xml_receipt',{receipt: r},{timeout: 5000})
-                    .then(function(){
-                        send_printing_job();
-                    },function(error, event){
-                        self.receipt_queue.unshift(r);
-                        console.log('There was an error while trying to print the order:');
-                        console.log(error);
-                    });
-            }
+        if(url.indexOf(':', url.indexOf('//') + 2) < 0 && window.location.protocol !== 'https:') {
+            url = url + ':8069';
         }
-        send_printing_job();
+        return new Printer(url, this);
     },
 });
 
 models.load_models({
     model: 'restaurant.printer',
-    fields: ['name','proxy_ip','product_categories_ids'],
+    fields: ['name','proxy_ip','product_categories_ids', 'printer_type'],
     domain: null,
     loaded: function(self,printers){
         var active_printers = {};
@@ -56,14 +36,7 @@ models.load_models({
 
         for(var i = 0; i < printers.length; i++){
             if(active_printers[printers[i].id]){
-                var url = printers[i].proxy_ip || '';
-                if(url.indexOf('//') < 0){
-                    url = 'http://'+url;
-                }
-                if(url.indexOf(':',url.indexOf('//')+2) < 0){
-                    url = url+':8069';
-                }
-                var printer = new Printer(self,{url:url});
+                var printer = self.create_printer(printers[i]);
                 printer.config = printers[i];
                 self.printers.push(printer);
 
@@ -89,17 +62,17 @@ models.Orderline = models.Orderline.extend({
             // mp dirty is true if this orderline has changed
             // since the last kitchen print
             // it's left undefined if the orderline does not
-            // need to be printed to a printer. 
+            // need to be printed to a printer.
 
             this.mp_dirty = this.printable() || undefined;
-        } 
+        }
         if (!this.mp_skip) {
             // mp_skip is true if the cashier want this orderline
             // not to be sent to the kitchen
             this.mp_skip  = false;
         }
     },
-    // can this orderline be potentially printed ? 
+    // can this orderline be potentially printed ?
     printable: function() {
         return this.pos.db.is_product_in_category(this.pos.printers_categories, this.get_product().id);
     },
@@ -120,8 +93,8 @@ models.Orderline = models.Orderline.extend({
         }
         _super_orderline.set_quantity.apply(this,arguments);
     },
-    can_be_merged_with: function(orderline) { 
-        return (!this.mp_skip) && 
+    can_be_merged_with: function(orderline) {
+        return (!this.mp_skip) &&
                (!orderline.mp_skip) &&
                _super_orderline.can_be_merged_with.apply(this,arguments);
     },
@@ -151,36 +124,6 @@ models.Orderline = models.Orderline.extend({
     },
 });
 
-screens.OrderWidget.include({
-    render_orderline: function(orderline) {
-        var node = this._super(orderline);
-        if (this.pos.config.iface_printers) {
-            if (orderline.mp_skip) {
-                node.classList.add('skip');
-            } else if (orderline.mp_dirty) {
-                node.classList.add('dirty');
-            }
-        }
-        return node;
-    },
-    click_line: function(line, event) {
-        if (!this.pos.config.iface_printers) {
-            this._super(line, event);
-        } else if (this.pos.get_order().selected_orderline !== line) {
-            this.mp_dbclk_time = (new Date()).getTime();
-        } else if (!this.mp_dbclk_time) {
-            this.mp_dbclk_time = (new Date()).getTime();
-        } else if (this.mp_dbclk_time + 500 > (new Date()).getTime()) {
-            line.set_skip(!line.mp_skip);
-            this.mp_dbclk_time = 0;
-        } else {
-            this.mp_dbclk_time = (new Date()).getTime();
-        }
-
-        this._super(line, event);
-    },
-});
-
 var _super_order = models.Order.prototype;
 models.Order = models.Order.extend({
     build_line_resume: function(){
@@ -189,22 +132,16 @@ models.Order = models.Order.extend({
             if (line.mp_skip) {
                 return;
             }
-            var line_hash = line.get_line_diff_hash();
             var qty  = Number(line.get_quantity());
             var note = line.get_note();
             var product_id = line.get_product().id;
-
-            if (typeof resume[line_hash] === 'undefined') {
-                resume[line_hash] = {
-                    qty: qty,
-                    note: note,
-                    product_id: product_id,
-                    product_name_wrapped: line.generate_wrapped_product_name(),
-                };
-            } else {
-                resume[line_hash].qty += qty;
-            }
-
+            var product_resume = product_id in resume ? resume[product_id] : {
+                product_name_wrapped: line.generate_wrapped_product_name(),
+                qties: {},
+            };
+            if (note in product_resume['qties']) product_resume['qties'][note] += qty;
+            else product_resume['qties'][note] = qty;
+            resume[product_id] = product_resume;
         });
         return resume;
     },
@@ -221,49 +158,55 @@ models.Order = models.Order.extend({
         var json        = this.export_as_JSON();
         var add = [];
         var rem = [];
-        var line_hash;
+        var pid, note;
 
-        for ( line_hash in current_res) {
-            var curr = current_res[line_hash];
-            var old  = old_res[line_hash];
+        for (pid in current_res) {
+            for (note in current_res[pid]['qties']) {
+                var curr = current_res[pid];
+                var old  = old_res[pid] || {};
+                var found = pid in old_res && note in old_res[pid]['qties'];
 
-            if (typeof old === 'undefined') {
-                add.push({
-                    'id':       curr.product_id,
-                    'name':     this.pos.db.get_product_by_id(curr.product_id).display_name,
-                    'name_wrapped': curr.product_name_wrapped,
-                    'note':     curr.note,
-                    'qty':      curr.qty,
-                });
-            } else if (old.qty < curr.qty) {
-                add.push({
-                    'id':       curr.product_id,
-                    'name':     this.pos.db.get_product_by_id(curr.product_id).display_name,
-                    'name_wrapped': curr.product_name_wrapped,
-                    'note':     curr.note,
-                    'qty':      curr.qty - old.qty,
-                });
-            } else if (old.qty > curr.qty) {
-                rem.push({
-                    'id':       curr.product_id,
-                    'name':     this.pos.db.get_product_by_id(curr.product_id).display_name,
-                    'name_wrapped': curr.product_name_wrapped,
-                    'note':     curr.note,
-                    'qty':      old.qty - curr.qty,
-                });
+                if (!found) {
+                    add.push({
+                        'id':       pid,
+                        'name':     this.pos.db.get_product_by_id(pid).display_name,
+                        'name_wrapped': curr.product_name_wrapped,
+                        'note':     note,
+                        'qty':      curr['qties'][note],
+                    });
+                } else if (old['qties'][note] < curr['qties'][note]) {
+                    add.push({
+                        'id':       pid,
+                        'name':     this.pos.db.get_product_by_id(pid).display_name,
+                        'name_wrapped': curr.product_name_wrapped,
+                        'note':     note,
+                        'qty':      curr['qties'][note] - old['qties'][note],
+                    });
+                } else if (old['qties'][note] > curr['qties'][note]) {
+                    rem.push({
+                        'id':       pid,
+                        'name':     this.pos.db.get_product_by_id(pid).display_name,
+                        'name_wrapped': curr.product_name_wrapped,
+                        'note':     note,
+                        'qty':      old['qties'][note] - curr['qties'][note],
+                    });
+                }
             }
         }
 
-        for (line_hash in old_res) {
-            if (typeof current_res[line_hash] === 'undefined') {
-                var old = old_res[line_hash];
-                rem.push({
-                    'id':       old.product_id,
-                    'name':     this.pos.db.get_product_by_id(old.product_id).display_name,
-                    'name_wrapped': old.product_name_wrapped,
-                    'note':     old.note,
-                    'qty':      old.qty, 
-                });
+        for (pid in old_res) {
+            for (note in old_res[pid]['qties']) {
+                var found = pid in current_res && note in current_res[pid]['qties'];
+                if (!found) {
+                    var old = old_res[pid];
+                    rem.push({
+                        'id':       pid,
+                        'name':     this.pos.db.get_product_by_id(pid).display_name,
+                        'name_wrapped': old.product_name_wrapped,
+                        'note':     note,
+                        'qty':      old['qties'][note],
+                    });
+                }
             }
         }
 
@@ -275,7 +218,7 @@ models.Order = models.Order.extend({
 
             var _add = [];
             var _rem = [];
-            
+
             for(var i = 0; i < add.length; i++){
                 if(self.pos.db.is_product_in_category(categories,add[i].id)){
                     _add.push(add[i]);
@@ -308,17 +251,22 @@ models.Order = models.Order.extend({
                 'minutes': minutes,
             },
         };
-        
+
     },
-    printChanges: function(){
+    printChanges: async function(){
         var printers = this.pos.printers;
+        let isPrintSuccessful = true;
         for(var i = 0; i < printers.length; i++){
             var changes = this.computeChanges(printers[i].config.product_categories_ids);
             if ( changes['new'].length > 0 || changes['cancelled'].length > 0){
                 var receipt = QWeb.render('OrderChangeReceipt',{changes:changes, widget:this});
-                printers[i].print(receipt);
+                const result = await printers[i].print_receipt(receipt);
+                if (!result.successful) {
+                    isPrintSuccessful = false;
+                }
             }
         }
+        return isPrintSuccessful;
     },
     hasChangesToPrint: function(){
         var printers = this.pos.printers;
@@ -341,46 +289,14 @@ models.Order = models.Order.extend({
     },
     export_as_JSON: function(){
         var json = _super_order.export_as_JSON.apply(this,arguments);
-        json.multiprint_resume = this.saved_resume;
+        json.multiprint_resume = JSON.stringify(this.saved_resume);
         return json;
     },
     init_from_JSON: function(json){
         _super_order.init_from_JSON.apply(this,arguments);
-        this.saved_resume = json.multiprint_resume;
+        this.saved_resume = json.multiprint_resume && JSON.parse(json.multiprint_resume);
     },
 });
 
-var SubmitOrderButton = screens.ActionButtonWidget.extend({
-    'template': 'SubmitOrderButton',
-    button_click: function(){
-        var order = this.pos.get_order();
-        if(order.hasChangesToPrint()){
-            order.printChanges();
-            order.saveChanges();
-        }
-    },
-});
-
-screens.define_action_button({
-    'name': 'submit_order',
-    'widget': SubmitOrderButton,
-    'condition': function() {
-        return this.pos.printers.length;
-    },
-});
-
-screens.OrderWidget.include({
-    update_summary: function(){
-        this._super();
-        var changes = this.pos.get_order().hasChangesToPrint();
-        var skipped = changes ? false : this.pos.get_order().hasSkippedChanges();
-        var buttons = this.getParent().action_buttons;
-
-        if (buttons && buttons.submit_order) {
-            buttons.submit_order.highlight(changes);
-            buttons.submit_order.altlight(skipped);
-        }
-    },
-});
 
 });

@@ -3,7 +3,7 @@
 
 {
     'name': 'Test Module',
-    'category': 'Website',
+    'category': 'Website/Website',
     'summary': 'Custom',
     'version': '1.0',
     'description': """
@@ -15,4 +15,5 @@
     ],
     'installable': True,
     'application': True,
+    'license': 'LGPL-3',
 }

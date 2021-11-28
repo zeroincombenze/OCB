@@ -13,11 +13,11 @@ Odoo Web Editor widget.
     'data': [
         'security/ir.model.access.csv',
         'views/editor.xml',
-        'views/iframe.xml',
         'views/snippets.xml',
     ],
     'qweb': [
         'static/src/xml/*.xml',
     ],
-    'auto_install': True
+    'auto_install': True,
+    'license': 'LGPL-3',
 }
