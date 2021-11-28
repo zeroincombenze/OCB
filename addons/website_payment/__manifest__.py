@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': 'Website Payment',
-    'category': 'Hidden',
-    'summary': 'Payment integration with website',
+    'name': 'Payment: Website Integration',
+    'category': 'Website',
+    'summary': 'Payment: Website Integration',
     'version': '1.0',
-    'description': """
-This is a bridge module which integrates payment acquirers with Website app.
-    """,
+    'description': """Bridge module for acquirers and website.""",
     'depends': [
         'website',
         'payment',
-        'portal',
+        'website_portal',
     ],
     'data': [
-        'views/payment_acquirer.xml',
+        'views/website_payment_view.xml',
+        'views/website_payment_templates.xml',
+        'views/res_config_view.xml',
     ],
     'auto_install': False,
-    'license': 'LGPL-3',
 }

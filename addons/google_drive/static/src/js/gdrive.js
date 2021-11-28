@@ -1,93 +1,80 @@
-odoo.define('google_drive.ActionMenus', function (require) {
-    "use strict";
+odoo.define('google_drive.google_drive', function (require) {
+"use strict";
 
-    const ActionMenus = require('web.ActionMenus');
-    const DropdownMenuItem = require('web.DropdownMenuItem');
+var data = require('web.data');
+var Model = require('web.DataModel');
+var Sidebar = require('web.Sidebar');
 
-    /**
-     * Fetches the google drive action menu item props. To do so this function
-     * is given its parent props and env, as well as the RPC function bound to
-     * the parent context.
-     * Note that we use the bound RPC to benefit from its added behaviour (see
-     * web/component_extension).
-     * @param {Object} props
-     * @param {number[]} props.activeIds
-     * @param {Object} props.context
-     * @param {Object} env
-     * @param {Object} env.action The current action
-     * @param {Object} env.view The current view
-     * @param {Function} rpc Bound to the ActionMenus context
-     * @returns {Object | boolean} item props or false
-     */
-    async function googleDrivePropsGetter(props, env, rpc) {
-        const [activeId] = props.activeIds;
-        const { context } = props;
-        if (env.view.type !== "form" || !activeId) {
-            return false;
+Sidebar.include({
+    init: function () {
+        var self = this;
+        var ids;
+        this._super.apply(this, arguments);
+        var view = self.getParent();
+        var result;
+        if (view.fields_view && view.fields_view.type === "form") {
+            ids = [];
+            view.on("load_record", self, function (r) {
+                ids = [r.id];
+                self.add_gdoc_items(view, r.id);
+            });
         }
-        const items = await rpc({
-            args: [env.action.res_model, activeId],
-            context,
-            method: 'get_google_drive_config',
-            model: 'google.drive.config',
+    },
+    add_gdoc_items: function (view, res_id) {
+        var self = this;
+        var gdoc_item = _.indexOf(_.pluck(self.items.other, 'classname'), 'oe_share_gdoc');
+        if (gdoc_item !== -1) {
+            self.items.other.splice(gdoc_item, 1);
+        }
+        if (res_id) {
+            view.sidebar_eval_context().done(function (context) {
+                var ds = new data.DataSet(this, 'google.drive.config', context);
+                ds.call('get_google_drive_config', [view.dataset.model, res_id, context]).done(function (r) {
+                    if (!_.isEmpty(r)) {
+                        _.each(r, function (res) {
+                            var already_there = false;
+                            for (var i = 0;i < self.items.other.length;i++){
+                                if (self.items.other[i].classname === "oe_share_gdoc" && self.items.other[i].label.indexOf(res.name) > -1){
+                                    already_there = true;
+                                    break;
+                                }
+                            }
+                            if (!already_there){
+                                self.add_items('other', [{
+                                        label: res.name,
+                                        config_id: res.id,
+                                        res_id: res_id,
+                                        res_model: view.dataset.model,
+                                        callback: self.on_google_doc,
+                                        classname: 'oe_share_gdoc'
+                                    },
+                                ]);
+                            }
+                        });
+                    }
+                });
+            });
+        }
+    },
+
+    fetch: function (model, fields, domain, ctx) {
+        return new Model(model).query(fields).filter(domain).context(ctx).all();
+    },
+
+    on_google_doc: function (doc_item) {
+        var self = this;
+        this.config = doc_item;
+        var loaded = this.fetch('google.drive.config', ['google_drive_resource_id', 'google_drive_client_id'], [['id', '=', doc_item.config_id]])
+            .then(function (configs) {
+            var ds = new data.DataSet(self, 'google.drive.config');
+            ds.call('get_google_drive_url', [doc_item.config_id, doc_item.res_id,configs[0].google_drive_resource_id, self.dataset.context]).done(function (url) {
+                if (url){
+                    window.open(url, '_blank');
+                }
+            });
         });
-        return Boolean(items.length) && { activeId, context, items };
-    }
+    },
 
-    /**
-     * Google drive menu
-     *
-     * This component is actually a set of list items used to enrich the ActionMenus's
-     * "Action" dropdown list (@see ActionMenus). It will fetch
-     * the current user's google drive configuration and set the result as its
-     * items if any.
-     * @extends DropdownMenuItem
-     */
-    class GoogleDriveMenu extends DropdownMenuItem {
+});
 
-        //---------------------------------------------------------------------
-        // Handlers
-        //---------------------------------------------------------------------
-
-        /**
-         * @private
-         * @param {number} itemId
-         * @returns {Promise}
-         */
-        async _onGoogleDocItemClick(itemId) {
-            const resID = this.props.activeId;
-            const domain = [['id', '=', itemId]];
-            const fields = ['google_drive_resource_id', 'google_drive_client_id'];
-            const configs = await this.rpc({
-                args: [domain, fields],
-                method: 'search_read',
-                model: 'google.drive.config',
-            });
-            const url = await this.rpc({
-                args: [itemId, resID, configs[0].google_drive_resource_id],
-                context: this.props.context,
-                method: 'get_google_drive_url',
-                model: 'google.drive.config',
-            });
-            if (url) {
-                window.open(url, '_blank');
-            }
-        }
-    }
-    GoogleDriveMenu.props = {
-        activeId: Number,
-        context: Object,
-        items: {
-            type: Array,
-            element: Object,
-        },
-    };
-    GoogleDriveMenu.template = 'GoogleDriveMenu';
-
-    ActionMenus.registry.add('google-drive-menu', {
-        Component: GoogleDriveMenu,
-        getProps: googleDrivePropsGetter,
-    });
-
-    return GoogleDriveMenu;
 });

@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 import argparse
 import glob
 import itertools
@@ -62,9 +61,9 @@ class Start(Command):
         try:
             _create_empty_database(args.db_name)
             odoo.tools.config['init']['base'] = True
-        except DatabaseExists as e:
+        except DatabaseExists, e:
             pass
-        except Exception as e:
+        except Exception, e:
             die("Could not create database `%s`. (%s)" % (args.db_name, e))
 
         if '--db-filter' not in cmdargs:
@@ -80,5 +79,5 @@ class Start(Command):
         main(cmdargs)
 
 def die(message, code=1):
-    print(message, file=sys.stderr)
+    print >>sys.stderr, message
     sys.exit(code)

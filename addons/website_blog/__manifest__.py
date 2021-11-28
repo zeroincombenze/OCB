@@ -3,21 +3,22 @@
 
 {
     'name': 'Blogs',
-    'category': 'Website/Website',
-    'sequence': 200,
+    'category': 'Website',
+    'sequence': 140,
     'website': 'https://www.odoo.com/page/blog-engine',
-    'summary': 'Publish blog posts, announces, news',
+    'summary': 'News, Blogs, Announces, Discussions',
     'version': '1.0',
-    'description': "",
+    'description': """
+Odoo Blog
+============
+
+        """,
     'depends': ['website_mail', 'website_partner'],
     'data': [
         'data/website_blog_data.xml',
         'views/website_blog_views.xml',
-        'views/website_blog_components.xml',
-        'views/website_blog_posts_loop.xml',
         'views/website_blog_templates.xml',
-        'views/snippets/snippets.xml',
-        'views/snippets/s_latest_posts.xml',
+        'views/snippets.xml',
         'security/ir.model.access.csv',
         'security/website_blog_security.xml',
     ],
@@ -30,5 +31,4 @@
     ],
     'installable': True,
     'application': True,
-    'license': 'LGPL-3',
 }

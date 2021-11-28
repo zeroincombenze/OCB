@@ -1,63 +1,56 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* payment_adyen
+# * payment_adyen
 # 
 # Translators:
-# ExcaliberX <excaliberx@gmail.com>, 2020
-# Yihya Hugirat <hugirat@gmail.com>, 2020
-# ZVI BLONDER <ZVIBLONDER@gmail.com>, 2020
-# 
+# ExcaliberX <excaliberx@gmail.com>, 2017
+# Martin Trigaux <mat@odoo.com>, 2017
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server saas~13.5\n"
+"Project-Id-Version: Odoo Server 10.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-01 07:28+0000\n"
-"PO-Revision-Date: 2020-09-07 08:15+0000\n"
-"Last-Translator: ZVI BLONDER <ZVIBLONDER@gmail.com>, 2020\n"
+"POT-Creation-Date: 2016-09-07 08:57+0000\n"
+"PO-Revision-Date: 2016-09-07 08:57+0000\n"
+"Last-Translator: Martin Trigaux <mat@odoo.com>, 2017\n"
 "Language-Team: Hebrew (https://www.transifex.com/odoo/teams/41243/he/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Language: he\n"
-"Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % 1 == 0) ? 1: (n % 10 == 0 && n % 1 == 0 && n > 10) ? 2 : 3;\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: payment_adyen
-#: code:addons/payment_adyen/models/payment.py:0
+#: code:addons/payment_adyen/models/payment.py:181
 #, python-format
 msgid "; multiple order found"
-msgstr "נמצאו הזמנות מרובות; "
+msgstr ""
 
 #. module: payment_adyen
-#: code:addons/payment_adyen/models/payment.py:0
+#: code:addons/payment_adyen/models/payment.py:179
 #, python-format
 msgid "; no order found"
-msgstr "לא נמצאה הזמנה; "
+msgstr ""
 
 #. module: payment_adyen
-#: model:ir.model.fields.selection,name:payment_adyen.selection__payment_acquirer__provider__adyen
-msgid "Adyen"
-msgstr "Adyen"
-
-#. module: payment_adyen
-#: code:addons/payment_adyen/models/payment.py:0
+#: code:addons/payment_adyen/models/payment.py:229
 #, python-format
 msgid "Adyen: feedback error"
 msgstr ""
 
 #. module: payment_adyen
-#: code:addons/payment_adyen/models/payment.py:0
+#: code:addons/payment_adyen/models/payment.py:191
 #, python-format
 msgid "Adyen: invalid merchantSig, received %s, computed %s"
 msgstr ""
 
 #. module: payment_adyen
-#: code:addons/payment_adyen/models/payment.py:0
+#: code:addons/payment_adyen/models/payment.py:177
 #, python-format
 msgid "Adyen: received data for reference %s"
 msgstr ""
 
 #. module: payment_adyen
-#: code:addons/payment_adyen/models/payment.py:0
+#: code:addons/payment_adyen/models/payment.py:170
 #, python-format
 msgid ""
 "Adyen: received data with missing reference (%s) or missing pspReference "
@@ -65,37 +58,19 @@ msgid ""
 msgstr ""
 
 #. module: payment_adyen
-#: model:ir.model.fields,field_description:payment_adyen.field_payment_acquirer__display_name
-#: model:ir.model.fields,field_description:payment_adyen.field_payment_transaction__display_name
-msgid "Display Name"
-msgstr "שם תצוגה"
-
-#. module: payment_adyen
-#: model_terms:ir.ui.view,arch_db:payment_adyen.acquirer_form_adyen
+#: model:ir.ui.view,arch_db:payment_adyen.acquirer_form_adyen
 msgid "How to configure your Adyen account?"
 msgstr ""
 
 #. module: payment_adyen
-#: model:ir.model.fields,field_description:payment_adyen.field_payment_acquirer__id
-#: model:ir.model.fields,field_description:payment_adyen.field_payment_transaction__id
-msgid "ID"
-msgstr "מזהה"
-
-#. module: payment_adyen
-#: model:ir.model.fields,field_description:payment_adyen.field_payment_acquirer____last_update
-#: model:ir.model.fields,field_description:payment_adyen.field_payment_transaction____last_update
-msgid "Last Modified on"
-msgstr "שונה לאחרונה ב - "
-
-#. module: payment_adyen
-#: model:ir.model.fields,field_description:payment_adyen.field_payment_acquirer__adyen_merchant_account
+#: model:ir.model.fields,field_description:payment_adyen.field_payment_acquirer_adyen_merchant_account
 msgid "Merchant Account"
 msgstr ""
 
 #. module: payment_adyen
 #: model:ir.model,name:payment_adyen.model_payment_acquirer
 msgid "Payment Acquirer"
-msgstr "ספק שירות תשלומים"
+msgstr "תשלום נקלט"
 
 #. module: payment_adyen
 #: model:ir.model,name:payment_adyen.model_payment_transaction
@@ -103,16 +78,11 @@ msgid "Payment Transaction"
 msgstr "עסקת תשלום"
 
 #. module: payment_adyen
-#: model:ir.model.fields,field_description:payment_adyen.field_payment_acquirer__provider
-msgid "Provider"
-msgstr "ספק"
-
-#. module: payment_adyen
-#: model:ir.model.fields,field_description:payment_adyen.field_payment_acquirer__adyen_skin_code
+#: model:ir.model.fields,field_description:payment_adyen.field_payment_acquirer_adyen_skin_code
 msgid "Skin Code"
 msgstr ""
 
 #. module: payment_adyen
-#: model:ir.model.fields,field_description:payment_adyen.field_payment_acquirer__adyen_skin_hmac_key
+#: model:ir.model.fields,field_description:payment_adyen.field_payment_acquirer_adyen_skin_hmac_key
 msgid "Skin HMAC Key"
 msgstr ""

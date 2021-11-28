@@ -7,29 +7,18 @@
     'name': 'Greece - Accounting',
     'author': 'P. Christeas, OpenERP SA.',
     'website': 'http://openerp.hellug.gr/',
-    'category': 'Accounting/Localizations/Account Charts',
+    'category': 'Localization',
     'description': """
 This is the base module to manage the accounting chart for Greece.
 ==================================================================
 
 Greek accounting chart and localization.
     """,
-    'depends': [
-        'account',
-        'base_iban',
-        'base_vat',
-    ],
+    'depends': ['base', 'account', 'base_iban', 'base_vat'],
     'data': [ 'data/account_type_data.xml',
               'data/l10n_gr_chart_data.xml',
-              'data/account.account.template.csv',
               'data/account_chart_template_data.xml',
-              'data/account_data.xml',
-              'data/account_tax_report_data.xml',
               'data/account_tax_data.xml',
-              'data/account_chart_template_configure_data.xml'
+              'data/account_chart_template_data.yml'
     ],
-    'demo': [
-        'demo/demo_company.xml',
-    ],
-    'license': 'LGPL-3',
 }

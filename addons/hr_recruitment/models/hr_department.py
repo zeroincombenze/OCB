@@ -13,6 +13,7 @@ class HrDepartment(models.Model):
     expected_employee = fields.Integer(
         compute='_compute_recruitment_stats', string='Expected Employee')
 
+    @api.multi
     def _compute_new_applicant_count(self):
         applicant_data = self.env['hr.applicant'].read_group(
             [('department_id', 'in', self.ids), ('stage_id.sequence', '<=', '1')],
@@ -21,6 +22,7 @@ class HrDepartment(models.Model):
         for department in self:
             department.new_applicant_count = result.get(department.id, 0)
 
+    @api.multi
     def _compute_recruitment_stats(self):
         job_data = self.env['hr.job'].read_group(
             [('department_id', 'in', self.ids)],

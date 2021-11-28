@@ -1,1 +1,1 @@
-from . import project_report
+import project_report

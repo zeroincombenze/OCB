@@ -1,71 +1,49 @@
 odoo.define('website_mail_channel', function (require) {
-'use strict';
+"use strict";
 
-var publicWidget = require('web.public.widget');
+var ajax = require('web.ajax');
 
-publicWidget.registry.websiteMailChannel = publicWidget.Widget.extend({
-    selector: '#wrapwrap',
-    events: {
-        'click .o_mg_link_hide': '_onHideLinkClick',
-        'click .o_mg_link_show': '_onShowLinkClick',
-        'click button.o_mg_read_more': '_onReadMoreClick',
-    },
+$(document).ready(function () {
 
-    //--------------------------------------------------------------------------
-    // Handlers
-    //--------------------------------------------------------------------------
-
-    /**
-     * @private
-     * @param {Event} ev
-     */
-    _onHideLinkClick: function (ev) {
+    $('.o_mg_link_hide').on('click', function (ev) {
         ev.preventDefault();
-        ev.stopPropagation();
         var $link = $(ev.currentTarget);
         var $container = $link.parents('div').first();
         $container.find('.o_mg_link_hide').first().hide();
         $container.find('.o_mg_link_show').first().show();
         $container.find('.o_mg_link_content').first().show();
-    },
-    /**
-     * @private
-     * @param {Event} ev
-     */
-    _onShowLinkClick: function (ev) {
+        return false;
+    });
+
+    $('.o_mg_link_show').on('click', function (ev) {
         ev.preventDefault();
-        ev.stopPropagation();
         var $link = $(ev.currentTarget);
         var $container = $link.parents('div').first();
         $container.find('.o_mg_link_hide').first().show();
         $container.find('.o_mg_link_show').first().hide();
         $container.find('.o_mg_link_content').first().hide();
-    },
-    /**
-     * @private
-     * @param {Event} ev
-     */
-     _onReadMoreClick: function (ev) {
+        return false;
+    });
+
+    $('body').on('click', 'button.o_mg_read_more', function (ev) {
         var $link = $(ev.target);
-        this._rpc({
-            route: $link.data('href'),
-            params: {
-                last_displayed_id: $link.data('msg-id'),
-            },
+        return ajax.jsonRpc($link.data('href'), 'call', {
+            'last_displayed_id': $link.data('msg-id'),
         }).then(function (data) {
-            if (!data) {
-                return;
+            if (! data) {
+                return true;
             }
-            var $threadContainer = $link.parents('.o_mg_replies').first().find('ul.list-unstyled');
-            if ($threadContainer) {
-                var $lastMsg = $threadContainer.find('li.media').last();
-                $(data).find('li.media').insertAfter($lastMsg);
-                $(data).find('.o_mg_read_more').parent().appendTo($threadContainer);
+            var $thread_container = $link.parents('.o_mg_replies').first().find('ul.media-list');
+            if ($thread_container) {
+                var $last_msg = $thread_container.find('li.media').last();
+                $(data).find('li.media').insertAfter($last_msg);
+                $(data).find('p.well').appendTo($thread_container);
             }
-            var $showMore = $link.parent();
-            $showMore.remove();
-            return;
+            var $show_more = $link.parents('p.well').first();
+            $show_more.remove();
+            return true;
         });
-     },
+    });
 });
+
 });

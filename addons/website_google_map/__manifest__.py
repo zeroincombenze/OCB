@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 {
-    'name': 'Google Maps',
-    'category': 'Website/Website',
-    'summary': 'Show your company address on Google Maps',
+    'name': 'Website Google Map',
+    'category': 'Website',
+    'summary': '',
     'version': '1.0',
     'description': """
-Show your company address/partner address on Google Maps. Configure an API key in the Website settings.
-    """,
+Odoo Website Google Map
+==========================
+
+        """,
     'depends': ['base_geolocalize', 'website_partner'],
     'data': [
         'views/google_map_templates.xml',
     ],
     'installable': True,
-    'license': 'LGPL-3',
 }

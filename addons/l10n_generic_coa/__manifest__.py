@@ -4,7 +4,7 @@
 {
     'name': 'Generic - Accounting',
     'version': '1.1',
-    'category': 'Accounting/Localizations/Account Charts',
+    'category': 'Localization',
     'description': """
 This is the base module to manage the generic accounting chart in Odoo.
 ==============================================================================
@@ -15,15 +15,16 @@ Install some generic chart of accounts.
         'account',
     ],
     'data': [
-        'data/l10n_generic_coa.xml',
-        'data/account.account.template.csv',
-        'data/l10n_generic_coa_post.xml',
+        'data/l10n_generic_coa_chart_data.xml',
+        'data/account_chart_template_data.yml',
+    ],
+    'test': [
+        '../account/test/account_bank_statement.yml',
+        '../account/test/account_invoice_state.yml',
     ],
     'demo': [
-        'demo/account_bank_statement_demo.xml',
-        'demo/account_invoice_demo.xml',
-        'demo/account_reconcile_model.xml',
+        '../account/demo/account_bank_statement.yml',
+        '../account/demo/account_invoice_demo.yml',
     ],
-    'uninstall_hook': 'uninstall_hook',
-    'license': 'LGPL-3',
+    'website': 'https://www.odoo.com/page/accounting',
 }

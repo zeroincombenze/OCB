@@ -5,7 +5,7 @@
 {
     'name': 'Delivery Costs',
     'version': '1.0',
-    'category': 'Inventory/Delivery',
+    'category': 'Stock',
     'description': """
 Allows you to add delivery methods in sale orders and picking.
 ==============================================================
@@ -13,24 +13,22 @@ Allows you to add delivery methods in sale orders and picking.
 You can define your own carrier for prices. When creating
 invoices from picking, the system is able to add and compute the shipping line.
 """,
-    'depends': ['sale_stock', 'sale_management'],
+    'depends': ['sale_stock'],
     'data': [
         'security/ir.model.access.csv',
-        'security/delivery_carrier_security.xml',
-        'views/product_packaging_view.xml',
-        'views/product_template_view.xml',
+        'security/delivery_security.xml',
         'views/delivery_view.xml',
         'views/partner_view.xml',
-        'views/delivery_portal_template.xml',
+        'views/product_template_view.xml',
+        'views/product_packaging_view.xml',
         'data/delivery_data.xml',
         'views/report_shipping.xml',
-        'views/report_deliveryslip.xml',
-        'views/report_package_barcode.xml',
-        'views/res_config_settings_views.xml',
-        'wizard/choose_delivery_package_views.xml',
-        'wizard/choose_delivery_carrier_views.xml',
+        'views/report_deliveryslip.xml'
+
     ],
     'demo': ['data/delivery_demo.xml'],
+    'test': [
+        '../account/test/account_minimal_test.xml',
+    ],
     'installable': True,
-    'license': 'LGPL-3',
 }

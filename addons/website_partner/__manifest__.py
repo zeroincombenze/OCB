@@ -3,12 +3,10 @@
 
 {
     'name': 'Website Partner',
-    'category': 'Hidden',
-    'summary': 'Partner module for website',
+    'category': 'Website',
+    'summary': 'Partner Module for Website',
     'version': '0.1',
-    'description': """
-This is a base module. It holds website-related stuff for Contact model (res.partner).
-    """,
+    'description': """Base module holding website-related stuff for partner model""",
     'depends': ['website'],
     'data': [
         'views/res_partner_views.xml',
@@ -20,5 +18,4 @@ This is a base module. It holds website-related stuff for Contact model (res.par
     ],
     'installable': True,
     'auto_install': False,
-    'license': 'LGPL-3',
 }

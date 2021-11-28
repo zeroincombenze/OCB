@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import werkzeug.urls
+import urlparse
+import urllib2
 import json
 
-import requests
-
 from odoo import api, fields, models
-from odoo.exceptions import AccessDenied, UserError
+from odoo.exceptions import AccessDenied
 from odoo.addons.auth_signup.models.res_users import SignupError
 
 from odoo.addons import base
-base.models.res_users.USER_PRIVATE_FIELDS.append('oauth_access_token')
+base.res.res_users.USER_PRIVATE_FIELDS.append('oauth_access_token')
 
 class ResUsers(models.Model):
     _inherit = 'res.users'
@@ -25,7 +26,14 @@ class ResUsers(models.Model):
 
     @api.model
     def _auth_oauth_rpc(self, endpoint, access_token):
-        return requests.get(endpoint, params={'access_token': access_token}).json()
+        params = werkzeug.url_encode({'access_token': access_token})
+        if urlparse.urlparse(endpoint)[4]:
+            url = endpoint + '&' + params
+        else:
+            url = endpoint + '?' + params
+        f = urllib2.urlopen(url)
+        response = f.read()
+        return json.loads(response)
 
     @api.model
     def _auth_oauth_validate(self, provider, access_token):
@@ -73,7 +81,7 @@ class ResUsers(models.Model):
             assert len(oauth_user) == 1
             oauth_user.write({'oauth_access_token': params['access_token']})
             return oauth_user.login
-        except AccessDenied as access_denied_exception:
+        except AccessDenied, access_denied_exception:
             if self.env.context.get('no_user_creation'):
                 return None
             state = json.loads(params['state'])
@@ -82,7 +90,7 @@ class ResUsers(models.Model):
             try:
                 _, login, _ = self.signup(values, token)
                 return login
-            except (SignupError, UserError):
+            except SignupError:
                 raise access_denied_exception
 
     @api.model
@@ -109,16 +117,14 @@ class ResUsers(models.Model):
         # return user credentials
         return (self.env.cr.dbname, login, access_token)
 
-    def _check_credentials(self, password, env):
+    @api.model
+    def check_credentials(self, password):
         try:
-            return super(ResUsers, self)._check_credentials(password, env)
+            return super(ResUsers, self).check_credentials(password)
         except AccessDenied:
-            passwd_allowed = env['interactive'] or not self.env.user._rpc_api_keys_only()
-            if passwd_allowed and self.env.user.active:
-                res = self.sudo().search([('id', '=', self.env.uid), ('oauth_access_token', '=', password)])
-                if res:
-                    return
-            raise
+            res = self.sudo().search([('id', '=', self.env.uid), ('oauth_access_token', '=', password)])
+            if not res:
+                raise
 
     def _get_session_token_fields(self):
         return super(ResUsers, self)._get_session_token_fields() | {'oauth_access_token'}

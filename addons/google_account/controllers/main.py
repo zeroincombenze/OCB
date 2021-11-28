@@ -10,7 +10,7 @@ from odoo.http import request
 
 class GoogleAuth(http.Controller):
 
-    @http.route('/google_account/authentication', type='http', auth="public")
+    @http.route('/google_account/authentication', type='http', auth="none")
     def oauth2callback(self, **kw):
         """ This route/function is called by Google when user Accept/Refuse the consent of Google """
         state = json.loads(kw['state'])
@@ -20,9 +20,7 @@ class GoogleAuth(http.Controller):
 
         with registry(dbname).cursor() as cr:
             if kw.get('code'):
-                access_token, refresh_token, ttl = request.env['google.service']._get_google_tokens(kw['code'], service)
-                # LUL TODO only defined in google_calendar
-                request.env.user._set_auth_tokens(access_token, refresh_token, ttl)
+                request.env(cr, request.session.uid)['google.%s' % service].set_all_tokens(kw['code'])
                 return redirect(url_return)
             elif kw.get('error'):
                 return redirect("%s%s%s" % (url_return, "?error=", kw['error']))

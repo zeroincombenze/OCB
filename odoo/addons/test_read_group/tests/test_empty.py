@@ -46,7 +46,7 @@ class TestEmptyDate(common.TransactionCase):
 
         gb = self.Model.read_group([], ['date', 'value'], ['date'], lazy=False)
 
-        self.assertSequenceEqual(sorted(gb, key=lambda r: r['date'] or ''), [{
+        self.assertSequenceEqual(sorted(gb, key=lambda r: r['date']), [{
             '__count': 2,
             '__domain': [('date', '=', False)],
             'date': False,

@@ -5,7 +5,6 @@ Mimetypes-related utilities
 # TODO: reexport stdlib mimetypes?
 """
 import collections
-import functools
 import io
 import logging
 import re
@@ -34,7 +33,7 @@ def _check_ooxml(data):
 
         # then there is a directory whose name denotes the type of the file:
         # word, pt (powerpoint) or xl (excel)
-        for dirname, mime in _ooxml_dirs.items():
+        for dirname, mime in _ooxml_dirs.iteritems():
             if any(entry.startswith(dirname) for entry in filenames):
                 return mime
 
@@ -50,20 +49,13 @@ _mime_validator = re.compile(r"""
     (?:\+[\w-]+)? # optional structured syntax specifier
 """, re.VERBOSE)
 def _check_open_container_format(data):
-    # Open Document Format for Office Applications (OpenDocument) Version 1.2
-    #
-    # Part 3: Packages
-    # 3 Packages
-    # 3.3 MIME Media Type
     with io.BytesIO(data) as f, zipfile.ZipFile(f) as z:
-        # If a MIME media type for a document exists, then an OpenDocument
-        # package should contain a file with name "mimetype".
+        # OCF zip files must contain a ``mimetype`` entry
         if 'mimetype' not in z.namelist():
             return False
 
-        # The content of this file shall be the ASCII encoded MIME media type
-        # associated with the document.
-        marcel = z.read('mimetype').decode('ascii')
+        # it holds the exact mimetype for the file
+        marcel = z.read('mimetype')
         # check that it's not too long (RFC6838 § 4.2 restricts type and
         # subtype to 127 characters each + separator, strongly recommends
         # limiting them to 64 but does not require it) and that it looks a lot
@@ -73,11 +65,11 @@ def _check_open_container_format(data):
 
         return False
 
-_xls_pattern = re.compile(b"""
+_xls_pattern = re.compile("""
     \x09\x08\x10\x00\x00\x06\x05\x00
   | \xFD\xFF\xFF\xFF(\x10|\x1F|\x20|"|\\#|\\(|\\))
 """, re.VERBOSE)
-_ppt_pattern = re.compile(b"""
+_ppt_pattern = re.compile("""
     \x00\x6E\x1E\xF0
   | \x0F\x00\xE8\x03
   | \xA0\x46\x1D\xF0
@@ -93,22 +85,15 @@ def _check_olecf(data):
     ignore that.
     """
     offset = 0x200
-    if data.startswith(b'\xEC\xA5\xC1\x00', offset):
+    if data.startswith('\xEC\xA5\xC1\x00', offset):
         return 'application/msword'
     # the _xls_pattern stuff doesn't seem to work correctly (the test file
     # only has a bunch of \xf* at offset 0x200), that apparently works
-    elif b'Microsoft Excel' in data:
+    elif 'Microsoft Excel' in data:
         return 'application/vnd.ms-excel'
     elif _ppt_pattern.match(data, offset):
         return 'application/vnd.ms-powerpoint'
     return False
-
-
-def _check_svg(data):
-    """This simply checks the existence of the opening and ending SVG tags"""
-    if b'<svg' in data and b'/svg>' in data:
-        return 'image/svg+xml'
-
 
 # for "master" formats with many subformats, discriminants is a list of
 # functions, tried in order and the first non-falsy value returned is the
@@ -117,22 +102,18 @@ def _check_svg(data):
 _Entry = collections.namedtuple('_Entry', ['mimetype', 'signatures', 'discriminants'])
 _mime_mappings = (
     # pdf
-    _Entry('application/pdf', [b'%PDF'], []),
+    _Entry('application/pdf', ['%PDF'], []),
     # jpg, jpeg, png, gif, bmp
-    _Entry('image/jpeg', [b'\xFF\xD8\xFF\xE0', b'\xFF\xD8\xFF\xE2', b'\xFF\xD8\xFF\xE3', b'\xFF\xD8\xFF\xE1'], []),
-    _Entry('image/png', [b'\x89PNG\r\n\x1A\n'], []),
-    _Entry('image/gif', [b'GIF87a', b'GIF89a'], []),
-    _Entry('image/bmp', [b'BM'], []),
-    _Entry('image/svg+xml', [b'<'], [
-        _check_svg,
-    ]),
-    _Entry('image/x-icon', [b'\x00\x00\x01\x00'], []),
+    _Entry('image/jpeg', ['\xFF\xD8\xFF\xE0', '\xFF\xD8\xFF\xE2', '\xFF\xD8\xFF\xE3', '\xFF\xD8\xFF\xE1'], []),
+    _Entry('image/png', ['\x89PNG\r\n\x1A\n'], []),
+    _Entry('image/gif', ['GIF87a', 'GIF89a'], []),
+    _Entry('image/bmp', ['BM'], []),
     # OLECF files in general (Word, Excel, PPT, default to word because why not?)
-    _Entry('application/msword', [b'\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1', b'\x0D\x44\x4F\x43'], [
+    _Entry('application/msword', ['\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1', '\x0D\x44\x4F\x43'], [
         _check_olecf
     ]),
     # zip, but will include jar, odt, ods, odp, docx, xlsx, pptx, apk
-    _Entry('application/zip', [b'PK\x03\x04'], [_check_ooxml, _check_open_container_format]),
+    _Entry('application/zip', ['PK\x03\x04'], [_check_ooxml, _check_open_container_format]),
 )
 def guess_mimetype(bin_data, default='application/octet-stream'):
     """ Attempts to guess the mime type of the provided binary data, similar
@@ -169,25 +150,12 @@ except ImportError:
     magic = None
 else:
     # There are 2 python libs named 'magic' with incompatible api.
+
     # magic from pypi https://pypi.python.org/pypi/python-magic/
-    if hasattr(magic, 'from_buffer'):
-        _guesser = functools.partial(magic.from_buffer, mime=True)
+    if hasattr(magic,'from_buffer'):
+        guess_mimetype = lambda bin_data, default=None: magic.from_buffer(bin_data, mime=True)
     # magic from file(1) https://packages.debian.org/squeeze/python-magic
-    elif hasattr(magic, 'open'):
+    elif hasattr(magic,'open'):
         ms = magic.open(magic.MAGIC_MIME_TYPE)
         ms.load()
-        _guesser = ms.buffer
-
-    def guess_mimetype(bin_data, default=None):
-        mimetype = _guesser(bin_data)
-        # upgrade incorrect mimetype to official one, fixed upstream
-        # https://github.com/file/file/commit/1a08bb5c235700ba623ffa6f3c95938fe295b262
-        if mimetype == 'image/svg':
-            return 'image/svg+xml'
-        return mimetype
-
-def neuter_mimetype(mimetype, user):
-    wrong_type = 'ht' in mimetype or 'xml' in mimetype or 'svg' in mimetype
-    if wrong_type and not user._is_system():
-        return 'text/plain'
-    return mimetype
+        guess_mimetype = lambda bin_data, default=None: ms.buffer(bin_data)

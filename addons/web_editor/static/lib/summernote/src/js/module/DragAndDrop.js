@@ -70,10 +70,6 @@ define([
         var dataTransfer = event.originalEvent.dataTransfer;
         var layoutInfo = dom.makeLayoutInfo(event.currentTarget || event.target);
 
-        /* ODOO: start_modification */
-        event.preventDefault();
-        /* ODOO: end_modification */
-
         if (dataTransfer && dataTransfer.files && dataTransfer.files.length) {
           event.preventDefault();
           layoutInfo.editable().focus();
@@ -86,12 +82,6 @@ define([
           for (var i = 0, len = dataTransfer.types.length; i < len; i++) {
             var type = dataTransfer.types[i];
             var content = dataTransfer.getData(type);
-
-            /* ODOO: start_modification */
-            if (type.toLowerCase().indexOf('_moz_') > -1) {
-              return;
-            }
-            /* ODOO: end_modification */
 
             if (type.toLowerCase().indexOf('text') > -1) {
               layoutInfo.holder().summernote('pasteHTML', content);

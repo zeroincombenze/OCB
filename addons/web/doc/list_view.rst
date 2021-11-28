@@ -46,7 +46,7 @@ various situations:
 
         Action button (``button`` tag in the view) inside the cell
 
-    ``.o_readonly_modifier``
+    ``.o_readonly``
 
         Readonly field cell
 

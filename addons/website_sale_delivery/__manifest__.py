@@ -1,17 +1,17 @@
 {
     'name': 'eCommerce Delivery',
-    'category': 'Website/Website',
-    'summary': 'Add delivery costs to online sales',
+    'category': 'Website',
+    'summary': 'Add Delivery Costs to Online Sales',
+    'website': 'https://www.odoo.com/page/e-commerce',
     'version': '1.0',
     'description': """
-Add a selection of delivery methods to your eCommerce store.
-Configure your own methods with a pricing grid or integrate with carriers for a fully automated shipping process.
-    """,
+Delivery Costs
+==============
+""",
     'depends': ['website_sale', 'delivery', 'website_sale_stock'],
     'data': [
         'views/website_sale_delivery_templates.xml',
         'views/website_sale_delivery_views.xml',
-        'views/res_config_settings_views.xml',
         'data/website_sale_delivery_data.xml'
     ],
     'demo': [
@@ -19,6 +19,4 @@ Configure your own methods with a pricing grid or integrate with carriers for a 
     ],
     'qweb': [],
     'installable': True,
-    'auto_install': True,
-    'license': 'LGPL-3',
 }

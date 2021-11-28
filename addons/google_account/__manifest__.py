@@ -3,7 +3,7 @@
 
 {
     'name': 'Google Users',
-    'category': 'Hidden/Tools',
+    'category': 'Extra Tools',
     'description': """
 The module adds google user in res user.
 ========================================
@@ -12,5 +12,4 @@ The module adds google user in res user.
     'data': [
         'data/google_account_data.xml',
     ],
-    'license': 'LGPL-3',
 }

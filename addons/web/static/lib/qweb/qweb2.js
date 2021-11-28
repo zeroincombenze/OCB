@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 var QWeb2 = {
     expressions_cache: { },
     RESERVED_WORDS: 'true,false,NaN,null,undefined,debugger,console,window,in,instanceof,new,function,return,this,typeof,eval,void,Math,RegExp,Array,Object,Date'.split(','),
-    ACTIONS_PRECEDENCE: 'foreach,if,elif,else,call,set,tag,esc,raw,js,debug,log'.split(','),
+    ACTIONS_PRECEDENCE: 'foreach,if,elif,else,call,set,esc,raw,js,debug,log'.split(','),
     WORD_REPLACEMENT: {
         'and': '&&',
         'or': '||',
@@ -268,7 +268,6 @@ QWeb2.Engine = (function() {
                             return this.tools.exception("Can't clone undefined template " + extend);
                         }
                         this.templates[name] = this.templates[extend].cloneNode(true);
-                        this.extend_templates[name] = (this.extend_templates[extend] || []).slice();
                         extend = name;
                         name = undefined;
                     }
@@ -328,7 +327,7 @@ QWeb2.Engine = (function() {
                     // All text nodes between branch nodes are removed
                     var text_node;
                     while ((text_node = node.previousSibling) !== prev_elem) {
-                        if (text_node.nodeType !== 8 && self.tools.trim(text_node.nodeValue)) {
+                        if (self.tools.trim(text_node.nodeValue)) {
                             return self.tools.exception("Error: text is not allowed between branching directives");
                         }
                         // IE <= 11.0 doesn't support ChildNode.remove
@@ -359,12 +358,7 @@ QWeb2.Engine = (function() {
                 req.open('GET', s, async);
                 if (async) {
                     req.addEventListener("load", function() {
-                        // 0, not being a valid HTTP status code, is used by browsers
-                        // to indicate success for a non-http xhr response
-                        // (for example, using the file:// protocol)
-                        // https://developer.mozilla.org/fr/docs/Web/API/XMLHttpRequest
-                        // https://bugzilla.mozilla.org/show_bug.cgi?id=331610
-                        if (req.status == 200 || req.status == 0) {
+                        if (req.status == 200) {
                             callback(null, self._parse_from_request(req));
                         } else {
                             callback(new Error("Can't load template " + s + ", http status " + req.status));
@@ -472,10 +466,10 @@ QWeb2.Engine = (function() {
                     if (this.debug && window.console) {
                         console.log(code);
                     }
-                    this.tools.exception("Error evaluating template: " + error, { template: template });
+                    this.tools.exception("Error evaluating template: " + error, { template: name });
                 }
                 if (!tcompiled) {
-                    this.tools.exception("Error evaluating template: (IE?)" + error, { template: template });
+                    this.tools.exception("Error evaluating template: (IE?)" + error, { template: name });
                 }
                 this.compiled_templates[template] = tcompiled;
                 return this.render(template, dict);
@@ -514,7 +508,7 @@ QWeb2.Engine = (function() {
                         if (operation === 'attributes') {
                             jQuery('attribute', child).each(function () {
                                 var attrib = jQuery(this);
-                                target.attr(attrib.attr('name'), attrib.text() || attrib.attr('value'));
+                                target.attr(attrib.attr('name'), attrib.text());
                             });
                         } else {
                             target[operation](child.cloneNode(true).childNodes);
@@ -543,7 +537,7 @@ QWeb2.Element = (function() {
         this.engine = engine;
         this.node = node;
         this.tag = node.tagName;
-        this.actions = {tag: this.tag};
+        this.actions = {};
         this.actions_done = [];
         this.attributes = {};
         this.children = [];
@@ -569,11 +563,7 @@ QWeb2.Element = (function() {
                     if (name === 'name') {
                         continue;
                     }
-                    if (name.match(/^attf?(-.*)?/)) {
-                        this.attributes[m[0]] = attr.value;
-                    } else {
-                        this.actions[name] = attr.value;
-                    }
+                    this.actions[name] = attr.value;
                 } else {
                     this.attributes[name] = attr.value;
                 }
@@ -741,25 +731,26 @@ QWeb2.Element = (function() {
                     }
                 }
             }
-        },
-        compile_action_tag : function() {
             if (this.tag.toLowerCase() !== this.engine.prefix) {
-                this.top_string("<" + this.tag);
+                var tag = "<" + this.tag;
                 for (var a in this.attributes) {
-                    var v = this.attributes[a];
-                    var d = a.split('-');
-                    if (d[0] === this.engine.prefix && d.length > 1) {
-                        if (d.length === 2) {
-                            this.top("r.push(context.engine.tools.gen_attribute(" + (this.format_expression(v)) + "));");
-                        } else {
-                            this.top("r.push(context.engine.tools.gen_attribute(['" + d.slice(2).join('-') + "', (" +
-                                (d[1] === 'att' ? this.format_expression(v) : this.string_interpolation(v)) + ")]));");
-                        }
-                    } else {
-                        this.top_string(this.engine.tools.gen_attribute([a, v]));
+                    tag += this.engine.tools.gen_attribute([a, this.attributes[a]]);
+                }
+                this.top_string(tag);
+                if (this.actions.att) {
+                    this.top("r.push(context.engine.tools.gen_attribute(" + (this.format_expression(this.actions.att)) + "));");
+                }
+                for (var a in this.actions) {
+                    var v = this.actions[a];
+                    var m = a.match(/att-(.+)/);
+                    if (m) {
+                        this.top("r.push(context.engine.tools.gen_attribute(['" + m[1] + "', (" + (this.format_expression(v)) + ")]));");
+                    }
+                    var m = a.match(/attf-(.+)/);
+                    if (m) {
+                        this.top("r.push(context.engine.tools.gen_attribute(['" + m[1] + "', (" + (this.string_interpolation(v)) + ")]));");
                     }
                 }
-
                 if (this.actions.opentag === 'true' || (!this.children.length && this.is_void_element)) {
                     // We do not enforce empty content on void elements
                     // because QWeb rendering is not necessarily html.
@@ -827,18 +818,12 @@ QWeb2.Element = (function() {
             }
         },
         compile_action_esc : function(value) {
-            this.top("var t = " + this.format_str(value) + ";");
-            this.top("if (t != null) r.push(context.engine.tools.html_escape(t));");
-            this.top("else {");
-            this.bottom("}");
-            this.indent();
+            this.top("r.push(context.engine.tools.html_escape("
+                    + this.format_expression(value)
+                    + "));");
         },
         compile_action_raw : function(value) {
-            this.top("var t = " + this.format_str(value) + ";");
-            this.top("if (t != null) r.push(t);");
-            this.top("else {");
-            this.bottom("}");
-            this.indent();
+            this.top("r.push(" + (this.format_str(value)) + ");");
         },
         compile_action_js : function(value) {
             this.top("(function(" + value + ") {");

@@ -1,22 +1,20 @@
 # -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 {
-    'name': "Online Event Ticketing",
-    'category': 'Website/Website',
-    'summary': "Sell event tickets online",
+    'name': "Online Event's Tickets",
+    'category': 'Marketing',
+    'summary': "Sell Your Event's Tickets",
+    'website': 'https://www.odoo.com/page/events',
     'description': """
-Sell event tickets through eCommerce app.
-    """,
+Online Event's Tickets
+======================
+
+        """,
     'depends': ['website_event', 'event_sale', 'website_sale'],
     'data': [
-        'data/event_data.xml',
-        'views/assets.xml',
-        'views/event_event_views.xml',
-        'views/website_event_templates.xml',
-        'views/website_sale_templates.xml',
+        'views/website_event_sale_templates.xml',
+        'security/ir.model.access.csv',
         'security/website_event_sale_security.xml',
     ],
-    'auto_install': True,
-    'license': 'LGPL-3',
+    'auto_install': True
 }

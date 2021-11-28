@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-# decorator makes wrappers that have the same API as their wrapped function
-from collections import Counter, defaultdict
+# decorator makes wrappers that have the same API as their wrapped function;
+# this is important for the odoo.api.guess() that relies on signatures
+from collections import defaultdict
 from decorator import decorator
-from inspect import signature
+from inspect import formatargspec, getargspec
 import logging
 
 unsafe_eval = eval
@@ -44,10 +45,6 @@ class ormcache(object):
         @ormcache(skiparg=1)
         def _compute_domain(self, model_name, mode="read"):
             ...
-
-    Methods implementing this decorator should never return a Recordset,
-    because the underlying cursor will eventually be closed and raise a
-    `psycopg2.OperationalError`.
     """
     def __init__(self, *args, **kwargs):
         self.args = args
@@ -64,7 +61,7 @@ class ormcache(object):
         """ Determine the function that computes a cache key from arguments. """
         if self.skiparg is None:
             # build a string that represents function code and evaluate it
-            args = str(signature(self.method))[1:-1]
+            args = formatargspec(*getargspec(self.method))[1:-1]
             if self.args:
                 code = "lambda %s: (%s,)" % (args, ", ".join(self.args))
             else:
@@ -76,7 +73,7 @@ class ormcache(object):
 
     def lru(self, model):
         counter = STAT[(model.pool.db_name, model._name, self.method)]
-        return model.pool._Registry__cache, (model._name, self.method), counter
+        return model.pool.cache, (model._name, self.method), counter
 
     def lookup(self, method, *args, **kwargs):
         d, key0, counter = self.lru(args[0])
@@ -90,13 +87,14 @@ class ormcache(object):
             value = d[key] = self.method(*args, **kwargs)
             return value
         except TypeError:
-            _logger.warning("cache lookup error on %r", key, exc_info=True)
             counter.err += 1
             return self.method(*args, **kwargs)
 
     def clear(self, model, *args):
         """ Clear the registry cache """
-        model.pool._clear_cache()
+        d, key0, _ = self.lru(model)
+        d.clear()
+        model.pool.cache_cleared = True
 
 
 class ormcache_context(ormcache):
@@ -113,10 +111,10 @@ class ormcache_context(ormcache):
         """ Determine the function that computes a cache key from arguments. """
         assert self.skiparg is None, "ormcache_context() no longer supports skiparg"
         # build a string that represents function code and evaluate it
-        sign = signature(self.method)
-        args = str(sign)[1:-1]
-        cont_expr = "(context or {})" if 'context' in sign.parameters else "self._context"
-        keys_expr = "tuple(%s.get(k) for k in %r)" % (cont_expr, self.keys)
+        spec = getargspec(self.method)
+        args = formatargspec(*spec)[1:-1]
+        cont_expr = "(context or {})" if 'context' in spec.args else "self._context"
+        keys_expr = "tuple(map(%s.get, %r))" % (cont_expr, self.keys)
         if self.args:
             code = "lambda %s: (%s, %s)" % (args, ", ".join(self.args), keys_expr)
         else:
@@ -137,18 +135,18 @@ class ormcache_multi(ormcache):
     def determine_key(self):
         """ Determine the function that computes a cache key from arguments. """
         assert self.skiparg is None, "ormcache_multi() no longer supports skiparg"
-        assert isinstance(self.multi, str), "ormcache_multi() parameter multi must be an argument name"
+        assert isinstance(self.multi, basestring), "ormcache_multi() parameter multi must be an argument name"
 
         super(ormcache_multi, self).determine_key()
 
         # key_multi computes the extra element added to the key
-        sign = signature(self.method)
-        args = str(sign)[1:-1]
+        spec = getargspec(self.method)
+        args = formatargspec(*spec)[1:-1]
         code_multi = "lambda %s: %s" % (args, self.multi)
         self.key_multi = unsafe_eval(code_multi)
 
         # self.multi_pos is the position of self.multi in args
-        self.multi_pos = list(sign.parameters).index(self.multi)
+        self.multi_pos = spec.args.index(self.multi)
 
     def lookup(self, method, *args, **kwargs):
         d, key0, counter = self.lru(args[0])
@@ -203,27 +201,24 @@ def log_ormcache_stats(sig=None, frame=None):
 
     me = threading.currentThread()
     me_dbname = getattr(me, 'dbname', 'n/a')
-
-    for dbname, reg in sorted(Registry.registries.d.items()):
-        # set logger prefix to dbname
+    entries = defaultdict(int)
+    for dbname, reg in Registry.registries.iteritems():
+        for key in reg.cache.iterkeys():
+            entries[(dbname,) + key[:2]] += 1
+    for key, count in sorted(entries.items()):
+        dbname, model_name, method = key
         me.dbname = dbname
-        entries = Counter(k[:2] for k in reg._Registry__cache.d)
-        # show entries sorted by model name, method name
-        for key in sorted(entries, key=lambda key: (key[0], key[1].__name__)):
-            model, method = key
-            stat = STAT[(dbname, model, method)]
-            _logger.info(
-                "%6d entries, %6d hit, %6d miss, %6d err, %4.1f%% ratio, for %s.%s",
-                entries[key], stat.hit, stat.miss, stat.err, stat.ratio, model, method.__name__,
-            )
+        stat = STAT[key]
+        _logger.info("%6d entries, %6d hit, %6d miss, %6d err, %4.1f%% ratio, for %s.%s",
+                     count, stat.hit, stat.miss, stat.err, stat.ratio, model_name, method.__name__)
 
     me.dbname = me_dbname
 
 
 def get_cache_key_counter(bound_method, *args, **kwargs):
     """ Return the cache, key and stat counter for the given call. """
-    model = bound_method.__self__
-    ormcache = bound_method.clear_cache.__self__
+    model = bound_method.im_self
+    ormcache = bound_method.clear_cache.im_self
     cache, key0, counter = ormcache.lru(model)
     key = key0 + ormcache.key(model, *args, **kwargs)
     return cache, key, counter

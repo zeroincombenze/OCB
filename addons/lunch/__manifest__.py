@@ -2,11 +2,11 @@
 
 {
     'name': 'Lunch',
-    'sequence': 300,
+    'sequence': 120,
     'version': '1.0',
-    'depends': ['mail'],
-    'category': 'Human Resources/Lunch',
-    'summary': 'Handle lunch orders of your employees',
+    'depends': ['base', 'web', 'decimal_precision'],
+    'category': 'Human Resources',
+    'summary': 'Lunch Order, Meal, Food',
     'description': """
 The base module to manage lunch.
 ================================
@@ -24,23 +24,16 @@ If you want to save your employees' time and avoid them to always have coins in 
     'data': [
         'security/lunch_security.xml',
         'security/ir.model.access.csv',
-        'report/lunch_cashmove_report_views.xml',
+        'report/lunch_order_views.xml',
+        'report/lunch_order_templates.xml',
         'views/lunch_templates.xml',
-        'views/lunch_alert_views.xml',
-        'views/lunch_cashmove_views.xml',
-        'views/lunch_location_views.xml',
-        'views/lunch_orders_views.xml',
-        'views/lunch_product_views.xml',
-        'views/lunch_supplier_views.xml',
-        'views/res_config_settings.xml',
+        'wizard/lucky_order_view.xml',
         'views/lunch_views.xml',
         'data/lunch_data.xml',
-        'data/ir_cron_data.xml'
     ],
     'demo': ['data/lunch_demo.xml'],
-    'qweb': ['static/src/xml/lunch_templates.xml', ],
+    'qweb': ['static/src/xml/lunch.xml', ],
     'installable': True,
     'application': True,
     'certificate': '001292377792581874189',
-    'license': 'LGPL-3',
 }

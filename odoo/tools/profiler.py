@@ -35,7 +35,7 @@ class _LogTracer(object):
 
         in_self = frame.f_locals['self']
 
-        if not isinstance(in_self, odoo.models.BaseModel):
+        if isinstance(in_self, (odoo.sql_db.Cursor, odoo.sql_db.TestCursor, odoo.sql_db.LazyCursor)):
             return self.tracer
 
         model = getattr(in_self, '_name', None)
@@ -105,6 +105,7 @@ def profile(method=None, whitelist=None, blacklist=(None,), files=None,
             @profile                    # log only this create method
             def create(self, vals):
             ...
+            @api.multi
             @profile()                  # log all methods for all odoo models
             def unlink(self):
             ...

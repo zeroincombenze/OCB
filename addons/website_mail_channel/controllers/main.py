@@ -8,8 +8,7 @@ from dateutil import relativedelta
 
 from odoo import http, fields, tools, _
 from odoo.http import request
-from odoo.addons.http_routing.models.ir_http import slug
-
+from odoo.addons.website.models.website import slug
 
 class MailGroup(http.Controller):
     _thread_per_page = 20
@@ -17,8 +16,7 @@ class MailGroup(http.Controller):
 
     def _get_archives(self, group_id):
         MailMessage = request.env['mail.message']
-        # use sudo to avoid side-effects due to custom ACLs
-        groups = MailMessage.sudo()._read_group_raw(
+        groups = MailMessage._read_group_raw(
             [('model', '=', 'mail.channel'), ('res_id', '=', group_id), ('message_type', '!=', 'notification')],
             ['subject', 'date'],
             groupby=["date"], orderby="date desc")
@@ -39,25 +37,18 @@ class MailGroup(http.Controller):
             .date() # may be unnecessary?
             .strftime(tools.DEFAULT_SERVER_DATE_FORMAT))
 
-    @http.route("/groups", type='http', auth="public", website=True, sitemap=True)
+    @http.route("/groups", type='http', auth="public", website=True)
     def view(self, **post):
         groups = request.env['mail.channel'].search([('alias_id.alias_name', '!=', False)])
 
         # compute statistics
         month_date = datetime.today() - relativedelta.relativedelta(months=1)
-        # use sudo to avoid side-effects due to custom ACLs
-        messages = request.env['mail.message'].sudo().read_group([
-            ('model', '=', 'mail.channel'),
-            ('date', '>=', fields.Datetime.to_string(month_date)),
-            ('message_type', '!=', 'notification'),
-            ('res_id', 'in', groups.ids),
-        ], ['res_id'], ['res_id'])
+        messages = request.env['mail.message'].read_group(
+            [('model', '=', 'mail.channel'), ('date', '>=', fields.Datetime.to_string(month_date)), ('message_type', '!=', 'notification')],
+            [], ['res_id'])
         message_data = dict((message['res_id'], message['res_id_count']) for message in messages)
 
-        group_data = dict(
-            (group.id, {'monthly_message_nbr': message_data.get(group.id, 0),
-                        'members_count': len(group.channel_partner_ids)})
-            for group in groups.sudo())
+        group_data = dict((group.id, {'monthly_message_nbr': message_data.get(group.id, 0)}) for group in groups)
         return request.render('website_mail_channel.mail_channels', {'groups': groups, 'group_data': group_data})
 
     @http.route(["/groups/is_member"], type='json', auth="public", website=True)
@@ -96,9 +87,6 @@ class MailGroup(http.Controller):
         """
         unsubscribe = subscription == 'on'
         channel = request.env['mail.channel'].browse(int(channel_id))
-        if not channel.exists():
-            return False
-
         partner_ids = []
 
         # search partner_id
@@ -119,7 +107,7 @@ class MailGroup(http.Controller):
 
         else:
             # public users will recieve confirmation email
-            partner_ids = [p.id for p in request.env['mail.thread'].sudo()._mail_find_partner_from_emails([email], records=channel.sudo()) if p]
+            partner_ids = channel.sudo()._find_partner_from_emails([email], check_followers=True)
             if not partner_ids or not partner_ids[0]:
                 name = email.split('@')[0]
                 partner_ids = [request.env['res.partner'].sudo().create({'name': name, 'email': email}).id]
@@ -127,10 +115,11 @@ class MailGroup(http.Controller):
             channel.sudo()._send_confirmation_email(partner_ids, unsubscribe)
             return "email"
 
+
     @http.route([
-        '''/groups/<model('mail.channel', "[('channel_type', '=', 'channel')]"):group>''',
-        '''/groups/<model('mail.channel'):group>/page/<int:page>'''
-    ], type='http', auth="public", website=True, sitemap=True)
+        "/groups/<model('mail.channel'):group>",
+        "/groups/<model('mail.channel'):group>/page/<int:page>"
+    ], type='http', auth="public", website=True)
     def thread_headers(self, group, page=1, mode='thread', date_begin=None, date_end=None, **post):
         if group.channel_type != 'channel':
             raise werkzeug.exceptions.NotFound()
@@ -164,8 +153,8 @@ class MailGroup(http.Controller):
         return request.render('website_mail_channel.group_messages', values)
 
     @http.route([
-        '''/groups/<model('mail.channel', "[('channel_type', '=', 'channel')]"):group>/<model('mail.message', "[('model','=','mail.channel'), ('res_id','=',group.id)]"):message>''',
-    ], type='http', auth="public", website=True, sitemap=True)
+        '''/groups/<model('mail.channel'):group>/<model('mail.message', "[('model','=','mail.channel'), ('res_id','=',group[0])]"):message>''',
+    ], type='http', auth="public", website=True)
     def thread_discussion(self, group, message, mode='thread', date_begin=None, date_end=None, **post):
         if group.channel_type != 'channel':
             raise werkzeug.exceptions.NotFound()
@@ -191,7 +180,7 @@ class MailGroup(http.Controller):
         return request.render('website_mail_channel.group_message', values)
 
     @http.route(
-        '''/groups/<model('mail.channel', "[('channel_type', '=', 'channel')]"):group>/<model('mail.message', "[('model','=','mail.channel'), ('res_id','=',group.id)]"):message>/get_replies''',
+        '''/groups/<model('mail.channel'):group>/<model('mail.message', "[('model','=','mail.channel'), ('res_id','=',group[0])]"):message>/get_replies''',
         type='json', auth="public", methods=['POST'], website=True)
     def render_messages(self, group, message, **post):
         if group.channel_type != 'channel':
@@ -211,14 +200,10 @@ class MailGroup(http.Controller):
             'msg_more_count': message_count - self._replies_per_page,
             'replies_per_page': self._replies_per_page,
         }
-        return request.env.ref('website_mail_channel.messages_short')._render(values, engine='ir.qweb')
+        return request.env.ref('website_mail_channel.messages_short').render(values, engine='ir.qweb')
 
-    @http.route("/groups/<int:group_id>/get_alias_info", type='json', auth='public', website=True)
-    def get_alias_info(self, group_id, **post):
-        group = request.env['mail.channel'].search([('id', '=', group_id)])
-        if not group:  # doesn't exist or doesn't have the right to access it
-            return {}
-
+    @http.route("/groups/<model('mail.channel'):group>/get_alias_info", type='json', auth='public', website=True)
+    def get_alias_info(self, group, **post):
         return {
             'alias_name': group.alias_id and group.alias_id.alias_name and group.alias_id.alias_domain and '%s@%s' % (group.alias_id.alias_name, group.alias_id.alias_domain) or False
         }

@@ -9,31 +9,26 @@ Also, adds methods to convert values back to Odoo models.
 """
 
 import ast
-import babel
-import base64
-import io
+import cStringIO
 import itertools
 import json
 import logging
 import os
+import urllib2
+import urlparse
 import re
 import hashlib
-from datetime import datetime
 
 import pytz
-import requests
-from datetime import datetime
+from dateutil import parser
 from lxml import etree, html
 from PIL import Image as I
-from werkzeug import urls
-
 import odoo.modules
 
 from odoo import api, models, fields
-from odoo.tools import ustr, posix_to_ldml, pycompat
+from odoo.tools import ustr
 from odoo.tools import html_escape as escape
-from odoo.tools.misc import get_lang, babel_locale_parse
-from odoo.addons.base.models import ir_qweb
+from odoo.addons.base.ir import ir_qweb
 
 REMOTE_CONNECTION_TIMEOUT = 2.5
 
@@ -47,68 +42,12 @@ class QWeb(models.AbstractModel):
 
     # compile directives
 
-    def _compile_node(self, el, options):
-        snippet_key = options.get('snippet-key')
-        if snippet_key == options['template'] \
-                or options.get('snippet-sub-call-key') == options['template']:
-            # Get the path of element to only consider the first node of the
-            # snippet template content (ignoring all ancestors t elements which
-            # are not t-call ones)
-            nb_real_elements_in_hierarchy = 0
-            node = el
-            while node is not None and nb_real_elements_in_hierarchy < 2:
-                if node.tag != 't' or 't-call' in node.attrib:
-                    nb_real_elements_in_hierarchy += 1
-                node = node.getparent()
-            if nb_real_elements_in_hierarchy == 1:
-                # The first node might be a call to a sub template
-                sub_call = el.get('t-call')
-                if sub_call:
-                    el.set('t-call-options', f"{{'snippet-key': '{snippet_key}', 'snippet-sub-call-key': '{sub_call}'}}")
-                # If it already has a data-snippet it is a saved snippet.
-                # Do not override it.
-                elif 'data-snippet' not in el.attrib:
-                    el.attrib['data-snippet'] = snippet_key.split('.', 1)[-1]
-
-        return super()._compile_node(el, options)
-
     def _compile_directive_snippet(self, el, options):
-        key = el.attrib.pop('t-snippet')
-        el.set('t-call', key)
-        el.set('t-call-options', "{'snippet-key': '" + key + "'}")
-        View = self.env['ir.ui.view'].sudo()
-        view_id = View.get_view_id(key)
-        name = View.browse(view_id).name
+        el.set('t-call', el.attrib.pop('t-snippet'))
+        name = self.env['ir.ui.view'].search([('key', '=', el.attrib.get('t-call'))]).display_name
         thumbnail = el.attrib.pop('t-thumbnail', "oe-thumbnail")
-        div = u'<div name="%s" data-oe-type="snippet" data-oe-thumbnail="%s" data-oe-snippet-id="%s" data-oe-keywords="%s">' % (
-            escape(pycompat.to_text(name)),
-            escape(pycompat.to_text(thumbnail)),
-            escape(pycompat.to_text(view_id)),
-            escape(pycompat.to_text(el.findtext('keywords')))
-        )
+        div = u'<div name="%s" data-oe-type="snippet" data-oe-thumbnail="%s">' % (escape(ir_qweb.unicodifier(name)), escape(ir_qweb.unicodifier(thumbnail)))
         return [self._append(ast.Str(div))] + self._compile_node(el, options) + [self._append(ast.Str(u'</div>'))]
-
-    def _compile_directive_snippet_call(self, el, options):
-        key = el.attrib.pop('t-snippet-call')
-        el.set('t-call', key)
-        el.set('t-call-options', "{'snippet-key': '" + key + "'}")
-        return self._compile_node(el, options)
-
-    def _compile_directive_install(self, el, options):
-        if self.user_has_groups('base.group_system'):
-            module = self.env['ir.module.module'].search([('name', '=', el.attrib.get('t-install'))])
-            if not module or module.state == 'installed':
-                return []
-            name = el.attrib.get('string') or 'Snippet'
-            thumbnail = el.attrib.pop('t-thumbnail', 'oe-thumbnail')
-            div = u'<div name="%s" data-oe-type="snippet" data-module-id="%s" data-oe-thumbnail="%s"><section/></div>' % (
-                escape(pycompat.to_text(name)),
-                module.id,
-                escape(pycompat.to_text(thumbnail))
-            )
-            return [self._append(ast.Str(div))]
-        else:
-            return []
 
     def _compile_directive_tag(self, el, options):
         if el.get('t-placeholder'):
@@ -120,8 +59,6 @@ class QWeb(models.AbstractModel):
     def _directives_eval_order(self):
         directives = super(QWeb, self)._directives_eval_order()
         directives.insert(directives.index('call'), 'snippet')
-        directives.insert(directives.index('call'), 'snippet-call')
-        directives.insert(directives.index('call'), 'install')
         return directives
 
 
@@ -132,7 +69,6 @@ class QWeb(models.AbstractModel):
 
 class Field(models.AbstractModel):
     _name = 'ir.qweb.field'
-    _description = 'Qweb Field'
     _inherit = 'ir.qweb.field'
 
     @api.model
@@ -162,7 +98,6 @@ class Field(models.AbstractModel):
 
 class Integer(models.AbstractModel):
     _name = 'ir.qweb.field.integer'
-    _description = 'Qweb Field Integer'
     _inherit = 'ir.qweb.field.integer'
 
     value_from_string = int
@@ -170,7 +105,6 @@ class Integer(models.AbstractModel):
 
 class Float(models.AbstractModel):
     _name = 'ir.qweb.field.float'
-    _description = 'Qweb Field Float'
     _inherit = 'ir.qweb.field.float'
 
     @api.model
@@ -183,17 +117,15 @@ class Float(models.AbstractModel):
 
 class ManyToOne(models.AbstractModel):
     _name = 'ir.qweb.field.many2one'
-    _description = 'Qweb Field Many to One'
     _inherit = 'ir.qweb.field.many2one'
 
     @api.model
     def attributes(self, record, field_name, options, values):
         attrs = super(ManyToOne, self).attributes(record, field_name, options, values)
-        if options.get('inherit_branding'):
-            many2one = getattr(record, field_name)
-            if many2one:
-                attrs['data-oe-many2one-id'] = many2one.id
-                attrs['data-oe-many2one-model'] = many2one._name
+        many2one = getattr(record, field_name)
+        if many2one:
+            attrs['data-oe-many2one-id'] = many2one.id
+            attrs['data-oe-many2one-model'] = many2one._name
         return attrs
 
     @api.model
@@ -214,48 +146,28 @@ class ManyToOne(models.AbstractModel):
 
 class Contact(models.AbstractModel):
     _name = 'ir.qweb.field.contact'
-    _description = 'Qweb Field Contact'
     _inherit = 'ir.qweb.field.contact'
 
     @api.model
     def attributes(self, record, field_name, options, values):
         attrs = super(Contact, self).attributes(record, field_name, options, values)
-        if options.get('inherit_branding'):
-            options.pop('template_options') # remove options not specific to this widget
-            attrs['data-oe-contact-options'] = json.dumps(options)
+        attrs['data-oe-contact-options'] = json.dumps(options)
         return attrs
 
     # helper to call the rendering of contact field
     @api.model
     def get_record_to_html(self, ids, options=None):
-        return self.value_to_html(self.env['res.partner'].search([('id', '=', ids[0])]), options=options)
+        return self.value_to_html(self.env['res.partner'].browse(ids[0]), options=options)
 
 
 class Date(models.AbstractModel):
     _name = 'ir.qweb.field.date'
-    _description = 'Qweb Field Date'
     _inherit = 'ir.qweb.field.date'
 
     @api.model
     def attributes(self, record, field_name, options, values):
         attrs = super(Date, self).attributes(record, field_name, options, values)
-        if options.get('inherit_branding'):
-            attrs['data-oe-original'] = record[field_name]
-
-            if record._fields[field_name].type == 'datetime':
-                attrs = self.env['ir.qweb.field.datetime'].attributes(record, field_name, options, values)
-                attrs['data-oe-type'] = 'datetime'
-                return attrs
-
-            lg = self.env['res.lang']._lang_get(self.env.user.lang) or get_lang(self.env)
-            locale = babel_locale_parse(lg.code)
-            babel_format = value_format = posix_to_ldml(lg.date_format, locale=locale)
-
-            if record[field_name]:
-                date = fields.Date.from_string(record[field_name])
-                value_format = pycompat.to_text(babel.dates.format_date(date, format=babel_format, locale=locale))
-
-            attrs['data-oe-original-with-format'] = value_format
+        attrs['data-oe-original'] = record[field_name]
         return attrs
 
     @api.model
@@ -264,40 +176,24 @@ class Date(models.AbstractModel):
         if not value:
             return False
 
-        lg = self.env['res.lang']._lang_get(self.env.user.lang) or get_lang(self.env)
-        date = datetime.strptime(value, lg.date_format)
-        return fields.Date.to_string(date)
+        return value
 
 
 class DateTime(models.AbstractModel):
     _name = 'ir.qweb.field.datetime'
-    _description = 'Qweb Field Datetime'
     _inherit = 'ir.qweb.field.datetime'
 
     @api.model
     def attributes(self, record, field_name, options, values):
         attrs = super(DateTime, self).attributes(record, field_name, options, values)
-
-        if options.get('inherit_branding'):
-            value = record[field_name]
-
-            lg = self.env['res.lang']._lang_get(self.env.user.lang) or get_lang(self.env)
-            locale = babel_locale_parse(lg.code)
-            babel_format = value_format = posix_to_ldml('%s %s' % (lg.date_format, lg.time_format), locale=locale)
-            tz = record.env.context.get('tz') or self.env.user.tz
-
-            if isinstance(value, str):
-                value = fields.Datetime.from_string(value)
-
-            if value:
-                # convert from UTC (server timezone) to user timezone
-                value = fields.Datetime.context_timestamp(self.with_context(tz=tz), timestamp=value)
-                value_format = pycompat.to_text(babel.dates.format_datetime(value, format=babel_format, locale=locale))
-                value = fields.Datetime.to_string(value)
-
-            attrs['data-oe-original'] = value
-            attrs['data-oe-original-with-format'] = value_format
-            attrs['data-oe-original-tz'] = tz
+        value = record[field_name]
+        if isinstance(value, basestring):
+            value = fields.Datetime.from_string(value)
+        if value:
+            # convert from UTC (server timezone) to user timezone
+            value = fields.Datetime.context_timestamp(self, timestamp=value)
+            value = fields.Datetime.to_string(value)
+        attrs['data-oe-original'] = value
         return attrs
 
     @api.model
@@ -307,11 +203,10 @@ class DateTime(models.AbstractModel):
             return False
 
         # parse from string to datetime
-        lg = self.env['res.lang']._lang_get(self.env.user.lang) or get_lang(self.env)
-        dt = datetime.strptime(value, '%s %s' % (lg.date_format, lg.time_format))
+        dt = parser.parse(value)
 
         # convert back from user's timezone to UTC
-        tz_name = element.attrib.get('data-oe-original-tz') or self.env.context.get('tz') or self.env.user.tz
+        tz_name = self.env.context.get('tz') or self.env.user.tz
         if tz_name:
             try:
                 user_tz = pytz.timezone(tz_name)
@@ -319,7 +214,7 @@ class DateTime(models.AbstractModel):
 
                 dt = user_tz.localize(dt).astimezone(utc)
             except Exception:
-                logger.warning(
+                logger.warn(
                     "Failed to convert the value for a field of the model"
                     " %s back from the user's timezone (%s) to UTC",
                     model, tz_name,
@@ -331,7 +226,6 @@ class DateTime(models.AbstractModel):
 
 class Text(models.AbstractModel):
     _name = 'ir.qweb.field.text'
-    _description = 'Qweb Field Text'
     _inherit = 'ir.qweb.field.text'
 
     @api.model
@@ -341,7 +235,6 @@ class Text(models.AbstractModel):
 
 class Selection(models.AbstractModel):
     _name = 'ir.qweb.field.selection'
-    _description = 'Qweb Field Selection'
     _inherit = 'ir.qweb.field.selection'
 
     @api.model
@@ -360,7 +253,6 @@ class Selection(models.AbstractModel):
 
 class HTML(models.AbstractModel):
     _name = 'ir.qweb.field.html'
-    _description = 'Qweb Field HTML'
     _inherit = 'ir.qweb.field.html'
 
     @api.model
@@ -368,7 +260,7 @@ class HTML(models.AbstractModel):
         content = []
         if element.text:
             content.append(element.text)
-        content.extend(html.tostring(child, encoding='unicode')
+        content.extend(html.tostring(child)
                        for child in element.iterchildren(tag=etree.Element))
         return '\n'.join(content)
 
@@ -381,31 +273,64 @@ class Image(models.AbstractModel):
         set as attribute on the generated <img> tag
     """
     _name = 'ir.qweb.field.image'
-    _description = 'Qweb Field Image'
     _inherit = 'ir.qweb.field.image'
+
+    @api.model
+    def record_to_html(self, record, field_name, options):
+        assert options['tagName'] != 'img',\
+            "Oddly enough, the root tag of an image field can not be img. " \
+            "That is because the image goes into the tag, or it gets the " \
+            "hose again."
+
+        aclasses = ['img', 'img-responsive'] + options.get('class', '').split()
+        classes = ' '.join(itertools.imap(escape, aclasses))
+
+        max_size = None
+        if options.get('resize'):
+            max_size = options.get('resize')
+        else:
+            max_width, max_height = options.get('max_width', 0), options.get('max_height', 0)
+            if max_width or max_height:
+                max_size = '%sx%s' % (max_width, max_height)
+
+        sha = hashlib.sha1(options.get('unique', getattr(record, '__last_update'))).hexdigest()[0:7]
+        max_size = '' if max_size is None else '/%s' % max_size
+        src = '/web/image/%s/%s/%s%s?unique=%s' % (record._name, record.id, field_name, max_size, sha)
+
+        alt = None
+        if options.get('alt-field') and getattr(record, options['alt-field'], None):
+            alt = escape(record[options['alt-field']])
+        elif options.get('alt'):
+            alt = options['alt']
+
+        src_zoom = None
+        if options.get('zoom') and getattr(record, options['zoom'], None):
+            src_zoom = '/web/image/%s/%s/%s%s?unique=%s' % (record._name, record.id, options['zoom'], max_size, sha)
+        elif options.get('zoom'):
+            src_zoom = options['zoom']
+
+        img = '<img class="%s" src="%s" style="%s"%s%s/>' % \
+            (classes, src, options.get('style', ''), ' alt="%s"' % alt if alt else '', ' data-zoom="1" data-zoom-image="%s"' % src_zoom if src_zoom else '')
+        return ir_qweb.unicodifier(img)
 
     local_url_re = re.compile(r'^/(?P<module>[^]]+)/static/(?P<rest>.+)$')
 
     @api.model
     def from_html(self, model, field, element):
-        if element.find('img') is None:
-            return False
         url = element.find('img').get('src')
 
-        url_object = urls.url_parse(url)
+        url_object = urlparse.urlsplit(url)
         if url_object.path.startswith('/web/image'):
+            # url might be /web/image/<model>/<id>[_<checksum>]/<field>[/<width>x<height>]
             fragments = url_object.path.split('/')
-            query = url_object.decode_query()
-            url_id = fragments[3].split('-')[0]
-            # ir.attachment image urls: /web/image/<id>[-<checksum>][/...]
-            if url_id.isdigit():
+            query = dict(urlparse.parse_qsl(url_object.query))
+            if fragments[3].isdigit():
                 model = 'ir.attachment'
-                oid = url_id
+                oid = fragments[3]
                 field = 'datas'
-            # url of binary field on model: /web/image/<model>/<id>/<field>[/...]
             else:
                 model = query.get('model', fragments[3])
-                oid = query.get('id', fragments[4])
+                oid = query.get('id', fragments[4].split('_')[0])
                 field = query.get('field', fragments[5])
             item = self.env[model].browse(int(oid))
             return item[field]
@@ -416,7 +341,7 @@ class Image(models.AbstractModel):
         return self.load_remote_url(url)
 
     def load_local_url(self, url):
-        match = self.local_url_re.match(urls.url_parse(url).path)
+        match = self.local_url_re.match(urlparse.urlsplit(url).path)
 
         rest = match.group('rest')
         for sep in os.sep, os.altsep:
@@ -435,7 +360,7 @@ class Image(models.AbstractModel):
                 image = I.open(f)
                 image.load()
                 f.seek(0)
-                return base64.b64encode(f.read())
+                return f.read().encode('base64')
         except Exception:
             logger.exception("Failed to load local image %r", url)
             return None
@@ -449,9 +374,9 @@ class Image(models.AbstractModel):
             #   linking to HTTP images
             # implement drag & drop image upload to mitigate?
 
-            req = requests.get(url, timeout=REMOTE_CONNECTION_TIMEOUT)
-            # PIL needs a seekable file-like image so wrap result in IO buffer
-            image = I.open(io.BytesIO(req.content))
+            req = urllib2.urlopen(url, timeout=REMOTE_CONNECTION_TIMEOUT)
+            # PIL needs a seekable file-like image, urllib result is not seekable
+            image = I.open(cStringIO.StringIO(req.read()))
             # force a complete load of the image data to validate it
             image.load()
         except Exception:
@@ -460,9 +385,9 @@ class Image(models.AbstractModel):
 
         # don't use original data in case weird stuff was smuggled in, with
         # luck PIL will remove some of it?
-        out = io.BytesIO()
+        out = cStringIO.StringIO()
         image.save(out, image.format)
-        return base64.b64encode(out.getvalue())
+        return out.getvalue().encode('base64')
 
 
 class Monetary(models.AbstractModel):
@@ -481,14 +406,12 @@ class Monetary(models.AbstractModel):
 
 class Duration(models.AbstractModel):
     _name = 'ir.qweb.field.duration'
-    _description = 'Qweb Field Duration'
     _inherit = 'ir.qweb.field.duration'
 
     @api.model
     def attributes(self, record, field_name, options, values):
         attrs = super(Duration, self).attributes(record, field_name, options, values)
-        if options.get('inherit_branding'):
-            attrs['data-oe-original'] = record[field_name]
+        attrs['data-oe-original'] = record[field_name]
         return attrs
 
     @api.model
@@ -501,7 +424,6 @@ class Duration(models.AbstractModel):
 
 class RelativeDatetime(models.AbstractModel):
     _name = 'ir.qweb.field.relative'
-    _description = 'Qweb Field Relative'
     _inherit = 'ir.qweb.field.relative'
 
     # get formatting from ir.qweb.field.relative but edition/save from datetime
@@ -509,7 +431,6 @@ class RelativeDatetime(models.AbstractModel):
 
 class QwebView(models.AbstractModel):
     _name = 'ir.qweb.field.qweb'
-    _description = 'Qweb Field qweb'
     _inherit = 'ir.qweb.field.qweb'
 
 
@@ -575,7 +496,7 @@ def _realize_padding(it):
     requests for at least n newlines of padding. Runs thereof can be collapsed
     into the largest requests and converted to newlines.
     """
-    padding = 0
+    padding = None
     for item in it:
         if isinstance(item, int):
             padding = max(padding, item)
@@ -583,7 +504,7 @@ def _realize_padding(it):
 
         if padding:
             yield '\n' * padding
-            padding = 0
+            padding = None
 
         yield item
     # leftover padding irrelevant as the output will be stripped

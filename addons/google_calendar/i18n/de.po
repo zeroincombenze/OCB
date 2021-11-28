@@ -1,20 +1,22 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* google_calendar
+# * google_calendar
 # 
 # Translators:
-# Jérôme JEK <jek@odoo.com>, 2020
-# Martin Trigaux, 2020
-# Kevin Harrings <kha@odoo.com>, 2021
-# Friederike Fasterling-Nesselbosch, 2021
-# 
+# Martin Trigaux <mat@odoo.com>, 2016
+# Thorsten Vocks <thorsten.vocks@openbig.org>, 2016
+# Tina Rittmüller <tr@ife.de>, 2016
+# darenkster <inactive+darenkster@transifex.com>, 2016
+# Ralf Hilgenstock <rh@dialoge.info>, 2016
+# Henry Mineehen <info@mineehen.de>, 2016
+# Holger Jahnel <schmaitzler@web.de>, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 14.0+e\n"
+"Project-Id-Version: Odoo Server 10.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-27 11:24+0000\n"
-"PO-Revision-Date: 2020-09-07 08:12+0000\n"
-"Last-Translator: Friederike Fasterling-Nesselbosch, 2021\n"
+"POT-Creation-Date: 2016-09-07 08:56+0000\n"
+"PO-Revision-Date: 2016-09-07 08:56+0000\n"
+"Last-Translator: Holger Jahnel <schmaitzler@web.de>, 2016\n"
 "Language-Team: German (https://www.transifex.com/odoo/teams/41243/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -23,44 +25,56 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: google_calendar
-#: code:addons/google_calendar/models/calendar.py:0
-#, python-format
-msgid "%(reminder_type)s - %(duration)s Days"
-msgstr "%(reminder_type)s - %(duration)s Tage"
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid ""
+"<br/> You can now click on <b>'Create Client ID'</b>\n"
+"                                    <br/><br/>"
+msgstr ""
+"<br/> Sie können nun auf <b>'Erstelle eine Client-ID'</b>klicken\n"
+"<br/><br/>"
 
 #. module: google_calendar
-#: code:addons/google_calendar/models/calendar.py:0
-#, python-format
-msgid "%(reminder_type)s - %(duration)s Hours"
-msgstr "%(reminder_type)s - %(duration)s Stunden"
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid ""
+"<br/> You should now configure the allowed pages on which you will be redirected. To do it, you need to complete the field <b>\"Authorized redirect URI\"</b>\n"
+"                                    and set as value  (your own domain followed by <i>'/google_account/authentication'</i>):\n"
+"                                    <br/>==&gt;"
+msgstr ""
+"<br/> Sie sollten jetzt die Berechtigungen für die Seiten anlegen, zu denen Sie weitergeleitet werden. Hierfür nehmen Sie einen Eintrag im Feld <b>\"Autorisierte Umleitungs-URL\"</b>\n"
+"vor  (Ihre eigene Domäne gefolgt von <i>'/google_account/authentication'</i>):\n"
+"                                    <br/>==&gt;"
 
 #. module: google_calendar
-#: code:addons/google_calendar/models/calendar.py:0
-#, python-format
-msgid "%(reminder_type)s - %(duration)s Minutes"
-msgstr "%(reminder_type)s - %(duration)s Minuten"
+#: model:ir.actions.act_window,name:google_calendar.action_config_settings_google_calendar
+msgid "API Configuration"
+msgstr "API Einstellungen"
 
 #. module: google_calendar
-#: code:addons/google_calendar/models/calendar.py:0
-#, python-format
-msgid "(No title)"
-msgstr "(Kein Titel)"
-
-#. module: google_calendar
-#: model_terms:ir.ui.view,arch_db:google_calendar.res_config_settings_view_form
-msgid "<i class=\"fa fa-fw fa-arrow-right\"/>Tutorial"
-msgstr "<i class=\"fa fa-fw fa-arrow-right\"/>Tutorial"
-
-#. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_event__active
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_recurrence__active
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_sync__active
-msgid "Active"
-msgstr "Aktiv"
+#: model:ir.ui.menu,name:google_calendar.menu_calendar_google_tech_config
+msgid "API Credentials"
+msgstr "API Zugangsdaten"
 
 #. module: google_calendar
 #. openerp-web
-#: code:addons/google_calendar/static/src/js/google_calendar.js:0
+#: code:addons/google_calendar/static/src/js/google_calendar.js:79
+#, python-format
+msgid "Accounts"
+msgstr "Konten"
+
+#. module: google_calendar
+#. openerp-web
+#: code:addons/google_calendar/static/src/js/google_calendar.js:69
+#, python-format
+msgid ""
+"All events have been disconnected from your previous account. You can now "
+"restart the synchronization"
+msgstr ""
+"Alle Veranstaltungen wurden von Ihrem bisherigen Konto getrennt. Sie können "
+"nun die Synchronisierung starten."
+
+#. module: google_calendar
+#. openerp-web
+#: code:addons/google_calendar/static/src/js/google_calendar.js:51
 #, python-format
 msgid ""
 "An administrator needs to configure Google Synchronization before you can "
@@ -70,154 +84,177 @@ msgstr ""
 "diese verwenden können!"
 
 #. module: google_calendar
-#: model:ir.model,name:google_calendar.model_calendar_event
-msgid "Calendar Event"
-msgstr "Kalender Veranstaltung"
+#. openerp-web
+#: code:addons/google_calendar/static/src/js/google_calendar.js:73
+#, python-format
+msgid ""
+"An error occured while disconnecting events from your previous account. "
+"Please retry or contact your administrator."
+msgstr ""
+"Während des Trennes von Ihrem Konto ist ein Fehler aufgetreten. Bitte "
+"versuchen Sie es erneut oder wenden Sie sich an Ihren Administrator."
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_res_users__google_calendar_cal_id
+#: model:ir.model,name:google_calendar.model_calendar_attendee
+msgid "Attendee information"
+msgstr "Information zu Teilnehmern"
+
+#. module: google_calendar
+#: model:ir.ui.view,arch_db:google_calendar.view_users_form
+msgid "Calendar"
+msgstr "Kalender"
+
+#. module: google_calendar
+#: model:ir.model.fields,field_description:google_calendar.field_res_users_google_calendar_cal_id
 msgid "Calendar ID"
 msgstr "Kalender ID"
 
 #. module: google_calendar
-#: model_terms:ir.ui.view,arch_db:google_calendar.google_calendar_reset_account_view_form
-msgid "Cancel"
-msgstr "Abbrechen"
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid ""
+"Check that the Application type is set on <b>'Web Application'</b>, then click on <b>'Configure consent screen'</b>.\n"
+"                                    <br/> Specify an email address and a product name, then save.\n"
+"                                    <br/><br/>"
+msgstr ""
+"Stellen Sie sicher, dass der Anwendungstyp auf <b>'Webanwendung'</b> eingestellt ist. Klicken Sie dann auf <b>'Einverständniserklärung konfigurieren'</b>.\n"
+"<br/>Legen Sie eine eMail-Adresse und einen Produktnamen fest und speichern Sie.\n"
+"<br/><br/>"
 
 #. module: google_calendar
-#: model_terms:ir.ui.view,arch_db:google_calendar.res_config_settings_view_form
-msgid "Client ID"
-msgstr "Client ID"
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid ""
+"Click on <b>'Create a project...'</b> and enter a project name and change your id if you want. Don't forget to accept the Terms of Services\n"
+"                                    <br/><br/>"
+msgstr ""
+"Klicken Sie auf <b>'Projekt erstellen...'</b>, geben Sie einen Projektnamen ein und ändern Sie Ihre id wenn Sie möchten. Vergessen Sie nicht, die Geschäftsbedingungen zu akzeptieren\n"
+"<br/><br/>"
 
 #. module: google_calendar
-#: model_terms:ir.ui.view,arch_db:google_calendar.res_config_settings_view_form
-msgid "Client Secret"
-msgstr "Client Secret"
-
-#. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_res_config_settings__cal_client_id
+#: model:ir.model.fields,field_description:google_calendar.field_base_config_settings_cal_client_id
 msgid "Client_id"
 msgstr "Client_id"
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_res_config_settings__cal_client_secret
+#: model:ir.model.fields,field_description:google_calendar.field_base_config_settings_cal_client_secret
 msgid "Client_key"
 msgstr "Client_key"
 
 #. module: google_calendar
-#: model:ir.model,name:google_calendar.model_res_config_settings
-msgid "Config Settings"
-msgstr "Konfiguration "
-
-#. module: google_calendar
 #. openerp-web
-#: code:addons/google_calendar/static/src/js/google_calendar.js:0
-#: code:addons/google_calendar/static/src/js/google_calendar.js:0
+#: code:addons/google_calendar/static/src/js/google_calendar.js:48
+#: code:addons/google_calendar/static/src/js/google_calendar.js:52
 #, python-format
 msgid "Configuration"
 msgstr "Konfiguration"
 
 #. module: google_calendar
-#: model_terms:ir.ui.view,arch_db:google_calendar.google_calendar_reset_account_view_form
-msgid "Confirm"
-msgstr "Bestätigen"
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid "Connect on your google account and go to"
+msgstr "Melden Sie sich mit Ihrem Google Konto an und gehen Sie zu"
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_account_reset__create_uid
-msgid "Created by"
-msgstr "Erstellt von"
-
-#. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_account_reset__create_date
-msgid "Created on"
-msgstr "Erstellt am"
-
-#. module: google_calendar
-#: model:ir.model.fields.selection,name:google_calendar.selection__google_calendar_account_reset__delete_policy__delete_odoo
-msgid "Delete from Odoo"
-msgstr "Aus Odoo löschen"
-
-#. module: google_calendar
-#: model:ir.model.fields.selection,name:google_calendar.selection__google_calendar_account_reset__delete_policy__delete_both
-msgid "Delete from both"
-msgstr ""
-
-#. module: google_calendar
-#: model:ir.model.fields.selection,name:google_calendar.selection__google_calendar_account_reset__delete_policy__delete_google
-msgid "Delete from the current Google Calendar account"
-msgstr "Vom aktuellen Google Calendar Account löschen"
-
-#. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_event__display_name
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_recurrence__display_name
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_account_reset__display_name
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_sync__display_name
-#: model:ir.model.fields,field_description:google_calendar.field_res_config_settings__display_name
-#: model:ir.model.fields,field_description:google_calendar.field_res_users__display_name
+#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_display_name
 msgid "Display Name"
 msgstr "Anzeigename"
 
 #. module: google_calendar
-#: code:addons/google_calendar/models/calendar.py:0
+#. openerp-web
+#: code:addons/google_calendar/static/src/js/google_calendar.js:60
 #, python-format
-msgid "Email"
-msgstr "E-Mail"
+msgid "Do you want to do this now?"
+msgstr "Möchten Sie das jetzt tun?"
 
 #. module: google_calendar
-#: model:ir.model,name:google_calendar.model_calendar_recurrence
-msgid "Event Recurrence Rule"
-msgstr "Regel wiederkehrendes Ereignis"
+#: model:ir.model,name:google_calendar.model_calendar_event
+msgid "Event"
+msgstr "Event"
 
 #. module: google_calendar
-#: model_terms:ir.ui.view,arch_db:google_calendar.view_users_form
-msgid "Google Calendar"
-msgstr "Google-Kalender"
+#. openerp-web
+#: code:addons/google_calendar/static/src/js/google_calendar.js:74
+#, python-format
+msgid "Event disconnection error"
+msgstr "Event Trennungsfehler"
 
 #. module: google_calendar
-#: model:ir.actions.act_window,name:google_calendar.google_calendar_reset_account_action
-#: model:ir.model,name:google_calendar.model_google_calendar_account_reset
-msgid "Google Calendar Account Reset"
-msgstr ""
+#. openerp-web
+#: code:addons/google_calendar/static/src/js/google_calendar.js:70
+#, python-format
+msgid "Event disconnection success"
+msgstr "Event Trennungserfolg"
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_event__google_id
+#: model:ir.model.fields,field_description:google_calendar.field_calendar_attendee_google_internal_event_id
 msgid "Google Calendar Event Id"
 msgstr "Google Calendar EventID"
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_recurrence__google_id
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_sync__google_id
-msgid "Google Calendar Id"
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid "Google Client ID"
+msgstr "Google Client ID"
+
+#. module: google_calendar
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid "Google Client Secret"
+msgstr "Google Client zurück"
+
+#. module: google_calendar
+#: sql_constraint:calendar.attendee:0
+msgid "Google ID should be unique!"
+msgstr "Google ID muß eindeutig sein!"
+
+#. module: google_calendar
+#: code:addons/google_calendar/models/google_calendar.py:673
+#, python-format
+msgid ""
+"Google is lost... the next synchro will be a full synchro. \n"
+"\n"
+" %s"
 msgstr ""
+"Google ist verloren...die nächste Synchro wird eine volle Synchro sein.\n"
+"%s"
 
 #. module: google_calendar
-#: model:ir.actions.server,name:google_calendar.ir_cron_sync_all_cals_ir_actions_server
-#: model:ir.cron,cron_name:google_calendar.ir_cron_sync_all_cals
-#: model:ir.cron,name:google_calendar.ir_cron_sync_all_cals
-msgid "Google Calendar: synchronization"
-msgstr "Google Calendar: synchronisierung"
-
-#. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_event__id
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_recurrence__id
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_account_reset__id
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_sync__id
-#: model:ir.model.fields,field_description:google_calendar.field_res_config_settings__id
-#: model:ir.model.fields,field_description:google_calendar.field_res_users__id
+#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_id
 msgid "ID"
 msgstr "ID"
 
 #. module: google_calendar
-#: model:ir.model.fields,help:google_calendar.field_calendar_event__active
+#. openerp-web
+#: code:addons/google_calendar/static/src/js/google_calendar.js:59
+#, python-format
 msgid ""
-"If the active field is set to false, it will allow you to hide the event "
-"alarm information without removing it."
+"In order to do this, you first need to disconnect all existing events from "
+"the old account."
 msgstr ""
-"Wenn das Aktiv-Feld deaktiviert wird, wird die Erinnerung ausgeblendet ohne "
-"sie zu entfernen"
+"Um dies zu tun, deaktivieren Sie zuvor alle existierenden Einträge durch "
+"existierende Konten."
 
 #. module: google_calendar
-#: model:ir.model.fields,help:google_calendar.field_res_users__google_calendar_cal_id
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid ""
+"In the menu on left side, select the sub menu <b>'Credentials'</b> (from menu APIs and auth) and click on button <b>'Create new Client ID'</b>\n"
+"                                    <br/><br/>"
+msgstr ""
+"In dem Menü auf der linken Seite wählen Sie das Untermenü\n"
+"<b>'Credentials'</b> (aus dem Menü APIs und auth) und klicken Sie auf <b>' Neue Client-ID anlegen'</b>\n"
+"<br/><br/>"
+
+#. module: google_calendar
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid ""
+"In the menu on left side, select the sub menu APIs (from menu APIs and auth) and click on <b>'Calendar API'</b>.\n"
+"                                    <br/> Activate the Calendar API by clicking on the blue button <b>'Enable API'</b>.\n"
+"                                    <br/> When it's done, the Calendar API overview will be available\n"
+"                                    <br/><br/>"
+msgstr ""
+"In dem Menü auf der linken Seite wählen Sie das Untermenü APIs (aus dem Menü APIs und auth) und klicken Sie auf <b>' Kalender API'</b>.\n"
+"<br/> Aktivieren Sie die Kalender API, indem Sie auf den blauen Button<b>'API aktivieren'</b>klicken.\n"
+"<br/> Wenn das erledigt ist, wird die Kalender API Übersicht verfügbar sein.\n"
+"<br/><br/>"
+
+#. module: google_calendar
+#: model:ir.model.fields,help:google_calendar.field_res_users_google_calendar_cal_id
 msgid ""
 "Last Calendar ID who has been synchronized. If it is changed, we remove all "
 "links between GoogleID and Odoo Google Internal ID"
@@ -226,117 +263,66 @@ msgstr ""
 "Verbindungen zwischen der GoogleID und der Odoo Google Internal ID entfernt."
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_event____last_update
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_recurrence____last_update
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_account_reset____last_update
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_sync____last_update
-#: model:ir.model.fields,field_description:google_calendar.field_res_config_settings____last_update
-#: model:ir.model.fields,field_description:google_calendar.field_res_users____last_update
+#: model:ir.model.fields,field_description:google_calendar.field_google_calendar___last_update
 msgid "Last Modified on"
 msgstr "Zuletzt geändert am"
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_account_reset__write_uid
-msgid "Last Updated by"
-msgstr "Zuletzt aktualisiert durch"
+#: model:ir.model.fields,field_description:google_calendar.field_res_users_google_calendar_last_sync_date
+msgid "Last synchro date"
+msgstr "Letzte Synchronisation"
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_account_reset__write_date
-msgid "Last Updated on"
-msgstr "Zuletzt aktualisiert am"
+#: model:ir.model.fields,field_description:google_calendar.field_calendar_attendee_oe_synchro_date
+msgid "Odoo Synchro Date"
+msgstr "Odoo Synchronisationsdatum"
 
 #. module: google_calendar
-#: model:ir.model.fields.selection,name:google_calendar.selection__google_calendar_account_reset__delete_policy__dont_delete
-msgid "Leave them untouched"
+#: model:ir.model.fields,field_description:google_calendar.field_calendar_event_oe_update_date
+msgid "Odoo Update Date"
+msgstr "Odoo Aktualisierungsdatum"
+
+#. module: google_calendar
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid ""
+"Once done, you will have the both informations (<b>Client ID</b> and <b>Client Secret</b>) that you need to insert in the 2 fields below!\n"
+"                                    <br/><br/>"
 msgstr ""
-
-#. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_event__need_sync
-#: model:ir.model.fields,field_description:google_calendar.field_calendar_recurrence__need_sync
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_sync__need_sync
-msgid "Need Sync"
-msgstr "Synchronisierung erforderlich"
-
-#. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_res_users__google_calendar_sync_token
-msgid "Next Sync Token"
-msgstr ""
-
-#. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_account_reset__sync_policy
-msgid "Next Synchronization"
-msgstr "Nächste Synchronisierung"
-
-#. module: google_calendar
-#: code:addons/google_calendar/models/calendar.py:0
-#, python-format
-msgid "Notification"
-msgstr "Benachrichtigung"
+"Ist das erledigt, haben sie die beiden Informationen (<b>Client ID</b> und <b>Client Geheimnis</b>) ,die Sie in die 2 Felder darunter einfügen müssen!\n"
+"<br/><br/>"
 
 #. module: google_calendar
 #. openerp-web
-#: code:addons/google_calendar/static/src/js/google_calendar.js:0
+#: code:addons/google_calendar/static/src/js/google_calendar.js:40
 #, python-format
 msgid "Redirection"
 msgstr "Umleitung"
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_res_users__google_calendar_rtoken
+#: model:ir.model.fields,field_description:google_calendar.field_res_users_google_calendar_rtoken
 msgid "Refresh Token"
 msgstr "Aktualisiere Token"
 
 #. module: google_calendar
-#: model_terms:ir.ui.view,arch_db:google_calendar.view_users_form
-msgid "Reset Account"
-msgstr ""
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid "Return at Top"
+msgstr "Zurück zum Anfang"
 
 #. module: google_calendar
-#: model_terms:ir.ui.view,arch_db:google_calendar.google_calendar_reset_account_view_form
-msgid "Reset Google Calendar Account"
-msgstr ""
-
-#. module: google_calendar
-#: code:addons/google_calendar/models/res_users.py:0
-#, python-format
-msgid ""
-"Something went wrong during your token generation. Maybe your Authorization "
-"Code is invalid or already expired [%s]"
-msgstr ""
-"Während der Generierung des Tokens ist ein Fehler aufgetreten. Eventuell ist"
-" Ihr Autorisierungscode ungültig oder bereits abgelaufen [%s]"
+#: model:ir.model.fields,field_description:google_calendar.field_base_config_settings_google_cal_sync
+msgid "Show Tutorial"
+msgstr "Tutorial anzeigen"
 
 #. module: google_calendar
 #. openerp-web
-#: code:addons/google_calendar/static/src/js/google_calendar.js:0
+#: code:addons/google_calendar/static/src/js/google_calendar.js:90
 #, python-format
 msgid "Sync with <b>Google</b>"
 msgstr "Synchronisieren mit <b>Google</b>"
 
 #. module: google_calendar
 #. openerp-web
-#: code:addons/google_calendar/static/src/js/google_calendar.js:0
-#, python-format
-msgid "Synched with Google"
-msgstr ""
-
-#. module: google_calendar
-#: model:ir.model,name:google_calendar.model_google_calendar_sync
-msgid "Synchronize a record with Google Calendar"
-msgstr "Einen Datensatz mit Google Calendar synchronisieren"
-
-#. module: google_calendar
-#: model:ir.model.fields.selection,name:google_calendar.selection__google_calendar_account_reset__sync_policy__all
-msgid "Synchronize all existing events"
-msgstr "Alle bestehenden Termine sychronisieren"
-
-#. module: google_calendar
-#: model:ir.model.fields.selection,name:google_calendar.selection__google_calendar_account_reset__sync_policy__new
-msgid "Synchronize only new events"
-msgstr "Nur neue Termine synchronisieren"
-
-#. module: google_calendar
-#. openerp-web
-#: code:addons/google_calendar/static/src/js/google_calendar.js:0
+#: code:addons/google_calendar/static/src/js/google_calendar.js:44
 #, python-format
 msgid ""
 "The Google Synchronization needs to be configured before you can use it, do "
@@ -346,37 +332,39 @@ msgstr ""
 "wollen Sie dies jetzt tun ?"
 
 #. module: google_calendar
-#: code:addons/google_calendar/models/res_users.py:0
+#. openerp-web
+#: code:addons/google_calendar/static/src/js/google_calendar.js:58
 #, python-format
-msgid "The account for the Google Calendar service is not configured."
+msgid ""
+"The account you are trying to synchronize (%s) is not the same as the last "
+"one used (%s)!"
 msgstr ""
+"Das Konto, welches Sie zur Synchronisation nutzen wollen (%s) stimmt nicht "
+"mit dem zuletzt benutzten Konto überein (%s)!"
 
 #. module: google_calendar
-#: model:ir.model.fields,help:google_calendar.field_google_calendar_account_reset__delete_policy
-msgid "This will only affect events for which the user is the owner"
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid ""
+"To setup the signin process with Google, first you have to perform the "
+"following steps"
 msgstr ""
-"Dies wirkt sich nur auf Ereignisse aus, für die der Benutzer der Eigentümer "
-"ist"
+"Zur automatischen Anmeldung mit einem google Konto, müssen Sie zunächst "
+"folgendes tun"
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_res_users__google_calendar_token_validity
+#: model:ir.model.fields,field_description:google_calendar.field_res_users_google_calendar_token_validity
 msgid "Token Validity"
 msgstr "Token Guilty"
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_account_reset__user_id
-msgid "User"
-msgstr "Benutzer"
+#: model:ir.model.fields,field_description:google_calendar.field_base_config_settings_server_uri
+msgid "URI for tuto"
+msgstr "URL for brutto"
 
 #. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_res_users__google_calendar_token
+#: model:ir.model.fields,field_description:google_calendar.field_res_users_google_calendar_token
 msgid "User token"
 msgstr "Benutzer Token"
-
-#. module: google_calendar
-#: model:ir.model.fields,field_description:google_calendar.field_google_calendar_account_reset__delete_policy
-msgid "User's Existing Events"
-msgstr ""
 
 #. module: google_calendar
 #: model:ir.model,name:google_calendar.model_res_users
@@ -385,9 +373,30 @@ msgstr "Benutzer"
 
 #. module: google_calendar
 #. openerp-web
-#: code:addons/google_calendar/static/src/js/google_calendar.js:0
+#: code:addons/google_calendar/static/src/js/google_calendar.js:36
 #, python-format
 msgid "You will be redirected to Google to authorize access to your calendar!"
 msgstr ""
 "Sie werden zu Google weitergeleitet, um dort die  Anmeldung an Ihren "
 "Kalender zu ermöglichen"
+
+#. module: google_calendar
+#: code:addons/google_calendar/models/google_calendar.py:296
+#, python-format
+msgid "Your token is invalid or has been revoked !"
+msgstr "Ihr Schlüssel ist ungültig oder wurde widerrufen !"
+
+#. module: google_calendar
+#: model:ir.model,name:google_calendar.model_base_config_settings
+msgid "base.config.settings"
+msgstr "base.config.settings"
+
+#. module: google_calendar
+#: model:ir.model,name:google_calendar.model_google_calendar
+msgid "google.calendar"
+msgstr "google.kalender"
+
+#. module: google_calendar
+#: model:ir.ui.view,arch_db:google_calendar.view_calendar_config_settings
+msgid "https://console.developers.google.com/"
+msgstr "https://console.developers.google.com/"

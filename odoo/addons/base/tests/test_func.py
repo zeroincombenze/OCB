@@ -2,13 +2,13 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import functools
+import unittest
 
-from odoo.tests.common import BaseCase
 from odoo.tools import frozendict
 from odoo.tools.func import compose
 
 
-class TestCompose(BaseCase):
+class TestCompose(unittest.TestCase):
     def test_basic(self):
         str_add = compose(str, lambda a, b: a + b)
         self.assertEqual(str_add(1, 2), "3")
@@ -16,14 +16,14 @@ class TestCompose(BaseCase):
     def test_decorator(self):
         """ ensure compose() can be partially applied as a decorator
         """
-        @functools.partial(compose, str)
+        @functools.partial(compose, unicode)
         def mul(a, b):
             return a * b
 
         self.assertEqual(mul(5, 42), u"210")
 
 
-class TestFrozendict(BaseCase):
+class TestFrozendict(unittest.TestCase):
     def test_frozendict_immutable(self):
         """ Ensure that a frozendict is immutable. """
         vals = {'name': 'Joe', 'age': 42}

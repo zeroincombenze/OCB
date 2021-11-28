@@ -660,15 +660,9 @@ define([
             var selection = document.getSelection();
             if (!selection || selection.rangeCount === 0) {
               return null;
-            } else {
-              try {
-                if (dom.isBody(selection.anchorNode)) {
-                  // Firefox: returns entire body as range on initialization. We won't never need it.
-                  return null;
-                }
-              } catch (e) {
-                return null;
-              }
+            } else if (dom.isBody(selection.anchorNode)) {
+              // Firefox: returns entire body as range on initialization. We won't never need it.
+              return null;
             }
   
             var nativeRng = selection.getRangeAt(0);

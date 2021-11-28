@@ -3,4 +3,4 @@
 
 # Copyright (C) 2009  Renato Lima - Akretion
 
-from . import models
+import models

@@ -8,7 +8,7 @@ from odoo import api, fields, models
 class HolidaysSummaryEmployee(models.TransientModel):
 
     _name = 'hr.holidays.summary.employee'
-    _description = 'HR Time Off Summary Report By Employee'
+    _description = 'HR Leaves Summary Report By Employee'
 
     date_from = fields.Date(string='From', required=True, default=lambda *a: time.strftime('%Y-%m-01'))
     emp = fields.Many2many('hr.employee', 'summary_emp_rel', 'sum_id', 'emp_id', string='Employee(s)')
@@ -16,8 +16,9 @@ class HolidaysSummaryEmployee(models.TransientModel):
         ('Approved', 'Approved'),
         ('Confirmed', 'Confirmed'),
         ('both', 'Both Approved and Confirmed')
-    ], string='Select Time Off Type', required=True, default='Approved')
+    ], string='Select Leave Type', required=True, default='Approved')
 
+    @api.multi
     def print_report(self):
         self.ensure_one()
         [data] = self.read()
@@ -28,4 +29,4 @@ class HolidaysSummaryEmployee(models.TransientModel):
             'model': 'hr.employee',
             'form': data
         }
-        return self.env.ref('hr_holidays.action_report_holidayssummary').report_action(employees, data=datas)
+        return self.env['report'].get_action(employees, 'hr_holidays.report_holidayssummary', data=datas)

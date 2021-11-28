@@ -1,21 +1,18 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* bus
+# * bus
 # 
 # Translators:
-# Martin Trigaux, 2021
-# krnkris, 2021
-# Tamás Németh <ntomasz81@gmail.com>, 2021
-# gezza <geza.nagy@oregional.hu>, 2021
-# Ákos Nagy <akos.nagy@oregional.hu>, 2021
-# 
+# Martin Trigaux <mat@odoo.com>, 2016
+# krnkris <krnkris@freemail.hu>, 2016
+# Oregional <geza.nagy@oregional.hu>, 2016
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server saas~13.5\n"
+"Project-Id-Version: Odoo Server 10.0c\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-01 07:28+0000\n"
-"PO-Revision-Date: 2020-09-07 08:11+0000\n"
-"Last-Translator: Ákos Nagy <akos.nagy@oregional.hu>, 2021\n"
+"POT-Creation-Date: 2016-09-07 08:56+0000\n"
+"PO-Revision-Date: 2016-09-07 08:56+0000\n"
+"Last-Translator: Oregional <geza.nagy@oregional.hu>, 2016\n"
 "Language-Team: Hungarian (https://www.transifex.com/odoo/teams/41243/hu/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -24,134 +21,122 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: bus
-#: model:ir.model.constraint,message:bus.constraint_bus_presence_bus_user_presence_unique
+#: sql_constraint:bus.presence:0
 msgid "A user can only have one IM status."
-msgstr "Egy felhasználónak csak egy üzenetküldési állapota lehet."
+msgstr "Egy felhasználónak csak egy üzenőküldési állapota lehet."
 
 #. module: bus
-#: model:ir.model.fields.selection,name:bus.selection__bus_presence__status__away
+#: selection:bus.presence,status:0
 msgid "Away"
-msgstr "Távol"
+msgstr "Távollét"
 
 #. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_bus__channel
+#: model:ir.model.fields,field_description:bus.field_bus_bus_channel
 msgid "Channel"
 msgstr "Csatorna"
 
 #. module: bus
-#: model:ir.model,name:bus.model_bus_bus
-msgid "Communication Bus"
-msgstr "Kommunikációs busz"
+#: model:ir.model.fields,field_description:bus.field_bus_bus_create_date
+msgid "Create date"
+msgstr "Létrehozás dátuma"
 
 #. module: bus
-#: model:ir.model,name:bus.model_res_partner
-msgid "Contact"
-msgstr "Kapcsolat"
-
-#. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_bus__create_uid
+#: model:ir.model.fields,field_description:bus.field_bus_bus_create_uid
 msgid "Created by"
-msgstr "Létrehozta"
+msgstr "Készítette"
 
 #. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_bus__create_date
-msgid "Created on"
-msgstr "Létrehozva"
-
-#. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_bus__display_name
-#: model:ir.model.fields,field_description:bus.field_bus_presence__display_name
-#: model:ir.model.fields,field_description:bus.field_res_partner__display_name
-#: model:ir.model.fields,field_description:bus.field_res_users__display_name
+#: model:ir.model.fields,field_description:bus.field_bus_bus_display_name
+#: model:ir.model.fields,field_description:bus.field_bus_presence_display_name
 msgid "Display Name"
-msgstr "Név megjelenítése"
+msgstr "Megjelenített név"
 
 #. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_bus__id
-#: model:ir.model.fields,field_description:bus.field_bus_presence__id
-#: model:ir.model.fields,field_description:bus.field_res_partner__id
-#: model:ir.model.fields,field_description:bus.field_res_users__id
+#: model:ir.model.fields,field_description:bus.field_res_users_partner_latitude
+msgid "Geo Latitude"
+msgstr "Földrajzi szélesség"
+
+#. module: bus
+#: model:ir.model.fields,field_description:bus.field_res_users_partner_longitude
+msgid "Geo Longitude"
+msgstr "Földrajzi hosszúság"
+
+#. module: bus
+#: model:ir.model.fields,field_description:bus.field_res_users_date_localization
+msgid "Geolocation Date"
+msgstr "Földrajzi elhelyezkedés dátuma"
+
+#. module: bus
+#: model:ir.model.fields,field_description:bus.field_bus_bus_id
+#: model:ir.model.fields,field_description:bus.field_bus_presence_id
 msgid "ID"
-msgstr "Azonosító"
+msgstr "Azonosító ID"
 
 #. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_presence__status
-#: model:ir.model.fields,field_description:bus.field_res_partner__im_status
-#: model:ir.model.fields,field_description:bus.field_res_users__im_status
+#: model:ir.model.fields,field_description:bus.field_bus_presence_status
+#: model:ir.model.fields,field_description:bus.field_res_partner_im_status
+#: model:ir.model.fields,field_description:bus.field_res_users_im_status
 msgid "IM Status"
-msgstr "Üzenetküldési állapot"
+msgstr "Üzenetküldő-állapot"
 
 #. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_bus____last_update
-#: model:ir.model.fields,field_description:bus.field_bus_presence____last_update
-#: model:ir.model.fields,field_description:bus.field_res_partner____last_update
-#: model:ir.model.fields,field_description:bus.field_res_users____last_update
+#: model:ir.model.fields,field_description:bus.field_bus_bus___last_update
+#: model:ir.model.fields,field_description:bus.field_bus_presence___last_update
 msgid "Last Modified on"
-msgstr "Legutóbb módosítva"
+msgstr "Utoljára frissítve ekkor"
 
 #. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_presence__last_poll
+#: model:ir.model.fields,field_description:bus.field_bus_presence_last_poll
 msgid "Last Poll"
 msgstr "Utolsó szavazás"
 
 #. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_presence__last_presence
+#: model:ir.model.fields,field_description:bus.field_bus_presence_last_presence
 msgid "Last Presence"
 msgstr "Utolsó jelenlét"
 
 #. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_bus__write_uid
+#: model:ir.model.fields,field_description:bus.field_bus_bus_write_uid
 msgid "Last Updated by"
-msgstr "Frissítette"
+msgstr "Utoljára frissítette"
 
 #. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_bus__write_date
+#: model:ir.model.fields,field_description:bus.field_bus_bus_write_date
 msgid "Last Updated on"
-msgstr "Frissítve "
+msgstr "Utoljára frissítve "
 
 #. module: bus
-#: model:ir.model.fields,field_description:bus.field_bus_bus__message
+#: model:ir.model.fields,field_description:bus.field_bus_bus_message
 msgid "Message"
 msgstr "Üzenet"
 
 #. module: bus
-#: model:ir.model.fields.selection,name:bus.selection__bus_presence__status__offline
+#: selection:bus.presence,status:0
 msgid "Offline"
 msgstr "Offline"
 
 #. module: bus
-#: model:ir.model.fields.selection,name:bus.selection__bus_presence__status__online
+#: selection:bus.presence,status:0
 msgid "Online"
 msgstr "Online"
 
 #. module: bus
-#. openerp-web
-#: code:addons/bus/static/src/js/web_client_bus.js:0
-#: code:addons/bus/static/src/js/web_client_bus.js:0
-#, python-format
-msgid "Refresh"
-msgstr ""
-
-#. module: bus
-#. openerp-web
-#: code:addons/bus/static/src/js/web_client_bus.js:0
-#, python-format
-msgid "The page appears to be out of date."
-msgstr ""
+#: model:ir.model,name:bus.model_res_partner
+msgid "Partner"
+msgstr "Partner"
 
 #. module: bus
 #: model:ir.model,name:bus.model_bus_presence
 msgid "User Presence"
-msgstr "Felhasználói jelenlét"
+msgstr "Felhasználó jelenlét"
 
 #. module: bus
 #: model:ir.model,name:bus.model_res_users
-#: model:ir.model.fields,field_description:bus.field_bus_presence__user_id
+#: model:ir.model.fields,field_description:bus.field_bus_presence_user_id
 msgid "Users"
 msgstr "Felhasználók"
 
 #. module: bus
-#: code:addons/bus/controllers/main.py:0
-#, python-format
-msgid "bus.Bus not available in test mode"
-msgstr "bus.Bus nem elérhető tesztelési módban"
+#: model:ir.model,name:bus.model_bus_bus
+msgid "bus.bus"
+msgstr "bus.bus"

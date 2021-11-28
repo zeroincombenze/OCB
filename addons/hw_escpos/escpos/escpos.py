@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
 import base64
 import copy
 import io
 import math
+import md5
 import re
 import traceback
-import codecs
-from hashlib import md5
+import xml.etree.ElementTree as ET
 
 from PIL import Image
-from xml.etree import ElementTree as ET
-
 
 try:
     import jcconv
@@ -24,12 +21,12 @@ try:
 except ImportError:
     qrcode = None
 
-from .constants import *
-from .exceptions import *
+from constants import *
+from exceptions import *
 
 def utfstr(stuff):
     """ converts stuff to string and does without failing if stuff is a utf8 string """
-    if isinstance(stuff, str):
+    if isinstance(stuff,basestring):
         return stuff
     else:
         return str(stuff)
@@ -148,7 +145,7 @@ class StyleStack:
         _style = {}
         for attr in style:
             if attr in self.cmds and not style[attr] in self.cmds[attr]:
-                print('WARNING: ESC/POS PRINTING: ignoring invalid value: %s for style %s' % (style[attr], utfstr(attr)))
+                print 'WARNING: ESC/POS PRINTING: ignoring invalid value: '+utfstr(style[attr])+' for style: '+utfstr(attr)
             else:
                 _style[attr] = self.enforce_type(attr, style[attr])
         self.stack.append(_style)
@@ -158,7 +155,7 @@ class StyleStack:
         _style = {}
         for attr in style:
             if attr in self.cmds and not style[attr] in self.cmds[attr]:
-                print('WARNING: ESC/POS PRINTING: ignoring invalid value: %s for style %s' % (style[attr], attr))
+                print 'WARNING: ESC/POS PRINTING: ignoring invalid value: '+utfstr(style[attr])+' for style: '+utfstr(attr)
             else:
                 self.stack[-1][attr] = self.enforce_type(attr, style[attr])
 
@@ -170,7 +167,8 @@ class StyleStack:
     def to_escpos(self):
         """ converts the current style to an escpos command string """
         cmd = ''
-        ordered_cmds = sorted(self.cmds, key=lambda x: self.cmds[x]['_order'])
+        ordered_cmds = self.cmds.keys()
+        ordered_cmds.sort(lambda x,y: cmp(self.cmds[x]['_order'], self.cmds[y]['_order']))
         for style in ordered_cmds:
             cmd += self.cmds[style][self.get(style)]
         return cmd
@@ -318,9 +316,9 @@ class Escpos:
         else:
             image_border = 32 - (size % 32)
             if (image_border % 2) == 0:
-                return (int(image_border / 2), int(image_border / 2))
+                return (image_border / 2, image_border / 2)
             else:
-                return (int(image_border / 2), int((image_border / 2) + 1))
+                return (image_border / 2, (image_border / 2) + 1)
 
     def _print_image(self, line, size):
         """ Print formatted image """
@@ -330,8 +328,8 @@ class Escpos:
 
        
         self._raw(S_RASTER_N)
-        buffer = b"%02X%02X%02X%02X" % (int((size[0]/size[1])/8), 0, size[1], 0)
-        self._raw(codecs.decode(buffer, 'hex'))
+        buffer = "%02X%02X%02X%02X" % (((size[0]/size[1])/8), 0, size[1], 0)
+        self._raw(buffer.decode('hex'))
         buffer = ""
 
         while i < len(line):
@@ -340,7 +338,7 @@ class Escpos:
             i += 8
             cont += 1
             if cont % 4 == 0:
-                self._raw(codecs.decode(buffer, "hex"))
+                self._raw(buffer.decode("hex"))
                 buffer = ""
                 cont = 0
 
@@ -349,7 +347,7 @@ class Escpos:
         i = 0
         cont = 0
         buffer = ""
-        raw = b""
+        raw = ""
 
         def __raw(string):
             if output:
@@ -357,9 +355,9 @@ class Escpos:
             else:
                 self._raw(string)
        
-        raw += S_RASTER_N.encode('utf-8')
-        buffer = "%02X%02X%02X%02X" % (int((size[0]/size[1])/8), 0, size[1], 0)
-        raw += codecs.decode(buffer, 'hex')
+        raw += S_RASTER_N
+        buffer = "%02X%02X%02X%02X" % (((size[0]/size[1])/8), 0, size[1], 0)
+        raw += buffer.decode('hex')
         buffer = ""
 
         while i < len(line):
@@ -368,7 +366,7 @@ class Escpos:
             i += 8
             cont += 1
             if cont % 4 == 0:
-                raw += codecs.decode(buffer, 'hex')
+                raw += buffer.decode("hex")
                 buffer = ""
                 cont = 0
 
@@ -385,7 +383,7 @@ class Escpos:
 
 
         if im.size[0] > 512:
-            print("WARNING: Image is wider than 512 and could be truncated at print time ")
+            print  "WARNING: Image is wider than 512 and could be truncated at print time "
         if im.size[1] > 255:
             raise ImageSizeError()
 
@@ -431,16 +429,16 @@ class Escpos:
 
     def print_base64_image(self,img):
 
-        print('print_b64_img')
+        print 'print_b64_img'
 
-        id = md5(img).digest()
+        id = md5.new(img).digest()
 
         if id not in self.img_cache:
-            print('not in cache')
+            print 'not in cache'
 
-            img = img[img.find(b',')+1:]
-            f = io.BytesIO(b'img')
-            f.write(base64.decodebytes(img))
+            img = img[img.find(',')+1:]
+            f = io.BytesIO('img')
+            f.write(base64.decodestring(img))
             f.seek(0)
             img_rgba = Image.open(f)
             img = Image.new('RGB', img_rgba.size, (255,255,255))
@@ -451,16 +449,16 @@ class Escpos:
             else:
                 img.paste(img_rgba)
 
-            print('convert image')
+            print 'convert image'
         
             pix_line, img_size = self._convert_image(img)
 
-            print('print image')
+            print 'print image'
 
             buffer = self._raw_print_image(pix_line, img_size)
             self.img_cache[id] = buffer
 
-        print('raw image')
+        print 'raw image'
 
         self._raw(self.img_cache[id])
 
@@ -677,7 +675,7 @@ class Escpos:
 
             elif elem.tag == 'img':
                 if 'src' in elem.attrib and 'data:' in elem.attrib['src']:
-                    self.print_base64_image(bytes(elem.attrib['src'], 'utf-8'))
+                    self.print_base64_image(elem.attrib['src'])
 
             elif elem.tag == 'barcode' and 'encoding' in elem.attrib:
                 serializer.start_block(stylestack)
@@ -749,7 +747,6 @@ class Escpos:
                     'cp860': TXT_ENC_PC860,
                     'cp863': TXT_ENC_PC863,
                     'cp865': TXT_ENC_PC865,
-                    'cp1251': TXT_ENC_WPC1251,    # win-1251 covers more cyrillic symbols than cp866
                     'cp866': TXT_ENC_PC866,
                     'cp862': TXT_ENC_PC862,
                     'cp720': TXT_ENC_PC720,
@@ -788,34 +785,29 @@ class Escpos:
                         else: 
                             raise ValueError()
                     else:
-                        # First 127 symbols are covered by cp437.
-                        # Extended range is covered by different encodings.
                         encoded = char.encode(encoding)
-                        if ord(encoded) <= 127:
-                            encoding = 'cp437'
                         break
 
-                except (UnicodeEncodeError, UnicodeWarning, TypeError, ValueError):
-                    #the encoding failed, select another one and retry
+                except ValueError: #the encoding failed, select another one and retry
                     if encoding in remaining:
                         del remaining[encoding]
                     if len(remaining) >= 1:
-                        (encoding, _) = remaining.popitem()
+                        encoding = remaining.items()[0][0]
                     else:
                         encoding = 'cp437'
-                        encoded  = b'\xb1'    # could not encode, output error character
+                        encoded  = '\xb1'    # could not encode, output error character
                         break;
 
             if encoding != self.encoding:
                 # if the encoding changed, remember it and prefix the character with
                 # the esc-pos encoding change sequence
                 self.encoding = encoding
-                encoded = bytes(encodings[encoding], 'utf-8') + encoded
+                encoded = encodings[encoding] + encoded
 
             return encoded
         
         def encode_str(txt):
-            buffer = b''
+            buffer = ''
             for c in txt:
                 buffer += encode_char(c)
             return buffer
@@ -893,21 +885,24 @@ class Escpos:
             self._raw(PAPER_FULL_CUT)
 
 
-    def cashdraw(self, pin):
+    def cashdraw(self, pin, tries=5):
         """ Send pulse to kick the cash drawer
 
-        For some reason, with some printers (ex: Epson TM-m30), the cash drawer
-        only opens 50% of the time if you just send the pulse. But if you read
-        the status afterwards, it opens all the time.
+        With some printers the drawer will not open after one pulse, for this reason we will check
+        the drawer status up to 'tries' times and send a new pulse if the drawer is still closed. If the
+        drawer status is open, we will stop sending pulses.
         """
-        if pin == 2:
-            self._raw(CD_KICK_2)
-        elif pin == 5:
-            self._raw(CD_KICK_5)
-        else:
-            raise CashDrawerError()
+        for i in range(tries):
+            if pin == 2:
+                self._raw(CD_KICK_2)
+            elif pin == 5:
+                self._raw(CD_KICK_5)
+            else:
+                raise CashDrawerError()
 
-        self.get_printer_status()
+            if i != tries - 1 and not self.get_printer_status()['printer']['drawer_pin_high']:
+                break
+
 
     def hw(self, hw):
         """ Hardware operations """

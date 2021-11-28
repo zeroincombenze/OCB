@@ -1,32 +1,23 @@
 odoo.define('website_event_track.website_event_track', function (require) {
-'use strict';
+"use strict";
 
-var publicWidget = require('web.public.widget');
+$(document).ready(function() {
 
-publicWidget.registry.websiteEventTrack = publicWidget.Widget.extend({
-    selector: '.o_wevent_event',
-    events: {
-        'input #event_track_search': '_onEventTrackSearchInput',
-    },
+    $("#event_track_search").bind('keyup', function(){
+        var change_text = $(this).val();
+        $('.event_track').removeClass('invisible');
 
-    //--------------------------------------------------------------------------
-    // Handlers
-    //--------------------------------------------------------------------------
+        $("#search_summary").removeClass('invisible');
+        if (change_text) {
+            $("#search_number").text($(".event_track:Contains("+change_text+")").length);
+            $(".event_track:not(:Contains("+change_text+"))").addClass('invisible');
+        } else {
+            $("#search_number").text(30);
+        }
 
-    /**
-     * @private
-     * @param {Event} ev
-     */
-    _onEventTrackSearchInput: function (ev) {
-        ev.preventDefault();
+        event.preventDefault();
+    });
 
-        var text = $(ev.currentTarget).val();
-        var filter = _.str.sprintf(':containsLike(%s)', text);
-
-        $('#search_summary').removeClass('invisible');
-        var $tracks = $('.event_track');
-        $('#search_number').text($tracks.filter(filter).length);
-        $tracks.removeClass('invisible').not(filter).addClass('invisible');
-    },
 });
+
 });

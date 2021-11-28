@@ -6,9 +6,8 @@ from odoo import fields, models
 
 class WebsiteTwitterTweet(models.Model):
     _name = 'website.twitter.tweet'
-    _description = 'Website Twitter'
 
-    website_id = fields.Many2one('website', string='Website', ondelete='cascade')
+    website_id = fields.Many2one('website', string='Website')
     screen_name = fields.Char(string='Screen Name')
     tweet = fields.Text(string='Tweets')
 

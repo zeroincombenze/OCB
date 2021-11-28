@@ -4,6 +4,7 @@
     'name': 'HR Gamification',
     'version': '1.0',
     'category': 'Human Resources',
+    'website': 'https://www.odoo.com/page/employees',
     'depends': ['gamification', 'hr'],
     'description': """Use the HR resources for the gamification process.
 
@@ -20,5 +21,4 @@ Badge received are displayed on the user profile.
         'views/gamification_templates.xml',
     ],
     'auto_install': True,
-    'license': 'LGPL-3',
 }

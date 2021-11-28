@@ -18,5 +18,4 @@ membership products (schemes).
     'demo': [],
     'installable': True,
     'auto_install': False,
-    'license': 'LGPL-3',
 }

@@ -1,1 +1,3 @@
-from . import payment_acquirer
+import res_config
+import payment
+import website

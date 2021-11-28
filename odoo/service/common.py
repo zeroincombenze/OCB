@@ -4,8 +4,9 @@ import logging
 
 import odoo.release
 import odoo.tools
-from odoo.exceptions import AccessDenied
 from odoo.tools.translate import _
+
+import security
 
 _logger = logging.getLogger(__name__)
 
@@ -17,16 +18,16 @@ RPC_VERSION_1 = {
 }
 
 def exp_login(db, login, password):
-    return exp_authenticate(db, login, password, None)
+    # TODO: legacy indirection through 'security', should use directly
+    # the res.users model
+    res = security.login(db, login, password)
+    msg = res and 'successful login' or 'bad login or password'
+    _logger.info("%s from '%s' using database '%s'", msg, login, db.lower())
+    return res or False
 
 def exp_authenticate(db, login, password, user_agent_env):
-    if not user_agent_env:
-        user_agent_env = {}
     res_users = odoo.registry(db)['res.users']
-    try:
-        return res_users.authenticate(db, login, password, {**user_agent_env, 'interactive': False})
-    except AccessDenied:
-        return False
+    return res_users.authenticate(db, login, password, user_agent_env)
 
 def exp_version():
     return RPC_VERSION_1

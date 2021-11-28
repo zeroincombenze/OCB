@@ -4,9 +4,8 @@
 {
     'name': 'Dashboards',
     'version': '1.0',
-    'category': 'Productivity',
-    'sequence': 225,
-    'summary': 'Build your own dashboards',
+    'category': 'Extra Tools',
+    'summary': 'Create your custom dashboard',
     'description': """
 Lets the user create a custom dashboard.
 ========================================
@@ -21,5 +20,4 @@ Allows users to create custom dashboard.
     ],
     'qweb': ['static/src/xml/board.xml'],
     'application': True,
-    'license': 'LGPL-3',
 }

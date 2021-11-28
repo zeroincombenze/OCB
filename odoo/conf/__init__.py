@@ -15,6 +15,8 @@ must be used.
 
 """
 
+import deprecation
+
 # Paths to search for OpenERP addons.
 addons_paths = []
 

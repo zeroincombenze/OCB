@@ -6,8 +6,10 @@
         if (!i.require || !i.require.packaged) r.original = i.require, i.require = r, i.require.packaged = !0
     }
     var ACE_NAMESPACE = "",
-        e = {};
-    window.ace = e;
+        e = function() {
+            return this
+        }();
+    !e && typeof window != "undefined" && (e = window);
     if (!ACE_NAMESPACE && typeof requirejs != "undefined") return;
     var t = function(e, n, r) {
         if (typeof e != "string") {
@@ -74,9 +76,7 @@
             return s
         };
     o(ACE_NAMESPACE)
-})();
-(function() {var define = ace.define, require = ace.require;
-define("ace/lib/regexp", ["require", "exports", "module"], function(e, t, n) {
+})(), define("ace/lib/regexp", ["require", "exports", "module"], function(e, t, n) {
     "use strict";
 
     function o(e) {
@@ -1173,16 +1173,15 @@ define("ace/lib/regexp", ["require", "exports", "module"], function(e, t, n) {
                     if (!t.onCompositionEnd || t.$readOnly) return;
                     var r = h;
                     h = !1;
-                    var i2 = setTimeout(function() {
-                        i2 = null;
+                    var i = setTimeout(function() {
+                        i = null;
                         var e = n.value.replace(/\x01/g, "");
                         if (h) return;
                         e == r.lastValue ? w() : !r.lastValue && e && (w(), A(e))
                     });
                     k = function(n) {
-                        return i2 && clearTimeout(i2), n = n.replace(/\x01/g, ""), n == r.lastValue ? "" : (r.lastValue && i2 && t.undo(), n)
-                    }, t.onCompositionEnd(), t.removeListener("mousedown", F), e.type == "compositionend" && r.range && t.selection.setRange(r.range),
-                    i.isChrome && i.isChrome >= 53 && O()
+                        return i && clearTimeout(i), n = n.replace(/\x01/g, ""), n == r.lastValue ? "" : (r.lastValue && i && t.undo(), n)
+                    }, t.onCompositionEnd(), t.removeListener("mousedown", F), e.type == "compositionend" && r.range && t.selection.setRange(r.range)
                 },
                 I = o.delayedCall(j, 50);
             r.addListener(n, "compositionstart", B), i.isGecko ? r.addListener(n, "text", function() {
@@ -9827,7 +9826,7 @@ define("ace/lib/regexp", ["require", "exports", "module"], function(e, t, n) {
     }, t.EditSession = o, t.UndoManager = u
 });
 (function() {
-    require(["ace/ace"], function(a) {
+    window.require(["ace/ace"], function(a) {
         a && a.config.init(true);
         if (!window.ace)
             window.ace = a;
@@ -9835,5 +9834,4 @@ define("ace/lib/regexp", ["require", "exports", "module"], function(e, t, n) {
             if (a.hasOwnProperty(key))
                 window.ace[key] = a[key];
     });
-})();
 })();

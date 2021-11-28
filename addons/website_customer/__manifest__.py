@@ -3,12 +3,14 @@
 
 {
     'name': 'Customer References',
-    'category': 'Website/Website',
-    'summary': 'Publish your customer references',
+    'category': 'Website',
+    'website': 'https://www.odoo.com/page/website-builder',
+    'summary': 'Publish Your Customer References',
     'version': '1.0',
     'description': """
-Publish your customers as business references on your website to attract new potential prospects.
-    """,
+Odoo Customer References
+===========================
+""",
     'depends': [
         'website_crm_partner_assign',
         'website_partner',
@@ -25,5 +27,4 @@ Publish your customers as business references on your website to attract new pot
     ],
     'qweb': [],
     'installable': True,
-    'license': 'LGPL-3',
 }

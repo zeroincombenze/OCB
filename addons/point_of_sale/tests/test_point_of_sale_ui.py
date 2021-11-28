@@ -1,16 +1,11 @@
-# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo.tests import HttpCase, tagged
-from odoo import tools
+import odoo.tests
 
 
-@tagged('post_install', '-at_install')
-class TestUi(HttpCase):
+@odoo.tests.common.at_install(False)
+@odoo.tests.common.post_install(True)
+class TestUi(odoo.tests.HttpCase):
 
-	# Avoid "A Chart of Accounts is not yet installed in your current company."
-	# Everything is set up correctly even without installed CoA
-    @tools.mute_logger('odoo.http')
     def test_01_point_of_sale_tour(self):
-
-        self.start_tour("/web", 'point_of_sale_tour', login="admin")
+        self.phantom_js("/web", "odoo.__DEBUG__.services['web_tour.tour'].run('point_of_sale_tour')", "odoo.__DEBUG__.services['web_tour.tour'].tours.point_of_sale_tour.ready", login="admin")

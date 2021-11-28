@@ -8,7 +8,7 @@ function initialize_map() {
         mapTypeId: google.maps.MapTypeId.ROADMAP
     });
 
-    // ENABLE ADDRESS GEOCODING
+    // ENABLE ADRESS GEOCODING
     var Geocoder = new google.maps.Geocoder();
 
     // INFO BUBBLES
@@ -40,7 +40,7 @@ function initialize_map() {
 
     // Create a bubble for a partner
     var set_marker = function(partner) {
-        // If no lat & long, geocode address
+        // If no lat & long, geocode adress
         // TODO: a server cronjob that will store these coordinates in database instead of resolving them on-the-fly
         if (!partner.latitude && !partner.longitude) {
             Geocoder.geocode({'address': partner.address}, function(results, status) {

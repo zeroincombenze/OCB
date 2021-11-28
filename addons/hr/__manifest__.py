@@ -2,12 +2,24 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 {
-    'name': 'Employees',
+    'name': 'Employee Directory',
     'version': '1.1',
-    'category': 'Human Resources/Employees',
-    'sequence': 95,
-    'summary': 'Centralize employee information',
-    'description': "",
+    'category': 'Human Resources',
+    'sequence': 75,
+    'summary': 'Jobs, Departments, Employees Details',
+    'description': """
+Human Resources Management
+==========================
+
+This application enables you to manage important aspects of your company's staff and other details such as their skills, contacts, working time...
+
+
+You can manage:
+---------------
+* Employees and hierarchies : You can define your employee with User and display hierarchies
+* HR Departments
+* HR Jobs
+    """,
     'website': 'https://www.odoo.com/page/employees',
     'images': [
         'images/hr_department.jpeg',
@@ -19,25 +31,13 @@
         'base_setup',
         'mail',
         'resource',
-        'web',
+        'web_kanban',
     ],
     'data': [
         'security/hr_security.xml',
         'security/ir.model.access.csv',
-        'wizard/hr_plan_wizard_views.xml',
-        'wizard/hr_departure_wizard_views.xml',
-        'views/hr_job_views.xml',
-        'views/hr_plan_views.xml',
-        'views/hr_employee_category_views.xml',
-        'views/hr_employee_public_views.xml',
-        'report/hr_employee_badge.xml',
-        'views/hr_employee_views.xml',
-        'views/hr_department_views.xml',
         'views/hr_views.xml',
         'views/hr_templates.xml',
-        'views/res_config_settings_views.xml',
-        'views/mail_channel_views.xml',
-        'views/res_users.xml',
         'data/hr_data.xml',
     ],
     'demo': [
@@ -46,9 +46,5 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'qweb': [
-        'static/src/bugfix/bugfix.xml',
-        'static/src/xml/hr_templates.xml',
-    ],
-    'license': 'LGPL-3',
+    'qweb': [],
 }

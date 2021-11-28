@@ -7,11 +7,11 @@
             <field name="arch" type="xml">
                 <tree decoration-info="state == 'draft'" string="POP/IMAP Servers">
                     <field name="name"/>
-                    <field name="server_type"/>
+                    <field name="type"/>
                     <field name="is_ssl"/>
                     <field name="object_id"/>
                     <field name="date"/>
-                    <field name="message_ids" string="Email Count"/>
+                    <field name="message_ids" string="# of emails"/>
                     <field name="state"/>
                 </tree>
             </field>
@@ -22,7 +22,7 @@
             <field name="model">fetchmail.server</field>
             <field name="arch" type="xml">
                 <form string="Incoming Mail Server">
-                    <header attrs="{'invisible' : [('server_type', '=', 'local')]}">
+                    <header attrs="{'invisible' : [('type', '=', 'local')]}">
                         <button string="Test &amp; Confirm" type="object" name="button_confirm_login" states="draft"/>
                         <button string="Fetch Now" type="object" name="fetch_mail" states="done"/>
                         <button string="Reset Confirmation" type="object" name="set_draft" states="done"/>
@@ -31,39 +31,37 @@
                     <sheet>
                      <group col="4">
                         <field name="name"/>
-                        <field name="server_type"/>
+                        <field name="type"/>
                         <field name="date"/>
                      </group>
                      <notebook>
-                        <page string="Server &amp; Login" name="server_login_details">
+                        <page string="Server &amp; Login">
                             <group>
-                                <group attrs="{'invisible' : [('server_type', '=', 'local')]}" string="Server Information">
-                                    <field name="server" colspan="2" attrs="{'required' : [('server_type', '!=', 'local')]}" />
-                                    <field name="port"
-                                        required="1"
-                                        attrs="{'required' : [('server_type', '!=', 'local')]}"
-                                        options="{'format': false}" />
+                                <group attrs="{'invisible' : [('type', '=', 'local')]}" string="Server Information">
+                                    <field name="server" colspan="2" attrs="{'required' : [('type', '!=', 'local')]}" />
+                                    <field name="port" required="1" attrs="{'required' : [('type', '!=', 'local')]}" />
                                     <field name="is_ssl"/>
                                 </group>
-                                <group attrs="{'invisible' : [('server_type', '=', 'local')]}" string="Login Information">
-                                    <field name="user" attrs="{'required' : [('server_type', '!=', 'local')]}"/>
-                                    <field name="password" password="True" attrs="{'required' : [('server_type', '!=', 'local')]}"/>
+                                <group attrs="{'invisible' : [('type', '=', 'local')]}" string="Login Information">
+                                    <field name="user" attrs="{'required' : [('type', '!=', 'local')]}"/>
+                                    <field name="password" password="True" attrs="{'required' : [('type', '!=', 'local')]}"/>
                                 </group>
                                 <group string="Actions to Perform on Incoming Mails">
                                     <field name="object_id"/>
+                                    <field name="action_id" groups="base.group_no_one"/>
                                 </group>
-                                <group attrs="{'invisible' : [('server_type', '!=', 'local')]}" string="Configuration">
-                                    <field name="configuration"/>
-                                    <field name="script" widget="url"/>
+                                <group attrs="{'invisible' : [('type', '!=', 'local')]}" string="Configuration">
+                                    <field name="configuration" colspan="4"/>
+                                    <field name="script" colspan="4" widget="url"/>
                                 </group>
                             </group>
                         </page>
-                        <page string="Advanced" name="advanced_options" groups="base.group_no_one">
+                        <page string="Advanced" groups="base.group_no_one">
                             <group string="Advanced Options" col="4">
                                 <field name="priority"/>
                                 <field name="attach"/>
                                 <field name="original"/>
-                                <field name="active" widget="boolean_toggle"/>
+                                <field name="active"/>
                             </group>
                         </page>
                     </notebook>
@@ -78,12 +76,10 @@
             <field name="arch" type="xml">
                 <search string="Search Incoming Mail Servers">
                     <field name="name" string="Incoming Mail Server"/>
-                    <filter string="IMAP" name="imap" domain="[('server_type', '=', 'imap')]" help="Server type IMAP."/>
-                    <filter string="POP" name="pop" domain="[('server_type', '=', 'pop')]" help="Server type POP."/>
+                    <filter string="IMAP" domain="[('type','=','imap')]" help="Server type IMAP."/>
+                    <filter string="POP" domain="[('type','=','pop')]" help="Server type POP."/>
                     <separator/>
-                    <filter string="SSL" name="ssl" domain="[('is_ssl', '=', True)]" help="If SSL required."/>
-                    <separator/>
-                    <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                    <filter string="SSL" domain="[('is_ssl','=',True)]" help="If SSL required."/>
                 </search>
             </field>
         </record>
@@ -91,17 +87,34 @@
         <record id="action_email_server_tree" model="ir.actions.act_window">
             <field name="name">Incoming Mail Servers</field>
             <field name="res_model">fetchmail.server</field>
+            <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_email_server_tree"/>
             <field name="search_view_id" ref="view_email_server_search"/>
         </record>
+
+        <record id="inherit_view_general_configuration" model="ir.ui.view">
+            <field name="name">General Settings</field>
+            <field name="model">base.config.settings</field>
+            <field name="inherit_id" ref="base_setup.view_general_configuration"/>
+            <field name="arch" type="xml">
+                <div name="email.outgoing_server" position="after">
+                    <div name="email.incoming_server">
+                        <button type="action"
+                                name="%(action_email_server_tree)d"
+                                string="Configure the incoming email gateway" class="oe_link"/>
+                    </div>
+                </div>
+            </field>
+        </record>
+
 
         <menuitem
             parent="base.menu_email"
             id="menu_action_fetchmail_server_tree"
             action="action_email_server_tree"
             name="Incoming Mail Servers"
-            sequence="6"
+            sequence="14"
             groups="base.group_no_one"
         />
 

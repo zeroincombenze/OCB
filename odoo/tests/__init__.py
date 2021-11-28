@@ -1,2 +1,2 @@
-from . import common
-from .common import *
+import common
+from common import *

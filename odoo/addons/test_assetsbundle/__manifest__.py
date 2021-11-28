@@ -2,7 +2,7 @@
 {
     'name': 'test-assetsbundle',
     'version': '0.1',
-    'category': 'Hidden/Tests',
+    'category': 'Tests',
     'description': """A module to verify the Assets Bundle mechanism.""",
     'maintainer': 'Odoo SA',
     'depends': ['base'],
@@ -11,5 +11,4 @@
         "views/views.xml",
     ],
     'auto_install': False,
-    'license': 'LGPL-3',
 }

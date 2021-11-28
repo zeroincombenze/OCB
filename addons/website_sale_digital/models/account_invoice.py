@@ -6,27 +6,23 @@ from odoo import models
 
 class AccountInvoiceLine(models.Model):
 
-    _inherit = ['account.move.line']
+    _inherit = ['account.invoice.line']
 
     def get_digital_purchases(self):
         partner = self.env.user.partner_id
 
         # Get paid invoices
         purchases = self.sudo().search_read(
-            domain=[
-                ('move_id.payment_state', 'in', ['paid', 'in_payment']),
-                ('move_id.partner_id', '=', partner.id),
-                ('product_id', '!=', False),
-            ],
+            domain=[('invoice_id.state', '=', 'paid'), ('invoice_id.partner_id', '=', partner.id)],
             fields=['product_id'],
         )
 
         # Get free products
         purchases += self.env['sale.order.line'].sudo().search_read(
-            domain=[('display_type', '=', False), ('order_id.partner_id', '=', partner.id), '|', ('price_subtotal', '=', 0.0), ('order_id.amount_total', '=', 0.0)],
+            domain=[('price_subtotal', '=', 0.0), ('order_id.partner_id', '=', partner.id)],
             fields=['product_id'],
         )
 
         # I only want product_ids, but search_read insists in giving me a list of
         # (product_id: <id>, name: <product code> <template_name> <attributes>)
-        return [line['product_id'][0] for line in purchases]
+        return map(lambda x: x['product_id'][0], purchases)

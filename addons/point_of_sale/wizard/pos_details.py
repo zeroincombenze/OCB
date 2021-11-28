@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, fields, models, _
+from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 
 class PosDetails(models.TransientModel):
     _name = 'pos.details.wizard'
-    _description = 'Point of Sale Details Report'
+    _description = 'Open Sale Details Report'
 
     def _default_start_date(self):
         """ Find the earliest start_date of the latests sessions """
@@ -42,6 +42,8 @@ class PosDetails(models.TransientModel):
         if self.end_date and self.end_date < self.start_date:
             self.start_date = self.end_date
 
+    @api.multi
     def generate_report(self):
         data = {'date_start': self.start_date, 'date_stop': self.end_date, 'config_ids': self.pos_config_ids.ids}
-        return self.env.ref('point_of_sale.sale_details_report').report_action([], data=data)
+        return self.env['report'].get_action(
+            [], 'point_of_sale.report_saledetails', data=data)

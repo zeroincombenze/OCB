@@ -1,16 +1,13 @@
 # -*- encoding: utf-8 -*-
 {
-    'name': 'Digital Products',
+    'name': 'Website Sale Digital - Sell digital products',
     'version': '0.1',
-    'summary': 'Sell digital products in your eCommerce store',
-    'category': 'Website/Website',
+    'category': 'Website',
     'description': """
-Sell e-goods in your eCommerce store (e.g. webinars, articles, e-books, video tutorials).
-To do so, create the product and attach the file to share via the *Files* button of the product form.
-Once the order is paid, the file is made available in the order confirmation page and in the customer portal.
-    """,
+Sell digital product using attachments to virtual products
+""",
     'depends': [
-        'attachment_indexation',
+        'document',
         'website_sale',
     ],
     'installable': True,
@@ -21,5 +18,4 @@ Once the order is paid, the file is made available in the order confirmation pag
     'demo': [
         'data/product_demo.xml',
     ],
-    'license': 'LGPL-3',
 }

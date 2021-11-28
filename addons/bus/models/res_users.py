@@ -11,6 +11,7 @@ class ResUsers(models.Model):
 
     im_status = fields.Char('IM Status', compute='_compute_im_status')
 
+    @api.multi
     def _compute_im_status(self):
         """ Compute the im_status of the users """
         self.env.cr.execute("""

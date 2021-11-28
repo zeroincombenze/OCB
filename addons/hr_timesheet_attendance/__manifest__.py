@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-
 {
     'name': "Timesheets/attendances reporting",
     'description': """
@@ -9,11 +7,12 @@
     'category': 'Hidden',
     'version': '1.0',
 
-    'depends': ['hr_timesheet', 'hr_attendance'],
+    'depends': ['hr_timesheet_sheet', 'hr_attendance'],
     'data': [
         'security/ir.model.access.csv',
         'report/hr_timesheet_attendance_report_view.xml',
+        'views/hr_timesheet_sheet_views.xml',
+        'views/hr_timesheet_attendance_config_settings_views.xml',
     ],
     'auto_install': True,
-    'license': 'LGPL-3',
 }
