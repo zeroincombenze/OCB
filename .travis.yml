@@ -1,15 +1,13 @@
-# Odoo yaml template for travis-ci
-# __version__=0.2.2
-
 language: python
-sudo: false
-cache:
-  apt: true
-  directories:
-    - $HOME/.cache/pip
 
 python:
   - "2.7"
+
+sudo: false
+cache: pip
+  apt: true
+  directories:
+    - $HOME/.cache/pip
 
 virtualenv:
   system_site_packages: false
@@ -25,8 +23,9 @@ services:
 addons:
   apt:
     sources:
-      # Search your sources alias here:
-      # https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
+      - pov-wkhtmltopdf
+    # Search your sources alias here:
+    # https://github.com/travis-ci/apt-source-whitelist/blob/master/ubuntu.json
     packages:
       # - build-essential                 # Pre-installed
       # - curl                            # Pre-installed
@@ -57,7 +56,7 @@ before_install:
 
 install:
   - travis_install_env
-  - export EXCLUDE=hw_scanner,hw_escpos,theme_bootswatch,test_impex
+  - export EXCLUDE=hw_scanner,hw_escpos,theme_bootswatch
   # - export INCLUDE=$(getaddons.py -m ${HOME}/build/${ODOO_REPO}/odoo/addons ${HOME}/build/${ODOO_REPO}/addons)
 
 env:
@@ -83,4 +82,3 @@ script:
 
 after_success:
   - travis_after_tests_success
-
