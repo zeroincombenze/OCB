@@ -63,7 +63,7 @@ class website_account(http.Controller):
             'error_message': []
         }
 
-        if post and request.httprequest.method == 'POST':
+        if post:
             error, error_message = self.details_form_validate(post)
             values.update({'error': error, 'error_message': error_message})
             values.update(post)
