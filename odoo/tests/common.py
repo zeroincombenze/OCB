@@ -441,7 +441,7 @@ class HttpCase(TransactionCase):
         self.authenticate(login, login)
 
         phantomtest = os.path.join(os.path.dirname(__file__), 'phantomtest.js')
-        cmd = ['disable_phantomjs', phantomtest, json.dumps(options)]
+        cmd = ['phantomjs', phantomtest, json.dumps(options)]
         self.phantom_run(cmd, timeout)
 
 def can_import(module):

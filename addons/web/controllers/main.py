@@ -67,7 +67,6 @@ db_list = http.db_list
 
 db_monodb = http.db_monodb
 
-def clean(name): return name.replace('\x3c', '')
 def serialize_exception(f):
     @functools.wraps(f)
     def wrap(*args, **kwargs):
@@ -628,7 +627,7 @@ class Database(http.Controller):
 
     def _render_template(self, **d):
         d.setdefault('manage',True)
-        d['insecure'] = odoo.tools.config.verify_admin_password('admin')
+        d['insecure'] = odoo.tools.config['admin_passwd'] == 'admin'
         d['list_db'] = odoo.tools.config['list_db']
         d['langs'] = odoo.service.db.exp_list_lang()
         d['countries'] = odoo.service.db.exp_list_countries()
@@ -1061,7 +1060,7 @@ class Binary(http.Controller):
                     ufile.content_type, base64.b64encode(data)]
         except Exception, e:
             args = [False, e.message]
-        return out % (json.dumps(clean(callback)), json.dumps(args))
+        return out % (json.dumps(callback), json.dumps(args))
 
     @http.route('/web/binary/upload_attachment', type='http', auth="user")
     @serialize_exception
@@ -1087,14 +1086,14 @@ class Binary(http.Controller):
                 'res_id': int(id)
             })
             args = {
-                'filename': clean(filename),
+                'filename': filename,
                 'mimetype': ufile.content_type,
                 'id':  attachment.id
             }
         except Exception:
             args = {'error': _("Something horrible happened")}
             _logger.exception("Fail to upload attachment %s" % ufile.filename)
-        return out % (json.dumps(clean(callback)), json.dumps(args))
+        return out % (json.dumps(callback), json.dumps(args))
 
     @http.route([
         '/web/binary/company_logo',

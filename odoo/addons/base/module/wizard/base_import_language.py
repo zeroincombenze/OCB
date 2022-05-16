@@ -29,7 +29,6 @@ class BaseLanguageImport(models.TransientModel):
     def import_lang(self):
         this = self[0]
         this = this.with_context(overwrite=this.overwrite)
-        self.env["res.lang"].load_lang(lang=self.code, lang_name=self.name)
         with TemporaryFile('w+') as buf:
             try:
                 buf.write(base64.decodestring(this.data))
