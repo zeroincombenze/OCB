@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import time
+from datetime import datetime
 from odoo import api, fields, models
 
 
 class ReportOverdue(models.AbstractModel):
     _name = 'report.account.report_overdue'
+
+    def fmt_date(self, date):
+        return datetime.strftime(datetime.strptime(date, '%Y-%m-%d'), '%d-%m-%Y')
 
     def _get_account_move_lines(self, partner_ids):
         res = dict(map(lambda x:(x,[]), partner_ids))
@@ -27,6 +31,8 @@ class ReportOverdue(models.AbstractModel):
             "JOIN account_move m ON (l.move_id = m.id) "
             "WHERE l.partner_id IN %s AND at.type IN ('receivable', 'payable') AND l.full_reconcile_id IS NULL GROUP BY l.date, l.name, l.ref, l.date_maturity, l.partner_id, at.type, l.blocked, l.amount_currency, l.currency_id, l.move_id, m.name", (((fields.date.today(), ) + (tuple(partner_ids),))))
         for row in self.env.cr.dictfetchall():
+            row['date'] = self.fmt_date(row['date'])
+            row['date_maturity'] = self.fmt_date(row['date_maturity'])
             res[row.pop('partner_id')].append(row)
         return res
 
@@ -64,6 +70,6 @@ class ReportOverdue(models.AbstractModel):
             'time': time,
             'Lines': lines_to_display,
             'Totals': totals,
-            'Date': fields.date.today(),
+            'Date': datetime.strftime(fields.date.today(), '%d-%m-%Y')
         }
         return self.env['report'].render('account.report_overdue', values=docargs)
