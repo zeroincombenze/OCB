@@ -16,8 +16,6 @@ _logger = logging.getLogger(__name__)
 
 try:
     es_check = tools.misc.find_in_path('es-check')
-    # [antoniov: 2021-02-25] Avoid unsupported test
-    es_check = None
 except IOError:
     es_check = None
 
