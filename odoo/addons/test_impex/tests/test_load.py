@@ -240,8 +240,6 @@ class test_integer_field(ImporterCase):
     def test_out_of_range(self):
         result = self.import_(['value'], [[str(2**31)]])
         self.assertIs(result['ids'], False)
-        # [antoniov: 2020-09-06] Ignore Italian error text
-        result['messages'][0]['message'] = "integer out of range\n"
         self.assertEqual(result['messages'], [{
             'type': 'error',
             'rows': {'from': 0, 'to': 0},
@@ -251,8 +249,6 @@ class test_integer_field(ImporterCase):
 
         result = self.import_(['value'], [[str(-2**32)]])
         self.assertIs(result['ids'], False)
-        # [antoniov: 2020-09-06] Ignore Italian error text
-        result['messages'][0]['message'] = "integer out of range\n"
         self.assertEqual(result['messages'], [{
             'type': 'error',
             'rows': {'from': 0, 'to': 0},
