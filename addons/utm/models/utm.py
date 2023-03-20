@@ -3,12 +3,13 @@
 
 from odoo import api, fields, models, SUPERUSER_ID
 from odoo.http import request
+from odoo.tools import pycompat
 
 
 class UtmMedium(models.Model):
     # OLD crm.case.channel
     _name = 'utm.medium'
-    _description = 'Channels'
+    _description = 'UTM Medium'
     _order = 'name'
 
     name = fields.Char(string='Channel Name', required=True)
@@ -18,14 +19,14 @@ class UtmMedium(models.Model):
 class UtmCampaign(models.Model):
     # OLD crm.case.resource.type
     _name = 'utm.campaign'
-    _description = 'Campaign'
+    _description = 'UTM Campaign'
 
     name = fields.Char(string='Campaign Name', required=True, translate=True)
 
 
 class UtmSource(models.Model):
     _name = 'utm.source'
-    _description = 'Source'
+    _description = 'UTM Source'
 
     name = fields.Char(string='Source Name', required=True, translate=True)
 
@@ -34,13 +35,14 @@ class UtmMixin(models.AbstractModel):
 
     """Mixin class for objects which can be tracked by marketing. """
     _name = 'utm.mixin'
+    _description = 'UTM Mixin'
 
     campaign_id = fields.Many2one('utm.campaign', 'Campaign',
-                                  help="This is a name that helps you keep track of your different campaign efforts Ex: Fall_Drive, Christmas_Special")
+                                  help="This is a name that helps you keep track of your different campaign efforts, e.g. Fall_Drive, Christmas_Special")
     source_id = fields.Many2one('utm.source', 'Source',
-                                help="This is the source of the link Ex:Search Engine, another domain,or name of email list")
+                                help="This is the source of the link, e.g. Search Engine, another domain, or name of email list")
     medium_id = fields.Many2one('utm.medium', 'Medium',
-                                help="This is the method of delivery.Ex: Postcard, Email, or Banner Ad", oldname='channel_id')
+                                help="This is the method of delivery, e.g. Postcard, Email, or Banner Ad", oldname='channel_id')
 
     def tracking_fields(self):
         # This function cannot be overridden in a model which inherit utm.mixin
@@ -72,11 +74,12 @@ class UtmMixin(models.AbstractModel):
                     # ir_http dispatch saves the url params in a cookie
                     value = request.httprequest.cookies.get(cookie_name)
                 # if we receive a string for a many2one, we search/create the id
-                if field.type == 'many2one' and isinstance(value, basestring) and value:
+                if field.type == 'many2one' and isinstance(value, pycompat.string_types) and value:
                     Model = self.env[field.comodel_name]
                     records = Model.search([('name', '=', value)], limit=1)
                     if not records:
                         records = Model.create({'name': value})
                     value = records.id
-                values[field_name] = value
+                if value:
+                    values[field_name] = value
         return values

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 <template id="report_payslipdetails">
-    <t t-call="report.html_container">
+    <t t-call="web.html_container">
         <t t-foreach="docs" t-as="o">
-            <t t-call="report.external_layout">
+            <t t-call="web.external_layout">
                 <div class="page">
                     <h2>Pay Slip</h2>
                     <p t-field="o.name"/>
 
-                    <table class="table table-condensed table-bordered">
+                    <table class="table table-sm table-bordered">
                         <tr>
                             <td><strong>Name</strong></td>
                             <td><span t-field="o.employee_id"/></td>
@@ -19,7 +19,7 @@
                             <td><strong>Address</strong></td>
                             <td colspan="3">
                                 <div t-field="o.employee_id.address_home_id"
-                                    t-options='{"widget": "contact", "fields": ["address", "name", "phone", "fax"], "no_marker": True, "phone_icons": True}'/>
+                                    t-options='{"widget": "contact", "fields": ["address", "name", "phone"], "no_marker": True, "phone_icons": True}'/>
                             </td>
                         </tr>
                         <tr>
@@ -43,7 +43,7 @@
                     </table>
 
                     <h3>Details by Salary Rule Category</h3>
-                    <table class="table table-condensed mb32">
+                    <table class="table table-sm mb32">
                         <thead>
                             <tr>
                                 <th>Code</th>
@@ -61,14 +61,14 @@
                                 </td>
                                 <td class="text-right">
                                     <span t-esc="h['total']"
-                                          t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                          t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                 </td>
                             </tr>
                         </tbody>
                     </table>
 
                     <h3>Payslip Lines by Contribution Register</h3>
-                    <table class="table table-condensed mt32">
+                    <table class="table table-sm mt32">
                         <thead>
                             <tr>
                                 <th>Code</th>
@@ -86,7 +86,7 @@
                                 <td><span t-esc="p.get('amount', 0)"/></td>
                                 <td class="text-right">
                                     <span t-esc="p.get('total', 0)"
-                                          t-esc-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                          t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                 </td>
                             </tr>
                         </tbody>

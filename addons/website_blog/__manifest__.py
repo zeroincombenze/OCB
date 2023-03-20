@@ -6,13 +6,9 @@
     'category': 'Website',
     'sequence': 140,
     'website': 'https://www.odoo.com/page/blog-engine',
-    'summary': 'News, Blogs, Announces, Discussions',
+    'summary': 'Publish blog posts, announces, news',
     'version': '1.0',
-    'description': """
-Odoo Blog
-============
-
-        """,
+    'description': "",
     'depends': ['website_mail', 'website_partner'],
     'data': [
         'data/website_blog_data.xml',
@@ -31,4 +27,5 @@ Odoo Blog
     ],
     'installable': True,
     'application': True,
+    'license': 'LGPL-3',
 }

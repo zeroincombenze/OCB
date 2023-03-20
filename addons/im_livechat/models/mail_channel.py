@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, fields, models
-
+from odoo import api, fields, models, _
 
 class ChannelPartner(models.Model):
     _inherit = 'mail.channel.partner'
@@ -33,9 +32,15 @@ class MailChannel(models.Model):
     _inherit = ['mail.channel', 'rating.mixin']
 
     anonymous_name = fields.Char('Anonymous Name')
-    create_date = fields.Datetime('Create Date', required=True)
     channel_type = fields.Selection(selection_add=[('livechat', 'Livechat Conversation')])
     livechat_channel_id = fields.Many2one('im_livechat.channel', 'Channel')
+
+    @api.multi
+    def _compute_is_chat(self):
+        super(MailChannel, self)._compute_is_chat()
+        for record in self:
+            if record.channel_type == 'livechat':
+                record.is_chat = True
 
     @api.multi
     def _channel_message_notifications(self, message):
@@ -77,7 +82,7 @@ class MailChannel(models.Model):
                 last_msg = self.env['mail.message'].search([("channel_ids", "in", [channel.id])], limit=1)
                 if last_msg:
                     channel_infos_dict[channel.id]['last_message_date'] = last_msg.date
-        return channel_infos_dict.values()
+        return list(channel_infos_dict.values())
 
     @api.model
     def channel_fetch_slot(self):
@@ -102,8 +107,32 @@ class MailChannel(models.Model):
         empty_channel_ids = [item['id'] for item in self.env.cr.dictfetchall()]
         self.browse(empty_channel_ids).unlink()
 
-    @api.model
-    def get_empty_list_help(self, help):
-        if help:
-            return '<p>%s</p>' % (help)
-        return super(MailChannel, self).get_empty_list_help(help)
+    def _define_command_history(self):
+        return {
+            'channel_types': ['livechat'],
+            'help': _('See 15 last visited pages')
+        }
+
+    def _execute_command_history(self, **kwargs):
+        notification = []
+        notification_values = {
+            '_type': 'history_command',
+        }
+        notification.append([self.uuid, dict(notification_values)])
+        return self.env['bus.bus'].sendmany(notification)
+
+    def _send_history_message(self, pid, page_history):
+        message_body = _('No history found')
+        if page_history:
+            html_links = ['<li><a href="%s" target="_blank">%s</a></li>' % (page, page) for page in page_history]
+            message_body = '<span class="o_mail_notification"><ul>%s</ul></span>' % (''.join(html_links))
+        self.env['bus.bus'].sendone((self._cr.dbname, 'res.partner', pid), {
+            'body': message_body,
+            'channel_ids': self.ids,
+            'info': 'transient_message',
+        })
+
+    # Rating Mixin
+
+    def rating_get_parent(self):
+        return 'livechat_channel_id'

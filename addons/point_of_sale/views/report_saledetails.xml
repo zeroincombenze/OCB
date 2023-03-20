@@ -2,19 +2,19 @@
 <openerp>
 <data>
 <template id="report_saledetails">
-    <t t-call="report.html_container">
-    <t t-call="report.internal_layout">
+    <t t-call="web.html_container">
+    <t t-call="web.internal_layout">
         <div class="page">
 
             <div class="text-center">
-                <h2>Sale Details</h2>
+                <h2>Sales Details</h2>
 
                 <strong><t t-esc="date_start" t-options="{'widget': 'datetime'}"/> - <t t-esc="date_stop" t-options="{'widget': 'datetime'}"/></strong>
             </div>
 
             <!-- Orderlines -->
             <h3>Products</h3>
-            <table  class="table table-condensed">
+            <table  class="table table-sm">
                 <thead><tr>
                     <th>Product</th>
                     <th>Quantity</th>
@@ -43,7 +43,7 @@
             <br/>
 
             <h3>Payments</h3>
-            <table  class="table table-condensed">
+            <table  class="table table-sm">
                 <thead><tr>
                     <th>Name</th>
                     <th>Total</th>
@@ -59,15 +59,17 @@
             <br/>
 
             <h3>Taxes</h3>
-            <table  class="table table-condensed">
+            <table  class="table table-sm">
                 <thead><tr>
                     <th>Name</th>
-                    <th>Total</th>
+                    <th>Tax Amount</th>
+                    <th>Base Amount</th>
                 </tr></thead>
                 <tbody>
                 <tr t-foreach='taxes' t-as='tax'>
                     <td><t t-esc="tax['name']" /></td>
-                    <td><t t-esc="tax['total']" t-options="{'widget': 'float', 'precision': currency_precision}"/></td>
+                    <td><t t-esc="tax['tax_amount']" t-options="{'widget': 'float', 'precision': currency_precision}"/></td>
+                    <td><t t-esc="tax['base_amount']" t-options="{'widget': 'float', 'precision': currency_precision}"/></td>
                 </tr>
                 </tbody>
             </table>

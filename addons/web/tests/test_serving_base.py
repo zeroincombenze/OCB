@@ -2,8 +2,8 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import random
-import unittest
 
+from odoo.tests.common import BaseCase
 from odoo.tools import topological_sort
 
 
@@ -13,9 +13,9 @@ def sample(population):
             random.randint(0, min(len(population), 5)))
 
 
-class TestModulesLoading(unittest.TestCase):
+class TestModulesLoading(BaseCase):
     def setUp(self):
-        self.mods = map(str, range(1000))
+        self.mods = [str(i) for i in range(1000)]
 
     def test_topological_sort(self):
         random.shuffle(self.mods)

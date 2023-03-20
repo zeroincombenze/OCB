@@ -4,13 +4,11 @@
 # Copyright (C) 2013-2015 Akretion (http://www.akretion.com)
 
 import base64
-import csv
-from datetime import datetime
-import StringIO
+import io
 
 from odoo import api, fields, models, _
 from odoo.exceptions import Warning
-from odoo.tools import DEFAULT_SERVER_DATE_FORMAT
+from odoo.tools import float_is_zero, pycompat
 
 
 class AccountFrFec(models.TransientModel):
@@ -68,8 +66,8 @@ class AccountFrFec(models.TransientModel):
             AND am.state = 'posted'
             '''
         company = self.env.user.company_id
-        formatted_date_from = self.date_from.replace('-', '')
-        date_from = datetime.strptime(self.date_from, DEFAULT_SERVER_DATE_FORMAT)
+        formatted_date_from = fields.Date.to_string(self.date_from).replace('-', '')
+        date_from = self.date_from
         formatted_date_year = date_from.year
         self._cr.execute(
             sql_query, (formatted_date_year, formatted_date_from, formatted_date_from, formatted_date_from, self.date_from, company.id))
@@ -77,6 +75,27 @@ class AccountFrFec(models.TransientModel):
         row = self._cr.fetchone()
         listrow = list(row)
         return listrow
+
+    def _get_company_legal_data(self, company):
+        """
+        Dom-Tom are excluded from the EU's fiscal territory
+        Those regions do not have SIREN
+        sources:
+            https://www.service-public.fr/professionnels-entreprises/vosdroits/F23570
+            http://www.douane.gouv.fr/articles/a11024-tva-dans-les-dom
+        """
+        dom_tom_group = self.env.ref('l10n_fr.dom-tom')
+        is_dom_tom = company.country_id.code in dom_tom_group.country_ids.mapped('code')
+        if not is_dom_tom and not company.vat:
+            raise Warning(
+                _("Missing VAT number for company %s") % company.name)
+        if not is_dom_tom and company.vat[0:2] != 'FR':
+            raise Warning(
+                _("FEC is for French companies only !"))
+
+        return {
+            'siren': company.vat[4:13] if not is_dom_tom else '',
+        }
 
     @api.multi
     def generate_fec(self):
@@ -89,39 +108,31 @@ class AccountFrFec(models.TransientModel):
         # 2) CSV files are easier to read/use for a regular accountant.
         # So it will be easier for the accountant to check the file before
         # sending it to the fiscal administration
+        company = self.env.user.company_id
+        company_legal_data = self._get_company_legal_data(company)
+
         header = [
-            'JournalCode',    # 0
-            'JournalLib',     # 1
-            'EcritureNum',    # 2
-            'EcritureDate',   # 3
-            'CompteNum',      # 4
-            'CompteLib',      # 5
-            'CompAuxNum',     # 6  We use partner.id
-            'CompAuxLib',     # 7
-            'PieceRef',       # 8
-            'PieceDate',      # 9
-            'EcritureLib',    # 10
-            'Debit',          # 11
-            'Credit',         # 12
-            'EcritureLet',    # 13
-            'DateLet',        # 14
-            'ValidDate',      # 15
-            'Montantdevise',  # 16
-            'Idevise',        # 17
+            u'JournalCode',    # 0
+            u'JournalLib',     # 1
+            u'EcritureNum',    # 2
+            u'EcritureDate',   # 3
+            u'CompteNum',      # 4
+            u'CompteLib',      # 5
+            u'CompAuxNum',     # 6  We use partner.id
+            u'CompAuxLib',     # 7
+            u'PieceRef',       # 8
+            u'PieceDate',      # 9
+            u'EcritureLib',    # 10
+            u'Debit',          # 11
+            u'Credit',         # 12
+            u'EcritureLet',    # 13
+            u'DateLet',        # 14
+            u'ValidDate',      # 15
+            u'Montantdevise',  # 16
+            u'Idevise',        # 17
             ]
 
-        company = self.env.user.company_id
-        if not company.vat:
-            raise Warning(
-                _("Missing VAT number for company %s") % company.name)
-        if company.vat[0:2] != 'FR':
-            raise Warning(
-                _("FEC is for French companies only !"))
-
-        fecfile = StringIO.StringIO()
-        w = csv.writer(fecfile, delimiter='|')
-        w.writerow(header)
-
+        rows_to_write = [header]
         # INITIAL BALANCE
         unaffected_earnings_xml_ref = self.env.ref('account.data_unaffected_earnings')
         unaffected_earnings_line = True  # used to make sure that we add the unaffected earning initial balance only once
@@ -137,7 +148,7 @@ class AccountFrFec(models.TransientModel):
             'OUVERTURE/' || %s AS EcritureNum,
             %s AS EcritureDate,
             MIN(aa.code) AS CompteNum,
-            replace(MIN(aa.name), '|', '/') AS CompteLib,
+            replace(replace(MIN(aa.name), '|', '/'), '\t', '') AS CompteLib,
             '' AS CompAuxNum,
             '' AS CompAuxLib,
             '-' AS PieceRef,
@@ -171,14 +182,16 @@ class AccountFrFec(models.TransientModel):
 
         sql_query += '''
         GROUP BY aml.account_id, aat.type
-        HAVING sum(aml.balance) != 0
+        HAVING round(sum(aml.balance), %s) != 0
         AND aat.type not in ('receivable', 'payable')
         '''
-        formatted_date_from = self.date_from.replace('-', '')
-        date_from = datetime.strptime(self.date_from, DEFAULT_SERVER_DATE_FORMAT)
+        formatted_date_from = fields.Date.to_string(self.date_from).replace('-', '')
+        date_from = self.date_from
         formatted_date_year = date_from.year
+        currency_digits = 2
+
         self._cr.execute(
-            sql_query, (formatted_date_year, formatted_date_from, formatted_date_from, formatted_date_from, self.date_from, company.id))
+            sql_query, (formatted_date_year, formatted_date_from, formatted_date_from, formatted_date_from, self.date_from, company.id, currency_digits))
 
         for row in self._cr.fetchall():
             listrow = list(row)
@@ -191,13 +204,16 @@ class AccountFrFec(models.TransientModel):
                     current_amount = float(listrow[11].replace(',', '.')) - float(listrow[12].replace(',', '.'))
                     unaffected_earnings_amount = float(unaffected_earnings_results[11].replace(',', '.')) - float(unaffected_earnings_results[12].replace(',', '.'))
                     listrow_amount = current_amount + unaffected_earnings_amount
+                    if float_is_zero(listrow_amount, precision_digits=currency_digits):
+                        continue
                     if listrow_amount > 0:
                         listrow[11] = str(listrow_amount).replace('.', ',')
                         listrow[12] = '0,00'
                     else:
                         listrow[11] = '0,00'
                         listrow[12] = str(-listrow_amount).replace('.', ',')
-            w.writerow([s.encode("utf-8") for s in listrow])
+            rows_to_write.append(listrow)
+
         #if the unaffected earnings account wasn't in the selection yet: add it manually
         if (not unaffected_earnings_line
             and unaffected_earnings_results
@@ -208,7 +224,7 @@ class AccountFrFec(models.TransientModel):
             if unaffected_earnings_account:
                 unaffected_earnings_results[4] = unaffected_earnings_account.code
                 unaffected_earnings_results[5] = unaffected_earnings_account.name
-            w.writerow([s.encode("utf-8") for s in unaffected_earnings_results])
+            rows_to_write.append(unaffected_earnings_results)
 
         # INITIAL BALANCE - receivable/payable
         sql_query = '''
@@ -257,35 +273,35 @@ class AccountFrFec(models.TransientModel):
 
         sql_query += '''
         GROUP BY aml.account_id, aat.type, rp.ref, rp.id
-        HAVING sum(aml.balance) != 0
+        HAVING round(sum(aml.balance), %s) != 0
         AND aat.type in ('receivable', 'payable')
         '''
         self._cr.execute(
-            sql_query, (formatted_date_year, formatted_date_from, formatted_date_from, formatted_date_from, self.date_from, company.id))
+            sql_query, (formatted_date_year, formatted_date_from, formatted_date_from, formatted_date_from, self.date_from, company.id, currency_digits))
 
         for row in self._cr.fetchall():
             listrow = list(row)
             account_id = listrow.pop()
-            w.writerow([s.encode("utf-8") for s in listrow])
+            rows_to_write.append(listrow)
 
         # LINES
         sql_query = '''
         SELECT
-            replace(aj.code, '|', '/') AS JournalCode,
-            replace(aj.name, '|', '/') AS JournalLib,
-            replace(am.name, '|', '/') AS EcritureNum,
+            replace(replace(aj.code, '|', '/'), '\t', '') AS JournalCode,
+            replace(replace(aj.name, '|', '/'), '\t', '') AS JournalLib,
+            replace(replace(am.name, '|', '/'), '\t', '') AS EcritureNum,
             TO_CHAR(am.date, 'YYYYMMDD') AS EcritureDate,
             aa.code AS CompteNum,
-            replace(aa.name, '|', '/') AS CompteLib,
+            replace(replace(aa.name, '|', '/'), '\t', '') AS CompteLib,
             CASE WHEN rp.ref IS null OR rp.ref = ''
             THEN COALESCE('ID ' || rp.id, '')
             ELSE replace(rp.ref, '|', '/')
             END
             AS CompAuxNum,
-            COALESCE(replace(rp.name, '|', '/'), '') AS CompAuxLib,
+            COALESCE(replace(replace(rp.name, '|', '/'), '\t', ''), '') AS CompAuxLib,
             CASE WHEN am.ref IS null OR am.ref = ''
             THEN '-'
-            ELSE replace(am.ref, '|', '/')
+            ELSE replace(replace(am.ref, '|', '/'), '\t', '')
             END
             AS PieceRef,
             TO_CHAR(am.date, 'YYYYMMDD') AS PieceDate,
@@ -333,21 +349,19 @@ class AccountFrFec(models.TransientModel):
             sql_query, (self.date_from, self.date_to, company.id))
 
         for row in self._cr.fetchall():
-            listrow = list(row)
-            w.writerow([s.encode("utf-8") for s in listrow])
+            rows_to_write.append(list(row))
 
-        siren = company.vat[4:13]
-        end_date = self.date_to.replace('-', '')
+        fecvalue = self._csv_write_rows(rows_to_write)
+        end_date = fields.Date.to_string(self.date_to).replace('-', '')
         suffix = ''
         if self.export_type == "nonofficial":
             suffix = '-NONOFFICIAL'
-        fecvalue = fecfile.getvalue()
+
         self.write({
             'fec_data': base64.encodestring(fecvalue),
             # Filename = <siren>FECYYYYMMDD where YYYMMDD is the closing date
-            'filename': '%sFEC%s%s.csv' % (siren, end_date, suffix),
+            'filename': '%sFEC%s%s.csv' % (company_legal_data['siren'], end_date, suffix),
             })
-        fecfile.close()
 
         action = {
             'name': 'FEC',
@@ -356,3 +370,29 @@ class AccountFrFec(models.TransientModel):
             'target': 'self',
             }
         return action
+
+    def _csv_write_rows(self, rows, lineterminator=u'\r\n'):
+        """
+        Write FEC rows into a file
+        It seems that Bercy's bureaucracy is not too happy about the
+        empty new line at the End Of File.
+
+        @param {list(list)} rows: the list of rows. Each row is a list of strings
+        @param {unicode string} [optional] lineterminator: effective line terminator
+            Has nothing to do with the csv writer parameter
+            The last line written won't be terminated with it
+
+        @return the value of the file
+        """
+        fecfile = io.BytesIO()
+        writer = pycompat.csv_writer(fecfile, delimiter='|', lineterminator='')
+
+        rows_length = len(rows)
+        for i, row in enumerate(rows):
+            if not i == rows_length - 1:
+                row[-1] += lineterminator
+            writer.writerow(row)
+
+        fecvalue = fecfile.getvalue()
+        fecfile.close()
+        return fecvalue

@@ -5,7 +5,7 @@ from odoo import api, fields, models
 
 class HrEmployee(models.Model):
     _name = 'hr.employee'
-    _inherit = ['hr.employee', 'website.published.mixin']
+    _inherit = ['hr.employee', 'website.published.multi.mixin']
 
     public_info = fields.Char(string='Public Info')
 
@@ -13,4 +13,4 @@ class HrEmployee(models.Model):
     def _compute_website_url(self):
         super(HrEmployee, self)._compute_website_url()
         for employee in self:
-            employee.website_url = '/page/website.aboutus#team'
+            employee.website_url = '/aboutus#team'

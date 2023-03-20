@@ -1,19 +1,29 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-import itertools
-
 from odoo import models, fields, api
+from odoo.http import request
 
-MAGIC_FIELDS = ["id", "create_uid", "create_date", "write_uid", "write_date", "__last_update"]
 
 class website_form_config(models.Model):
     _inherit = 'website'
-    website_form_enable_metadata = fields.Boolean('Write metadata',help="Enable writing metadata on form submit.")
+
+    website_form_enable_metadata = fields.Boolean('Technical data on contact form', help="You can choose to log technical data like IP, User Agent ,...")
+
+    def _website_form_last_record(self):
+        if request and request.session.form_builder_model_model:
+            return request.env[request.session.form_builder_model_model].browse(request.session.form_builder_id)
+        return False
+
+
+class ResConfigSettings(models.TransientModel):
+    _inherit = 'res.config.settings'
+    website_form_enable_metadata = fields.Boolean(related="website_id.website_form_enable_metadata", readonly=False)
 
 
 class website_form_model(models.Model):
     _name = 'ir.model'
+    _description = 'Models'
     _inherit = 'ir.model'
 
     website_form_access = fields.Boolean('Allowed to use in forms', help='Enable the form builder feature for this model.')
@@ -35,26 +45,32 @@ class website_form_model(models.Model):
             ])
         }
         return {
-            k: v for k, v in self.get_authorized_fields().iteritems()
+            k: v for k, v in self.get_authorized_fields(self.model).items()
             if k in included
         }
 
-    @api.multi
-    def get_authorized_fields(self):
-        model = self.env[self.model]
+    @api.model
+    def get_authorized_fields(self, model_name):
+        """ Return the fields of the given model name as a mapping like method `fields_get`. """
+        model = self.env[model_name]
         fields_get = model.fields_get()
 
-        for key, val in model._inherits.iteritems():
-            fields_get.pop(val,None)
+        for key, val in model._inherits.items():
+            fields_get.pop(val, None)
 
         # Unrequire fields with default values
-        default_values = model.default_get(fields_get.keys())
+        default_values = model.default_get(list(fields_get))
         for field in [f for f in fields_get if f in default_values]:
             fields_get[field]['required'] = False
 
         # Remove readonly and magic fields
-        for field in fields_get.keys():
-            if fields_get[field]['readonly'] or field in MAGIC_FIELDS:
+        # Remove string domains which are supposed to be evaluated
+        # (e.g. "[('product_id', '=', product_id)]")
+        MAGIC_FIELDS = models.MAGIC_COLUMNS + [model.CONCURRENCY_CHECK_FIELD]
+        for field in list(fields_get):
+            if 'domain' in fields_get[field] and isinstance(fields_get[field]['domain'], str):
+                del fields_get[field]['domain']
+            if fields_get[field].get('readonly') or field in MAGIC_FIELDS:
                 del fields_get[field]
 
         return fields_get
@@ -63,6 +79,7 @@ class website_form_model(models.Model):
 class website_form_model_fields(models.Model):
     """ fields configuration for form builder """
     _name = 'ir.model.fields'
+    _description = 'Fields'
     _inherit = 'ir.model.fields'
 
     @api.model_cr
@@ -73,7 +90,7 @@ class website_form_model_fields(models.Model):
                          ' SET website_form_blacklisted=true'
                          ' WHERE website_form_blacklisted IS NULL')
         # add an SQL-level default value on website_form_blacklisted to that
-        # pure-SQL ir.model.field creations (e.g. in _field_create) generate
+        # pure-SQL ir.model.field creations (e.g. in _reflect) generate
         # the right default value for a whitelist (aka fields should be
         # blacklisted by default)
         self._cr.execute('ALTER TABLE ir_model_fields '

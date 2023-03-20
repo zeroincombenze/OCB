@@ -6,7 +6,6 @@
     'description': """
 This module allows a customer to give rating.
 """,
-    'website': 'http://odoo.com',
     'depends': [
         'mail',
     ],
@@ -17,4 +16,5 @@ This module allows a customer to give rating.
      ],
     'installable': True,
     'auto_install': False,
+    'license': 'LGPL-3',
 }

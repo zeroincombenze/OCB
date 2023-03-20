@@ -9,7 +9,7 @@ from odoo import api, fields, models
 
 class PayslipLinesContributionRegister(models.TransientModel):
     _name = 'payslip.lines.contribution.register'
-    _description = 'PaySlip Lines by Contribution Registers'
+    _description = 'Payslip Lines by Contribution Registers'
 
     date_from = fields.Date(string='Date From', required=True,
         default=datetime.now().strftime('%Y-%m-01'))
@@ -24,4 +24,4 @@ class PayslipLinesContributionRegister(models.TransientModel):
              'model': 'hr.contribution.register',
              'form': self.read()[0]
         }
-        return self.env['report'].get_action([], 'hr_payroll.report_contributionregister', data=datas)
+        return self.env.ref('hr_payroll.action_contribution_register').report_action([], data=datas)

@@ -7,8 +7,7 @@ odoo.define('point_of_sale.gui', function (require) {
 // it is available to all pos objects trough the '.gui' field.
 
 var core = require('web.core');
-var Model = require('web.DataModel');
-var formats = require('web.formats');
+var field_utils = require('web.field_utils');
 var session = require('web.session');
 
 var _t = core._t;
@@ -245,10 +244,11 @@ var Gui = core.Class.extend({
         }
 
         this.show_popup('selection',{
-            'title': options.title || _t('Select User'),
+            title: options.title || _t('Select User'),
             list: list,
             confirm: function(user){ def.resolve(user); },
-            cancel:  function(){ def.reject(); },
+            cancel: function(){ def.reject(); },
+            is_selected: function(user){ return user === self.pos.get_cashier(); },
         });
 
         return def.then(function(user){
@@ -321,16 +321,20 @@ var Gui = core.Class.extend({
                     self._close();
                 } else {
                     var reason = self.pos.get('failed') ? 
-                                 'configuration errors' : 
-                                 'internet connection issues';  
+                                 _t('Some orders could not be submitted to '+
+                                     'the server due to configuration errors. '+
+                                     'You can exit the Point of Sale, but do '+
+                                     'not close the session before the issue '+
+                                     'has been resolved.') :
+                                 _t('Some orders could not be submitted to '+
+                                     'the server due to internet connection issues. '+
+                                     'You can exit the Point of Sale, but do '+
+                                     'not close the session before the issue '+
+                                     'has been resolved.');
 
                     self.show_popup('confirm', {
                         'title': _t('Offline Orders'),
-                        'body':  _t(['Some orders could not be submitted to',
-                                     'the server due to ' + reason + '.',
-                                     'You can exit the Point of Sale, but do',
-                                     'not close the session before the issue',
-                                     'has been resolved.'].join(' ')),
+                        'body':  reason,
                         'confirm': function() {
                             self._close();
                         },
@@ -437,7 +441,7 @@ var Gui = core.Class.extend({
     numpad_input: function(buffer, input, options) { 
         var newbuf  = buffer.slice(0);
         options = options || {};
-        var newbuf_float  = formats.parse_value(newbuf, {type: "float"}, 0);
+        var newbuf_float  = newbuf === '-' ? newbuf : field_utils.parse.float(newbuf);
         var decimal_point = _t.database.parameters.decimal_point;
 
         if (input === decimal_point) {

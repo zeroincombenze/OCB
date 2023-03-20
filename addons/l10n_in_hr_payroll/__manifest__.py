@@ -3,7 +3,7 @@
 
 {
     'name': 'Indian Payroll',
-    'category': 'Localization',
+    'category': 'Human  Resources',
     'depends': ['hr_payroll'],
     'description': """
 Indian Payroll Salary Rules.
@@ -16,7 +16,7 @@ Indian Payroll Salary Rules.
     * Allow to configure Basic / Gross / Net Salary
     * Employee PaySlip
     * Allowance / Deduction
-    * Integrated with Holiday Management
+    * Integrated with Leaves Management
     * Medical Allowance, Travel Allowance, Child Allowance, ...
     - Payroll Advice and Report
     - Yearly Salary by Head and Yearly Salary by Employee Report
@@ -38,4 +38,5 @@ Indian Payroll Salary Rules.
          'views/report_payroll_advice_template.xml',
      ],
     'demo': ['demo/l10n_in_hr_payroll_demo.xml'],
+    'license': 'LGPL-3',
 }

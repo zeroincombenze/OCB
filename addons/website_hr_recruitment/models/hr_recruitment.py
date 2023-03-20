@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from urlparse import urljoin
-from werkzeug import url_encode
+from werkzeug import urls
 
 from odoo import api, fields, models
-from odoo.addons.website.models.website import slug
 from odoo.tools.translate import html_translate
 
 
@@ -17,10 +15,10 @@ class RecruitmentSource(models.Model):
     @api.one
     @api.depends('source_id', 'source_id.name', 'job_id')
     def _compute_url(self):
-        base_url = self.env['ir.config_parameter'].get_param('web.base.url')
+        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         for source in self:
-            source.url = urljoin(base_url, "%s?%s" % (source.job_id.website_url,
-                url_encode({
+            source.url = urls.url_join(base_url, "%s?%s" % (source.job_id.website_url,
+                urls.url_encode({
                     'utm_campaign': self.env.ref('hr_recruitment.utm_campaign_job').name,
                     'utm_medium': self.env.ref('utm.utm_medium_website').name,
                     'utm_source': source.source_id.name
@@ -41,7 +39,7 @@ class Applicant(models.Model):
 class Job(models.Model):
 
     _name = 'hr.job'
-    _inherit = ['hr.job', 'website.seo.metadata', 'website.published.mixin']
+    _inherit = ['hr.job', 'website.seo.metadata', 'website.published.multi.mixin']
 
     def _get_default_website_description(self):
         default_description = self.env["ir.model.data"].xmlid_to_object("website_hr_recruitment.default_website_description")

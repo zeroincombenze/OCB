@@ -12,13 +12,13 @@ Adds enhanced support for (Ether)Pad attachments in the web client.
 Lets the company customize which Pad installation should be used to link to new
 pads (by default, http://etherpad.com/).
     """,
-    'website': 'https://www.odoo.com/page/notes',
     'depends': ['web', 'base_setup'],
     'data': [
         'views/pad.xml',
-        'views/res_config_view.xml',
+        'views/res_config_settings_views.xml',
     ],
     'demo': ['data/pad_demo.xml'],
     'web': True,
-    'qweb': ['static/src/xml/pad.xml']
+    'qweb': ['static/src/xml/pad.xml'],
+    'license': 'LGPL-3',
 }

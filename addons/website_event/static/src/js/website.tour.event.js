@@ -15,12 +15,12 @@ odoo.define("website_event.tour", function (require) {
         content: _t("Click here to create a new event."),
         position: "bottom",
     }, {
-        trigger: ".modal-dialog #editor_new_event input[type=text]",
+        trigger: '.modal-dialog #editor_new_event input[type=text]',
         content: _t("Create a name for your new event and click <em>\"Continue\"</em>. e.g: Technical Training"),
         position: "right",
     }, {
-        trigger: ".modal-dialog button.btn-primary.btn-continue",
-        extra_trigger: ".modal-dialog #editor_new_event input[type=text][value!=\"\"]",
+        trigger: '.modal-footer button.btn-primary.btn-continue',
+        extra_trigger: '#editor_new_event input[type=text][value!=""]',
         content: _t("Click <em>Continue</em> to create the event."),
         position: "right",
     }, {
@@ -33,14 +33,14 @@ odoo.define("website_event.tour", function (require) {
         content: _t("Once you click on save, your event is updated."),
         position: "bottom",
     }, {
-        trigger: "button.btn-danger.js_publish_btn",
+        trigger: ".js_publish_management .js_publish_btn",
         extra_trigger: "body:not(.editor_enable)",
         content: _t("Click to publish your event."),
         position: "top",
     }, {
-        trigger: ".js_publish_management button[data-toggle=\"dropdown\"]",
-        extra_trigger: ".js_publish_management button.js_publish_btn.btn-success:visible",
+        trigger: ".css_edit_dynamic",
+        extra_trigger: ".js_publish_management .js_publish_btn .css_unpublish:visible",
         content: _t("Click here to customize your event further."),
-        position: "left",
+        position: "bottom",
     }]);
 });

@@ -6,13 +6,14 @@
             <field name="arch" type="xml">
             <form string="Pay Order">
                 <group>
+                    <field name="session_id" invisible="True"/>
                     <field name="journal_id" domain="[('journal_user', '=', True)]"/>
                     <field name="amount" />
                     <field name="payment_name"/>
                 </group>
                 <footer>
                     <button name="check" string="Make Payment" type="object" class="btn-primary"/>
-                    <button special="cancel" string="Cancel" class="btn-default"/>
+                    <button special="cancel" string="Cancel" class="btn-secondary"/>
                 </footer>
             </form>
             </field>

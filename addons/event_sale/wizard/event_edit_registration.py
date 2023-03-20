@@ -5,8 +5,9 @@ from odoo import models, fields, api
 
 class RegistrationEditor(models.TransientModel):
     _name = "registration.editor"
+    _description = 'Edit Attendee Details on Sales Confirmation'
 
-    sale_order_id = fields.Many2one('sale.order', 'Sale Order', required=True)
+    sale_order_id = fields.Many2one('sale.order', 'Sales Order', required=True, ondelete='cascade')
     event_registration_ids = fields.One2many('registration.editor.line', 'editor_id', string='Registrations to Edit')
 
     @api.model
@@ -55,16 +56,17 @@ class RegistrationEditor(models.TransientModel):
                 self.env['event.registration'].create(values)
         if self.env.context.get('active_model') == 'sale.order':
             for order in self.env['sale.order'].browse(self.env.context.get('active_ids', [])):
-                order.order_line._update_registrations(confirm=True)
+                order.order_line._update_registrations(confirm=False)
         return {'type': 'ir.actions.act_window_close'}
 
 
 class RegistrationEditorLine(models.TransientModel):
     """Event Registration"""
     _name = "registration.editor.line"
+    _description = 'Edit Attendee Line on Sales Confirmation'
 
     editor_id = fields.Many2one('registration.editor')
-    sale_order_line_id = fields.Many2one('sale.order.line', string='Sale Order Line')
+    sale_order_line_id = fields.Many2one('sale.order.line', string='Sales Order Line')
     event_id = fields.Many2one('event.event', string='Event', required=True)
     registration_id = fields.Many2one('event.registration', 'Original Registration')
     event_ticket_id = fields.Many2one('event.event.ticket', string='Event Ticket')

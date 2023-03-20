@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-
-import csv
+import base64
 import io
 import unittest
 
 from odoo.tests.common import TransactionCase, can_import
 from odoo.modules.module import get_module_resource
-from odoo.tools import mute_logger
-
+from odoo.tools import mute_logger, pycompat
 
 ID_FIELD = {
     'id': 'id',
@@ -99,7 +97,7 @@ class TestO2M(BaseImportCase):
         self.assertEqualFields(self.get_fields('o2m'), make_field(field_type='one2many', fields=[
             ID_FIELD,
             # FIXME: should reverse field be ignored?
-            {'id': 'parent_id', 'name': 'parent_id', 'string': 'Parent id', 'type': 'many2one', 'required': False, 'fields': [
+            {'id': 'parent_id', 'name': 'parent_id', 'string': 'Parent', 'type': 'many2one', 'required': False, 'fields': [
                 {'id': 'parent_id', 'name': 'id', 'string': 'External ID', 'required': False, 'fields': [], 'type': 'id'},
                 {'id': 'parent_id', 'name': '.id', 'string': 'Database ID', 'required': False, 'fields': [], 'type': 'id'},
             ]},
@@ -191,6 +189,31 @@ class TestMatchHeadersMultiple(TransactionCase):
         )
 
 
+class TestColumnMapping(TransactionCase):
+
+    def test_column_mapping(self):
+        import_record = self.env['base_import.import'].create({
+            'res_model': 'base_import.tests.models.preview',
+            'file': u"Name,Some Value,value\n"
+                    u"chhagan,10,1\n"
+                    u"magan,20,2\n".encode('utf-8'),
+            'file_type': 'text/csv',
+            'file_name': 'data.csv',
+        })
+        import_record.do(
+            ['name', 'somevalue', 'othervalue'],
+            ['Name', 'Some Value', 'value'],
+            {'quoting': '"', 'separator': ',', 'headers': True},
+            True
+        )
+        fields = self.env['base_import.mapping'].search_read(
+            [('res_model', '=', 'base_import.tests.models.preview')],
+            ['column_name', 'field_name']
+        )
+        self.assertItemsEqual([f['column_name'] for f in fields], ['Name', 'Some Value', 'value'])
+        self.assertItemsEqual([f['field_name'] for f in fields], ['somevalue', 'name', 'othervalue'])
+
+
 class TestPreview(TransactionCase):
 
     def make_import(self):
@@ -209,7 +232,7 @@ class TestPreview(TransactionCase):
             'quoting': '"',
             'separator': ',',
         })
-        self.assertTrue('error' in result)
+        self.assertFalse('error' in result)
 
     @mute_logger('odoo.addons.base_import.models.base_import')
     def test_csv_errors(self):
@@ -218,24 +241,22 @@ class TestPreview(TransactionCase):
         result = import_wizard.parse_preview({
             'quoting': 'foo',
             'separator': ',',
-            'encoding': 'euc_kr',
         })
         self.assertTrue('error' in result)
 
         result = import_wizard.parse_preview({
             'quoting': '"',
             'separator': 'bob',
-            'encoding': 'euc_kr',
         })
         self.assertTrue('error' in result)
 
     def test_csv_success(self):
         import_wizard = self.env['base_import.import'].create({
             'res_model': 'base_import.tests.models.preview',
-            'file': 'name,Some Value,Counter\n'
-                    'foo,1,2\n'
-                    'bar,3,4\n'
-                    'qux,5,6\n',
+            'file': b'name,Some Value,Counter\n'
+                    b'foo,1,2\n'
+                    b'bar,3,4\n'
+                    b'qux,5,6\n',
             'file_type': 'text/csv'
         })
 
@@ -260,7 +281,7 @@ class TestPreview(TransactionCase):
             ['qux', '5', '6'],
         ])
         # Ensure we only have the response fields we expect
-        self.assertItemsEqual(result.keys(), ['matches', 'headers', 'fields', 'preview', 'headers_type', 'options', 'advanced_mode', 'debug'])
+        self.assertItemsEqual(list(result), ['matches', 'headers', 'fields', 'preview', 'headers_type', 'options', 'advanced_mode', 'debug'])
 
     @unittest.skipUnless(can_import('xlrd'), "XLRD module not available")
     def test_xls_success(self):
@@ -290,7 +311,7 @@ class TestPreview(TransactionCase):
             ['qux', '5', '6'],
         ])
         # Ensure we only have the response fields we expect
-        self.assertItemsEqual(result.keys(), ['matches', 'headers', 'fields', 'preview', 'headers_type', 'options', 'advanced_mode', 'debug'])
+        self.assertItemsEqual(list(result), ['matches', 'headers', 'fields', 'preview', 'headers_type', 'options', 'advanced_mode', 'debug'])
 
     @unittest.skipUnless(can_import('xlrd.xlsx'), "XLRD/XLSX not available")
     def test_xlsx_success(self):
@@ -320,7 +341,7 @@ class TestPreview(TransactionCase):
             ['qux', '5', '6'],
         ])
         # Ensure we only have the response fields we expect
-        self.assertItemsEqual(result.keys(), ['matches', 'headers', 'fields', 'preview', 'headers_type', 'options','advanced_mode', 'debug'])
+        self.assertItemsEqual(list(result), ['matches', 'headers', 'fields', 'preview', 'headers_type', 'options', 'advanced_mode', 'debug'])
 
     @unittest.skipUnless(can_import('odf'), "ODFPY not available")
     def test_ods_success(self):
@@ -350,7 +371,7 @@ class TestPreview(TransactionCase):
             ['aux', '5', '6'],
         ])
         # Ensure we only have the response fields we expect
-        self.assertItemsEqual(result.keys(), ['matches', 'headers', 'fields', 'preview', 'headers_type', 'options', 'advanced_mode', 'debug'])
+        self.assertItemsEqual(list(result), ['matches', 'headers', 'fields', 'preview', 'headers_type', 'options', 'advanced_mode', 'debug'])
 
 
 class test_convert_import_data(TransactionCase):
@@ -360,10 +381,10 @@ class test_convert_import_data(TransactionCase):
     def test_all(self):
         import_wizard = self.env['base_import.import'].create({
             'res_model': 'base_import.tests.models.preview',
-            'file': 'name,Some Value,Counter\n'
-                    'foo,1,2\n'
-                    'bar,3,4\n'
-                    'qux,5,6\n',
+            'file': b'name,Some Value,Counter\n'
+                    b'foo,1,2\n'
+                    b'bar,3,4\n'
+                    b'qux,5,6\n',
             'file_type': 'text/csv'
 
         })
@@ -382,14 +403,15 @@ class test_convert_import_data(TransactionCase):
     def test_date_fields(self):
         import_wizard = self.env['base_import.import'].create({
             'res_model': 'res.partner',
-            'file': 'name,date,create_date\n'
-                    '"foo","2013年07月18日","2016-10-12 06:06"\n',
+            'file': u'name,date,create_date\n'
+                    u'"foo","2013年07月18日","2016-10-12 06:06"\n'.encode('utf-8'),
             'file_type': 'text/csv'
 
         })
 
         results = import_wizard.do(
             ['name', 'date', 'create_date'],
+            [],
             {
                 'date_format': '%Y年%m月%d日',
                 'datetime_format': '%Y-%m-%d %H:%M',
@@ -400,7 +422,7 @@ class test_convert_import_data(TransactionCase):
         )
 
         # if results empty, no errors
-        self.assertItemsEqual(results, [])
+        self.assertItemsEqual(results['messages'], [])
 
     def test_parse_relational_fields(self):
         """ Ensure that relational fields float and date are correctly
@@ -408,8 +430,8 @@ class test_convert_import_data(TransactionCase):
         """
         import_wizard = self.env['base_import.import'].create({
             'res_model': 'res.partner',
-            'file': 'name,parent_id/id,parent_id/date,parent_id/credit_limit\n'
-                    '"foo","__export__.res_partner_1","2017年10月12日","5,69"\n',
+            'file': u'name,parent_id/id,parent_id/date,parent_id/credit_limit\n'
+                    u'"foo","__export__.res_partner_1","2017年10月12日","5,69"\n'.encode('utf-8'),
             'file_type': 'text/csv'
 
         })
@@ -436,10 +458,10 @@ class test_convert_import_data(TransactionCase):
         """
         import_wizard = self.env['base_import.import'].create({
             'res_model': 'base_import.tests.models.preview',
-            'file': 'name,Some Value,Counter\n'
-                    'foo,1,2\n'
-                    'bar,3,4\n'
-                    'qux,5,6\n',
+            'file': b'name,Some Value,Counter\n'
+                    b'foo,1,2\n'
+                    b'bar,3,4\n'
+                    b'qux,5,6\n',
             'file_type': 'text/csv'
         })
         data, fields = import_wizard._convert_import_data(
@@ -460,10 +482,10 @@ class test_convert_import_data(TransactionCase):
         """
         import_wizard = self.env['base_import.import'].create({
             'res_model': 'base_import.tests.models.preview',
-            'file': 'name,Some Value,Counter\n'
-                    'foo,1,2\n'
-                    ',3,\n'
-                    ',5,6\n',
+            'file': b'name,Some Value,Counter\n'
+                    b'foo,1,2\n'
+                    b',3,\n'
+                    b',5,6\n',
             'file_type': 'text/csv'
         })
         data, fields = import_wizard._convert_import_data(
@@ -480,12 +502,12 @@ class test_convert_import_data(TransactionCase):
     def test_empty_rows(self):
         import_wizard = self.env['base_import.import'].create({
             'res_model': 'base_import.tests.models.preview',
-            'file': 'name,Some Value\n'
-                    'foo,1\n'
-                    '\n'
-                    'bar,2\n'
-                    '     \n'
-                    '\t \n',
+            'file': b'name,Some Value\n'
+                    b'foo,1\n'
+                    b'\n'
+                    b'bar,2\n'
+                    b'     \n'
+                    b'\t \n',
             'file_type': 'text/csv'
         })
         data, fields = import_wizard._convert_import_data(
@@ -502,8 +524,8 @@ class test_convert_import_data(TransactionCase):
     def test_nofield(self):
         import_wizard = self.env['base_import.import'].create({
             'res_model': 'base_import.tests.models.preview',
-            'file': 'name,Some Value,Counter\n'
-                    'foo,1,2\n',
+            'file': b'name,Some Value,Counter\n'
+                    b'foo,1,2\n',
             'file_type': 'text/csv'
 
         })
@@ -512,8 +534,8 @@ class test_convert_import_data(TransactionCase):
     def test_falsefields(self):
         import_wizard = self.env['base_import.import'].create({
             'res_model': 'base_import.tests.models.preview',
-            'file': 'name,Some Value,Counter\n'
-                    'foo,1,2\n',
+            'file': b'name,Some Value,Counter\n'
+                    b'foo,1,2\n',
             'file_type': 'text/csv'
         })
 
@@ -528,11 +550,11 @@ class test_convert_import_data(TransactionCase):
         Ensure importing keep newlines
         """
         output = io.BytesIO()
-        writer = csv.writer(output, quoting=csv.QUOTE_ALL)
+        writer = pycompat.csv_writer(output, quoting=1)
 
-        data_row = ["\tfoo\n\tbar", " \"hello\" \n\n 'world' "]
+        data_row = [u"\tfoo\n\tbar", u" \"hello\" \n\n 'world' "]
 
-        writer.writerow(["name", "Some Value"])
+        writer.writerow([u"name", u"Some Value"])
         writer.writerow(data_row)
 
         import_wizard = self.env['base_import.import'].create({
@@ -554,16 +576,15 @@ class test_failures(TransactionCase):
         Ensure big fields (e.g. b64-encoded image data) can be imported and
         we're not hitting limits of the default CSV parser config
         """
-        import csv, cStringIO
         from PIL import Image
 
         im = Image.new('RGB', (1920, 1080))
-        fout = cStringIO.StringIO()
+        fout = io.BytesIO()
 
-        writer = csv.writer(fout, dialect=None)
+        writer = pycompat.csv_writer(fout, dialect=None)
         writer.writerows([
-            ['name', 'db_datas'],
-            ['foo', im.tobytes().encode('base64')]
+            [u'name', u'db_datas'],
+            [u'foo', base64.b64encode(im.tobytes()).decode('ascii')]
         ])
 
         import_wizard = self.env['base_import.import'].create({
@@ -573,5 +594,6 @@ class test_failures(TransactionCase):
         })
         results = import_wizard.do(
             ['name', 'db_datas'],
+            [],
             {'headers': True, 'separator': ',', 'quoting': '"'})
-        self.assertFalse(results, "results should be empty on successful import")
+        self.assertFalse(results['messages'], "results should be empty on successful import")

@@ -3,17 +3,17 @@
 # * mrp_byproduct
 # 
 # Translators:
-# 종현 엄 <whd5367@naver.com>, 2017
-# Martin Trigaux, 2017
-# 방상우 <mrroom@gmail.com>, 2017
+# Martin Trigaux, 2018
+# Link Up링크업 <linkup.way@gmail.com>, 2018
+# Linkup <link-up@naver.com>, 2018
 # JH CHOI <hwangtog@gmail.com>, 2019
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0c\n"
+"Project-Id-Version: Odoo Server saas~11.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-07 08:57+0000\n"
-"PO-Revision-Date: 2016-09-07 09:23+0000\n"
+"POT-Creation-Date: 2018-09-21 13:17+0000\n"
+"PO-Revision-Date: 2018-08-24 09:21+0000\n"
 "Last-Translator: JH CHOI <hwangtog@gmail.com>, 2019\n"
 "Language-Team: Korean (https://www.transifex.com/odoo/teams/41243/ko/)\n"
 "MIME-Version: 1.0\n"
@@ -28,7 +28,7 @@ msgid "Bill of Material"
 msgstr "재료 명세서"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_bom_id
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__bom_id
 msgid "BoM"
 msgstr "재료 명세서"
 
@@ -38,63 +38,63 @@ msgid "Byproduct"
 msgstr "부산물"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_bom_sub_products
-#: model:ir.ui.view,arch_db:mrp_byproduct.mrp_subproduct_view
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_bom__sub_products
+#: model_terms:ir.ui.view,arch_db:mrp_byproduct.mrp_subproduct_view
 msgid "Byproducts"
 msgstr "부산물"
 
 #. module: mrp_byproduct
 #: model:ir.model,name:mrp_byproduct.model_change_production_qty
-msgid "Change Quantity of Products"
-msgstr "상품의 수량을 변경"
+msgid "Change Production Qty"
+msgstr "생산 수량 변경"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_create_uid
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__create_uid
 msgid "Created by"
 msgstr "작성자"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_create_date
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__create_date
 msgid "Created on"
 msgstr "작성일"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_display_name
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__display_name
 msgid "Display Name"
-msgstr "표시 이름"
+msgstr "제목"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_id
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__id
 msgid "ID"
 msgstr "ID"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct___last_update
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct____last_update
 msgid "Last Modified on"
-msgstr "최근 수정"
+msgstr "최근 수정일"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_write_uid
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__write_uid
 msgid "Last Updated by"
 msgstr "최근 갱신한 사람"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_write_date
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__write_date
 msgid "Last Updated on"
-msgstr "최근 갱신 날짜"
+msgstr "최근 갱신일"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_operation_id
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__operation_id
 msgid "Produced at Operation"
 msgstr "운영으로 생산됨"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_product_id
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__product_id
 msgid "Product"
 msgstr "상품"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_product_qty
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__product_qty
 msgid "Product Qty"
 msgstr "상품 수량"
 
@@ -104,17 +104,22 @@ msgid "Production"
 msgstr "생산"
 
 #. module: mrp_byproduct
+#: model:ir.model,name:mrp_byproduct.model_mrp_product_produce
+msgid "Record Production"
+msgstr "제품 기록"
+
+#. module: mrp_byproduct
 #: model:ir.model,name:mrp_byproduct.model_stock_move
 msgid "Stock Move"
 msgstr "재고 이동"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_stock_move_subproduct_id
+#: model:ir.model.fields,field_description:mrp_byproduct.field_stock_move__subproduct_id
 msgid "Subproduct"
-msgstr "부제품"
+msgstr "하위 제품"
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,help:mrp_byproduct.field_stock_move_subproduct_id
+#: model:ir.model.fields,help:mrp_byproduct.field_stock_move__subproduct_id
 msgid "Subproduct line that generated the move in a manufacturing order"
 msgstr "제조 주문으로 이동을 발생시킨 하위 제품 명세"
 
@@ -122,17 +127,23 @@ msgstr "제조 주문으로 이동을 발생시킨 하위 제품 명세"
 #: code:addons/mrp_byproduct/models/mrp_subproduct.py:32
 #, python-format
 msgid ""
-"The Product Unit of Measure you chose has a different category than in the "
-"product form."
-msgstr "상품 측정 단위는 상품 형태와는 다른 분류를 선택합니다."
+"The unit of measure you chose is in a different category than the product "
+"unit of measure."
+msgstr "선택한 측정 단위는 제품 측정 단위와 다른 범주에 있습니다."
 
 #. module: mrp_byproduct
-#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct_product_uom_id
+#: model:ir.model.fields,field_description:mrp_byproduct.field_mrp_subproduct__product_uom_id
 msgid "Unit of Measure"
-msgstr "측정 단위"
+msgstr "단위"
 
 #. module: mrp_byproduct
 #: code:addons/mrp_byproduct/models/mrp_subproduct.py:31
 #, python-format
 msgid "Warning"
 msgstr "경고"
+
+#. module: mrp_byproduct
+#: code:addons/mrp_byproduct/models/mrp_production.py:48
+#, python-format
+msgid "You cannot have %s  as the finished product and in the Byproducts"
+msgstr "%s을 완제품 및 부산물로 가질 수 없습니다."

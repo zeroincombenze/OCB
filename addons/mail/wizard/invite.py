@@ -24,11 +24,11 @@ class Invite(models.TransientModel):
         model = result.get('res_model')
         res_id = result.get('res_id')
         if model and res_id:
-            document = self.env['ir.model'].search([('model', '=', model)]).name_get()[0][1]
+            document = self.env['ir.model']._get(model).display_name
             title = self.env[model].browse(res_id).display_name
             msg_fmt = _('%(user_name)s invited you to follow %(document)s document: %(title)s')
         else:
-            msg_fmt = _('%(user_name)s invited you to follow a new document')
+            msg_fmt = _('%(user_name)s invited you to follow a new document.')
 
         text = msg_fmt % locals()
         message = html.DIV(
@@ -58,8 +58,7 @@ class Invite(models.TransientModel):
             new_channels = wizard.channel_ids - document.message_channel_ids
             document.message_subscribe(new_partners.ids, new_channels.ids)
 
-            model_ids = self.env['ir.model'].search([('model', '=', wizard.res_model)])
-            model_name = model_ids.name_get()[0][1]
+            model_name = self.env['ir.model']._get(wizard.res_model).display_name
             # send an email if option checked and if a message exists (do not send void emails)
             if wizard.send_mail and wizard.message and not wizard.message == '<br>':  # when deleting the message, cleditor keeps a <br>
                 message = self.env['mail.message'].create({
@@ -71,7 +70,20 @@ class Invite(models.TransientModel):
                     'model': wizard.res_model,
                     'res_id': wizard.res_id,
                     'no_auto_thread': True,
+                    'add_sign': True,
                 })
-                new_partners.with_context(auto_delete=True)._notify(message, force_send=True, send_after_commit=False, user_signature=True)
+                partners_data = []
+                recipient_data = self.env['mail.followers']._get_recipient_data(document, False, pids=new_partners.ids)
+                for pid, cid, active, pshare, ctype, notif, groups in recipient_data:
+                    pdata = {'id': pid, 'share': pshare, 'active': active, 'notif': 'email', 'groups': groups or []}
+                    if not pshare and notif:  # has an user and is not shared, is therefore user
+                        partners_data.append(dict(pdata, type='user'))
+                    elif pshare and notif:  # has an user and is shared, is therefore portal
+                        partners_data.append(dict(pdata, type='portal'))
+                    else:  # has no user, is therefore customer
+                        partners_data.append(dict(pdata, type='customer'))
+                self.env['res.partner'].with_context(auto_delete=True)._notify(
+                    message, partners_data, document,
+                    force_send=True, send_after_commit=False)
                 message.unlink()
         return {'type': 'ir.actions.act_window_close'}

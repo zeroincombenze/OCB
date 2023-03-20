@@ -10,100 +10,130 @@ odoo.define('payment_stripe.stripe', function(require) {
     // The following currencies are integer only, see
     // https://stripe.com/docs/currencies#zero-decimal
     var int_currencies = [
-        'BIF', 'XAF', 'XPF', 'CLP', 'KMF', 'DJF', 'GNF', 'JPY', 'MGA', 'PYGí',
+        'BIF', 'XAF', 'XPF', 'CLP', 'KMF', 'DJF', 'GNF', 'JPY', 'MGA', 'PYG',
         'RWF', 'KRW', 'VUV', 'VND', 'XOF'
     ];
 
-    var handler = StripeCheckout.configure({
-        key: $("input[name='stripe_key']").val(),
-        image: $("input[name='stripe_image']").val(),
-        locale: 'auto',
-        closed: function() {
-          if (!handler.isTokenGenerate) {
-                $('#pay_stripe')
-                    .removeAttr('disabled')
-                    .find('i').remove();
-          }
-        },
-        token: function(token, args) {
-            handler.isTokenGenerate = true;
-            ajax.jsonRpc("/payment/stripe/create_charge", 'call', {
-                tokenid: token.id,
-                email: token.email,
-                amount: $("input[name='amount']").val(),
-                acquirer_id: $("#acquirer_stripe").val(),
-                currency: $("input[name='currency']").val(),
-                invoice_num: $("input[name='invoice_num']").val(),
-                return_url: $("input[name='return_url']").val()
-            }).done(function(data){
-                handler.isTokenGenerate = false;
-                window.location.href = data;
-            }).fail(function(){
-                var msg = arguments && arguments[1] && arguments[1].data && arguments[1].data.message;
-                var wizard = $(qweb.render('stripe.error', {'msg': msg || _t('Payment error')}));
-                wizard.appendTo($('body')).modal({'keyboard': true});
-            });
-        },
+    if ($.blockUI) {
+        // our message needs to appear above the modal dialog
+        $.blockUI.defaults.baseZ = 2147483647; //same z-index as StripeCheckout
+        $.blockUI.defaults.css.border = '0';
+        $.blockUI.defaults.css["background-color"] = '';
+        $.blockUI.defaults.overlayCSS["opacity"] = '0.9';
+    }
+    var stripeHandler;
+    function getStripeHandler()
+    {
+        if (stripeHandler) {
+            return stripeHandler;
+        }
+        var handler = stripeHandler = StripeCheckout.configure({
+            key: $("input[name='stripe_key']").val(),
+            image: $("input[name='stripe_image']").val(),
+            locale: 'auto',
+            token: function(token, args) {
+                handler.isTokenGenerate = true;
+                if ($.blockUI) {
+                    var msg = _t("Just one more second, confirming your payment...");
+                    $.blockUI({
+                        'message': '<h2 class="text-white"><img src="/web/static/src/img/spin.png" class="fa-pulse"/>' +
+                                '    <br />' + msg +
+                                '</h2>'
+                    });
+                }
+                ajax.jsonRpc("/payment/stripe/create_charge", 'call', {
+                    tokenid: token.id,  // TBE TODO: for backward compatibility, remove on master
+                    email: token.email, // TBE TODO: for backward compatibility, remove on master
+                    token: token,
+                    amount: $("input[name='amount']").val(),
+                    acquirer_id: $("#acquirer_stripe").val(),
+                    currency: $("input[name='currency']").val(),
+                    invoice_num: $("input[name='invoice_num']").val(),
+                    tx_ref: $("input[name='invoice_num']").val(),
+                    return_url: $("input[name='return_url']").val()
+                }).always(function(){
+                    if ($.blockUI) {
+                        $.unblockUI();
+                    }
+                }).done(function(data){
+                    handler.isTokenGenerate = false;
+                    window.location.href = data;
+                }).fail(function(data){
+                    var msg = data && data.data && data.data.message;
+                    var wizard = $(qweb.render('stripe.error', {'msg': msg || _t('Payment error')}));
+                    wizard.appendTo($('body')).modal({'keyboard': true});
+                });
+            },
+        });
+        return handler;
+    }
+
+    require('web.dom_ready');
+    if (!$('.o_payment_form').length) {
+        return $.Deferred().reject("DOM doesn't contain '.o_payment_form'");
+    }
+
+    var observer = new MutationObserver(function(mutations, observer) {
+        for(var i=0; i<mutations.length; ++i) {
+            for(var j=0; j<mutations[i].addedNodes.length; ++j) {
+                if(mutations[i].addedNodes[j].tagName.toLowerCase() === "form" && mutations[i].addedNodes[j].getAttribute('provider') == 'stripe') {
+                    display_stripe_form($(mutations[i].addedNodes[j]));
+                }
+            }
+        }
     });
 
-    $('#pay_stripe').on('click', function(e) {
+
+    function display_stripe_form(provider_form) {
         // Open Checkout with further options
-        if(!$(this).find('i').length)
-            $(this).append('<i class="fa fa-spinner fa-spin"/>');
-            $(this).attr('disabled','disabled');
+        var payment_form = $('.o_payment_form');
+        if(!payment_form.find('i').length)
+            payment_form.append('<i class="fa fa-spinner fa-spin"/>');
+            payment_form.attr('disabled','disabled');
 
-        var $form = $(e.currentTarget).parents('form');
-        var acquirer_id = $(e.currentTarget).closest('div.oe_sale_acquirer_button,div.oe_quote_acquirer_button,div.o_website_payment_new_payment');
-        acquirer_id = acquirer_id.data('id') || acquirer_id.data('acquirer_id');
-        if (! acquirer_id) {
-            return false;
+        var payment_tx_url = payment_form.find('input[name="prepare_tx_url"]').val();
+        var access_token = $("input[name='access_token']").val() || $("input[name='token']").val() || '';
+
+        var get_input_value = function(name) {
+            return provider_form.find('input[name="' + name + '"]').val();
         }
 
-        var so_token = $("input[name='token']").val();
-        var so_id = $("input[name='return_url']").val().match(/quote\/([0-9]+)/) || undefined;
-        if (so_id) {
-            so_id = parseInt(so_id[1]);
+        var acquirer_id = parseInt(provider_form.find('#acquirer_stripe').val());
+        var amount = parseFloat(get_input_value("amount") || '0.0');
+        var currency = get_input_value("currency");
+        var email = get_input_value("email");
+        var invoice_num = get_input_value("invoice_num");
+        var merchant = get_input_value("merchant");
+
+        // Search if the user wants to save the credit card information
+        var form_save_token = false;
+        var acquirer_form = $('#o_payment_form_acq_' + acquirer_id);
+        if (acquirer_form.length) {
+            form_save_token = acquirer_form.find('input[name="o_payment_form_save_token"]').prop('checked');
         }
 
-        e.preventDefault();
-        if ($('.o_website_payment').length !== 0) {
-            var currency = $("input[name='currency']").val();
-            var currency_id = $("input[name='currency_id']").val();
-            var amount = parseFloat($("input[name='amount']").val() || '0.0');
-
-            ajax.jsonRpc('/website_payment/transaction', 'call', {
-                    reference: $("input[name='invoice_num']").val(),
-                    amount: amount,
-                    currency_id: currency_id,
-                    acquirer_id: acquirer_id
-                })
-                handler.open({
-                    name: $("input[name='merchant']").val(),
-                    email: $("input[name='email']").val(),
-                    description: $("input[name='invoice_num']").val(),
-                    currency: currency,
-                    amount: _.contains(int_currencies, currency) ? amount : amount * 100,
-                });
-        } else {
-            var currency = $("input[name='currency']").val();
-            var amount = parseFloat($("input[name='amount']").val() || '0.0');
-
-            ajax.jsonRpc('/shop/payment/transaction/' + acquirer_id, 'call', {
-                    so_id: so_id,
-                    so_token: so_token
-                }, {'async': false}).then(function (data) {
-                var $pay_stripe = $('#pay_stripe').detach();
-                $form.html(data);
-                // Restore 'Pay Now' button HTML since data might have changed it.
-                $form.find('#pay_stripe').replaceWith($pay_stripe);
-                handler.open({
-                    name: $("input[name='merchant']").val(),
-                    email: $("input[name='email']").val(),
-                    description: $("input[name='invoice_num']").val(),
-                    currency: currency,
-                    amount: _.contains(int_currencies, currency) ? amount : amount * 100,
-                });
+        ajax.jsonRpc(payment_tx_url, 'call', {
+            acquirer_id: acquirer_id,
+            access_token: access_token,
+            save_token: form_save_token,
+        }).then(function(data) {
+            var $pay_stripe = $('#pay_stripe').detach();
+            try { provider_form[0].innerHTML = data; } catch (e) {}
+            // Restore 'Pay Now' button HTML since data might have changed it.
+            $(provider_form[0]).find('#pay_stripe').replaceWith($pay_stripe);
+        }).done(function () {
+            getStripeHandler().open({
+                name: merchant,
+                description: invoice_num,
+                email: email,
+                currency: currency,
+                amount: _.contains(int_currencies, currency) ? amount : amount * 100,
             });
-        }
+        });
+    }
+
+    $.getScript("https://checkout.stripe.com/checkout.js", function(data, textStatus, jqxhr) {
+        observer.observe(document.body, {childList: true});
+        display_stripe_form($('form[provider="stripe"]'));
     });
 });

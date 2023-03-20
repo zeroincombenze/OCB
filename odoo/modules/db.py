@@ -12,28 +12,24 @@ def is_initialized(cr):
     The database can be initialized with the 'initialize' function below.
 
     """
-    cr.execute("SELECT relname FROM pg_class WHERE relkind='r' AND relname='ir_module_module'")
-    return len(cr.fetchall()) > 0
+    return odoo.tools.table_exists(cr, 'ir_module_module')
 
 def initialize(cr):
     """ Initialize a database with for the ORM.
 
-    This executes base/base.sql, creates the ir_module_categories (taken
-    from each module descriptor file), and creates the ir_module_module
+    This executes base/data/base_data.sql, creates the ir_module_categories
+    (taken from each module descriptor file), and creates the ir_module_module
     and ir_model_data entries.
 
     """
-    f = odoo.modules.get_module_resource('base', 'base.sql')
+    f = odoo.modules.get_module_resource('base', 'data', 'base_data.sql')
     if not f:
         m = "File not found: 'base.sql' (provided by module 'base')."
         _logger.critical(m)
         raise IOError(m)
-    base_sql_file = odoo.tools.misc.file_open(f)
-    try:
+
+    with odoo.tools.misc.file_open(f) as base_sql_file:
         cr.execute(base_sql_file.read())
-        cr.commit()
-    finally:
-        base_sql_file.close()
 
     for i in odoo.modules.get_modules():
         mod_path = odoo.modules.get_module_path(i)
@@ -85,8 +81,6 @@ def initialize(cr):
         if not to_auto_install: break
         cr.execute("""UPDATE ir_module_module SET state='to install' WHERE name in %s""", (tuple(to_auto_install),))
 
-    cr.commit()
-
 def create_categories(cr, categories):
     """ Create the ir_module_category entries for some categories.
 
@@ -100,7 +94,7 @@ def create_categories(cr, categories):
     category = []
     while categories:
         category.append(categories[0])
-        xml_id = 'module_category_' + ('_'.join(map(lambda x: x.lower(), category))).replace('&', 'and').replace(' ', '_')
+        xml_id = 'module_category_' + ('_'.join(x.lower() for x in category)).replace('&', 'and').replace(' ', '_')
         # search via xml_id (because some categories are renamed)
         cr.execute("SELECT res_id FROM ir_model_data WHERE name=%s AND module=%s AND model=%s",
                    (xml_id, "base", "ir.module.category"))

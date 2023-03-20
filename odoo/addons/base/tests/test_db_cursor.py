@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-import unittest
 
 import odoo
 from odoo.sql_db import TestCursor
 from odoo.tests import common
+from odoo.tests.common import BaseCase
 from odoo.tools.misc import mute_logger
 
 ADMIN_USER_ID = common.ADMIN_USER_ID
@@ -14,7 +14,7 @@ def registry():
     return odoo.registry(common.get_db_name())
 
 
-class TestExecute(unittest.TestCase):
+class TestExecute(BaseCase):
     """ Try cr.execute with wrong parameters """
 
     @mute_logger('odoo.sql_db')
@@ -35,11 +35,14 @@ class TestTestCursor(common.TransactionCase):
     @classmethod
     def setUpClass(cls):
         super(TestTestCursor, cls).setUpClass()
-        registry().enter_test_mode()
+        r = registry()
+        r.enter_test_mode(r.cursor())
 
     @classmethod
     def tearDownClass(cls):
-        registry().leave_test_mode()
+        r = registry()
+        r.test_cr.close()
+        r.leave_test_mode()
         super(TestTestCursor, cls).tearDownClass()
 
     def setUp(self):

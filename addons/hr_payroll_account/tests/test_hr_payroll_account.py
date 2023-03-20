@@ -34,7 +34,7 @@ class TestHrPayrollAccount(common.TransactionCase):
 
         self.hr_employee_john = self.env['hr.employee'].create({
             'address_home_id': self.ref('base.res_partner_address_2'),
-            'address_id': self.ref('base.res_partner_address_12'),
+            'address_id': self.ref('base.res_partner_address_27'),
             'birthday': '1984-05-01',
             'children': 0.0,
             'country_id': self.ref('base.in'),
@@ -43,7 +43,6 @@ class TestHrPayrollAccount(common.TransactionCase):
             'marital': 'single',
             'name': 'John',
             'bank_account_id': self.res_partner_bank.bank_id.id,
-            'vehicle_distance': 0.0,
         })
 
         self.hr_structure_softwaredeveloper = self.env['hr.payroll.structure'].create({
@@ -70,7 +69,6 @@ class TestHrPayrollAccount(common.TransactionCase):
             'type_id': self.ref('hr_contract.hr_contract_type_emp'),
             'employee_id': self.hr_employee_john.id,
             'struct_id': self.hr_structure_softwaredeveloper.id,
-            'working_hours': self.ref('resource.timesheet_group1'),
             'journal_id': self.ref('hr_payroll_account.expenses_journal'),
         })
 

@@ -6,7 +6,7 @@ var crash_manager = require('web.crash_manager');
 var data = require('web.data');
 var Dialog = require('web.Dialog');
 var framework = require('web.framework');
-var pyeval = require('web.pyeval');
+var pyUtils = require('web.py_utils');
 
 var QWeb = core.qweb;
 var _t = core._t;
@@ -14,7 +14,7 @@ var _t = core._t;
 var DataExport = Dialog.extend({
     template: 'ExportDialog',
     events: {
-        'click .o_expand_parent': function(e) {
+        'click .o_expand': function(e) {
             this.on_expand_action(this.records[$(e.target).closest('.o_export_tree_item').data('id')]);
         },
         'click .o_export_tree_item': function(e) {
@@ -49,17 +49,26 @@ var DataExport = Dialog.extend({
 
             function process_children() {
                 var $this = $(this);
-                if($this.hasClass('open')) {
+                if($this.hasClass('show')) {
                     $this.children('.o_export_tree_item')
                          .addClass('o_selected')
                          .each(process_children);
                 }
             }
         },
-        'dblclick .o_export_tree_item': function(e) {
-            var $elem = $(e.currentTarget);
-            $elem.removeClass('o_selected');
-            this.add_field($elem.data('id'), $elem.find('.o_tree_column').first().text());
+        'dblclick .o_export_tree_item:not(.haschild)': function(e) {
+            var self = this;
+            function addElement(el) {
+                self.add_field(el.getAttribute('data-id'), el.querySelector('.o_tree_column').textContent);
+            }
+            var target = e.currentTarget;
+            target.classList.remove('o_selected');
+            // Add parent fields to export
+            [].reverse.call($(target).parents('.o_export_tree_item')).each(function () {
+                addElement(this);
+            });
+            // add field itself
+            addElement(target);
         },
         'keydown .o_export_tree_item': function(e) {
             e.stopPropagation();
@@ -68,19 +77,19 @@ var DataExport = Dialog.extend({
 
             switch(e.keyCode || e.which) {
                 case $.ui.keyCode.LEFT:
-                    if ($elem.hasClass('open')) {
+                    if ($elem.hasClass('show')) {
                         this.on_expand_action(record);
                     }
                     break;
                 case $.ui.keyCode.RIGHT:
-                    if (!$elem.hasClass('open')) {
+                    if (!$elem.hasClass('show')) {
                         this.on_expand_action(record);
                     }
                     break;
                 case $.ui.keyCode.UP:
                     var $prev = $elem.prev('.o_export_tree_item');
                     if($prev.length === 1) {
-                        while($prev.hasClass('open')) {
+                        while($prev.hasClass('show')) {
                             $prev = $prev.children('.o_export_tree_item').last();
                         }
                     } else {
@@ -95,7 +104,7 @@ var DataExport = Dialog.extend({
                     break;
                 case $.ui.keyCode.DOWN:
                     var $next;
-                    if($elem.hasClass('open')) {
+                    if($elem.hasClass('show')) {
                         $next = $elem.children('.o_export_tree_item').first();
                     } else {
                         $next = $elem.next('.o_export_tree_item');
@@ -179,7 +188,7 @@ var DataExport = Dialog.extend({
             var self = this;
             this.exports.create({
                 name: value,
-                resource: this.dataset.model,
+                resource: this.record.model,
                 export_fields: _.map(fields, function (field) {
                     return [0, 0, {name: field}];
                 }),
@@ -195,7 +204,7 @@ var DataExport = Dialog.extend({
             });
         },
     },
-    init: function(parent, dataset) {
+    init: function(parent, record, defaultExportFields) {
         var options = {
             title: _t("Export Data"),
             buttons: [
@@ -205,63 +214,83 @@ var DataExport = Dialog.extend({
         };
         this._super(parent, options);
         this.records = {};
-        this.dataset = dataset;
-        this.exports = new data.DataSetSearch(this, 'ir.exports', this.dataset.get_context());
+        this.record = record;
+        this.defaultExportFields = defaultExportFields;
+        this.exports = new data.DataSetSearch(this, 'ir.exports', this.record.getContext());
 
         this.row_index = 0;
         this.row_index_level = 0;
-
-        // The default for the ".modal_content" element is "max-height: 100%;"
-        // but we want it to always expand to "height: 100%;" for this modal.
-        // This can be achieved thanks to LESS modification without touching
-        // the ".modal-content" rules... but not with Internet explorer (11).
-        this.$modal.find(".modal-content").css("height", "100%");
     },
     start: function() {
         var self = this;
         var waitFor = [this._super.apply(this, arguments)];
 
+        // The default for the ".modal_content" element is "max-height: 100%;"
+        // but we want it to always expand to "height: 100%;" for this modal.
+        // This can be achieved thanks to CSS modification without touching
+        // the ".modal-content" rules... but not with Internet explorer (11).
+        this.$modal.find(".modal-content").css("height", "100%");
+
         this.$fields_list = this.$('.o_fields_list');
         this.$import_compat_radios = this.$('.o_import_compat input');
 
-        waitFor.push(this.rpc('/web/export/formats', {}).then(do_setup_export_formats));
+        waitFor.push(this._rpc({route: '/web/export/formats'}).then(do_setup_export_formats));
 
         var got_fields = new $.Deferred();
         this.$import_compat_radios.change(function(e) {
+            self.isCompatibleMode = !!$(e.target).val();
             self.$('.o_field_tree_structure').remove();
 
-            self.rpc("/web/export/get_fields", {
-                model: self.dataset.model,
-                import_compat: !!$(e.target).val(),
-            }).done(function (records) {
-                var compatible_fields = _.map(records, function (record) {return record.id});
-                self.$fields_list
-                    .find('option')
-                    .filter(function () {
-                        var option_field = $(this).attr('value');
-                        if (compatible_fields.indexOf(option_field) === -1) {
-                            return true;
+            self._rpc({
+                    route: '/web/export/get_fields',
+                    params: {
+                        model: self.record.model,
+                        import_compat: self.isCompatibleMode,
+                    },
+                })
+                .done(function (records) {
+                    var compatible_fields = _.map(records, function (record) {return record.id; });
+                    self.$fields_list
+                        .find('option')
+                        .filter(function () {
+                            var option_field = $(this).attr('value');
+                            if (compatible_fields.indexOf(option_field) === -1) {
+                                return true;
+                            }
+                        })
+                        .remove();
+                    got_fields.resolve();
+                    self.on_show_data(records);
+                    // In compatible mode add ID field as first field to export
+                    if (self.isCompatibleMode) {
+                        self.$('.o_fields_list').prepend(new Option(_('External ID'), 'id'));
+                    }
+                    _.each(records, function (record) {
+                        if (_.contains(self.defaultExportFields, record.id)) {
+                            self.add_field(record.id, record.string);
                         }
-                    })
-                    .remove();
-                got_fields.resolve();
-                self.on_show_data(records);
-            });
+                    });
+                });
         }).eq(0).change();
         waitFor.push(got_fields);
 
-        waitFor.push(this.getParent().get_active_domain().then(function (domain) {
+        waitFor.push(this.getParent().getActiveDomain().then(function (domain) {
             if (domain === undefined) {
-                self.ids_to_export = self.getParent().get_selected_ids();
-                self.domain = self.dataset.domain;
+                self.ids_to_export = self.getParent().getSelectedIds();
+                self.domain = self.record.domain;
             } else {
                 self.ids_to_export = false;
                 self.domain = domain;
             }
-            self.on_show_domain();
         }));
 
-        waitFor.push(this.show_exports_list());
+        waitFor.push(this.show_exports_list().then(function () {
+            _.each(self.records, function (record, key) {
+                if (_.contains(self.defaultExportFields, key)) {
+                    self.add_field(key, record.string);
+                }
+            });
+        }));
 
         return $.when.apply($, waitFor);
 
@@ -270,18 +299,19 @@ var DataExport = Dialog.extend({
 
             _.each(formats, function(format, i) {
                 var $radio = $('<input/>', {type: 'radio', value: format.tag, name: 'o_export_format_name'});
-                var $label = $('<label/>', {html: format.label});
+                var $label = $('<span/>', {html: format.label});
 
                 if (format.error) {
                     $radio.prop('disabled', true);
                     $label.html(_.str.sprintf("%s — %s", format.label, format.error));
                 }
 
-                $fmts.append($("<div/>").append($radio, $label));
+                var $radioButton = $('<label/>').append($radio, $label);
+                $fmts.append($("<div class='radio'></div>").append($radioButton));
             });
 
             self.$export_format_inputs = $fmts.find('input');
-            self.$export_format_inputs.first().prop('checked', true);
+            self.$export_format_inputs.filter(':enabled').first().prop('checked', true);
         }
     },
     show_exports_list: function() {
@@ -291,8 +321,11 @@ var DataExport = Dialog.extend({
         }
 
         var self = this;
-        return this.exports.read_slice(['name'], {
-            domain: [['resource', '=', this.dataset.model]]
+        return this._rpc({
+            model: 'ir.exports',
+            method: 'search_read',
+            fields: ['name'],
+            domain: [['resource', '=', this.record.model]]
         }).then(function (export_list) {
             if (!export_list.length) {
                 return;
@@ -302,24 +335,33 @@ var DataExport = Dialog.extend({
                 self.$fields_list.empty();
                 var export_id = self.$('.o_exported_lists_select option:selected').val();
                 if(export_id) {
-                    self.rpc('/web/export/namelist', {
-                        model: self.dataset.model,
-                        export_id: parseInt(export_id, 10),
-                    }).then(do_load_export_field);
+                    self._rpc({
+                            route: '/web/export/namelist',
+                            params: {
+                                model: self.record.model,
+                                export_id: parseInt(export_id, 10),
+                            },
+                        })
+                        .then(do_load_export_field);
                 }
             });
             self.$('.o_delete_exported_list').click(function() {
                 var select_exp = self.$('.o_exported_lists_select option:selected');
-                if(select_exp.val()) {
-                    self.exports.unlink([parseInt(select_exp.val(), 10)]);
-                    select_exp.remove();
-                    self.$fields_list.empty();
-                    if (self.$('.o_exported_lists_select option').length <= 1) {
-                        self.$('.o_exported_lists').hide();
+                var options = {
+                    confirm_callback: function () {
+                        if (select_exp.val()) {
+                            self.exports.unlink([parseInt(select_exp.val(), 10)]);
+                            select_exp.remove();
+                            self.$fields_list.empty();
+                            if (self.$('.o_exported_lists_select option').length <= 1) {
+                                self.$('.o_exported_lists').hide();
+                            }
+                        }
                     }
-                }
+                };
+                Dialog.confirm(this, _t("Do you really want to delete this export template?"), options);
             });
-        });
+       });
 
         function do_load_export_field(field_list) {
             _.each(field_list, function (field) {
@@ -342,40 +384,41 @@ var DataExport = Dialog.extend({
 
         if(!record.loaded) {
             var self = this;
-            this.rpc("/web/export/get_fields", {
-                model: model,
-                prefix: prefix,
-                parent_name: name,
-                import_compat: !!this.$import_compat_radios.filter(':checked').val(),
-                parent_field_type : record['field_type'],
-                exclude: exclude_fields
-            }).done(function(results) {
-                record.loaded = true;
-                self.on_show_data(results, record.id);
-            });
+            this._rpc({
+                    route: '/web/export/get_fields',
+                    params: {
+                        model: model,
+                        prefix: prefix,
+                        parent_name: name,
+                        import_compat: !!this.$import_compat_radios.filter(':checked').val(),
+                        parent_field_type : record['field_type'],
+                        parent_field: record['params']['parent_field'],
+                        exclude: exclude_fields,
+                    },
+                })
+                .done(function(results) {
+                    record.loaded = true;
+                    self.on_show_data(results, record.id);
+                });
         } else {
             this.show_content(record.id);
         }
     },
-    on_show_domain: function() {
-        this.$('p').first()
-                   .after(QWeb.render('Export.DomainMessage', {record: this}));
-    },
     on_show_data: function(records, expansion) {
         var self = this;
-
         if(expansion) {
             this.$('.o_export_tree_item[data-id="' + expansion + '"]')
-                .addClass('open')
+                .addClass('show')
                 .find('.o_expand_parent')
-                .toggleClass('fa-plus fa-minus')
+                .toggleClass('fa-chevron-right fa-chevron-down')
                 .next()
-                .after(QWeb.render('Export.TreeItems', {'fields': records}));
+                .after(QWeb.render('Export.TreeItems', {'fields': records, 'debug': this.getSession().debug}));
         } else {
             this.$('.o_left_field_panel').empty().append(
                 $("<div/>").addClass('o_field_tree_structure')
-                           .append(QWeb.render('Export.TreeItems', {'fields': records}))
+                           .append(QWeb.render('Export.TreeItems', {'fields': records, 'debug': this.getSession().debug}))
             );
+            this.records = {};
         }
 
         _.extend(this.records, _.object(_.pluck(records, 'id'), records));
@@ -387,10 +430,10 @@ var DataExport = Dialog.extend({
     },
     show_content: function(id) {
         var $this = this.$('.o_export_tree_item[data-id="' + id + '"]');
-        $this.toggleClass('open');
-        var is_open = $this.hasClass('open');
+        $this.toggleClass('show');
+        var is_open = $this.hasClass('show');
 
-        $this.children('.o_expand_parent').toggleClass('fa-minus', !!is_open).toggleClass('fa-plus', !is_open);
+        $this.children('.o_expand_parent').toggleClass('fa-chevron-down', !!is_open).toggleClass('fa-chevron-right', !is_open);
 
         var $child_field = $this.find('.o_export_tree_item');
         var child_len = (id.split("/")).length + 1;
@@ -399,9 +442,9 @@ var DataExport = Dialog.extend({
             if(!is_open) {
                 $child.hide();
             } else if(child_len === $child_field.eq(i).data('id').split("/").length) {
-                if ($child.hasClass('open')) {
-                    $child.removeClass('open');
-                    $child.children('.o_expand_parent').removeClass('fa-minus').addClass('fa-plus');
+                if ($child.hasClass('show')) {
+                    $child.removeClass('show');
+                    $child.children('.o_expand_parent').removeClass('fa-chevron-down').addClass('fa-chevron-right');
                 }
                 $child.show();
             }
@@ -436,19 +479,21 @@ var DataExport = Dialog.extend({
             Dialog.alert(this, _t("Please select fields to export..."));
             return;
         }
-        exported_fields.unshift({name: 'id', label: 'External ID'});
+        if (!this.isCompatibleMode) {
+            exported_fields.unshift({name: 'id', label: _t('External ID')});
+        }
 
         var export_format = this.$export_format_inputs.filter(':checked').val();
 
         framework.blockUI();
-        this.session.get_file({
+        this.getSession().get_file({
             url: '/web/export/' + export_format,
             data: {data: JSON.stringify({
-                model: this.dataset.model,
+                model: this.record.model,
                 fields: exported_fields,
                 ids: this.ids_to_export,
                 domain: this.domain,
-                context: pyeval.eval('contexts', [this.dataset._model.context()]),
+                context: pyUtils.eval('contexts', [this.record.getContext()]),
                 import_compat: !!this.$import_compat_radios.filter(':checked').val(),
             })},
             complete: framework.unblockUI,

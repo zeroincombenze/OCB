@@ -2,24 +2,12 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 {
-    'name': 'Employee Directory',
+    'name': 'Employees',
     'version': '1.1',
     'category': 'Human Resources',
     'sequence': 75,
-    'summary': 'Jobs, Departments, Employees Details',
-    'description': """
-Human Resources Management
-==========================
-
-This application enables you to manage important aspects of your company's staff and other details such as their skills, contacts, working time...
-
-
-You can manage:
----------------
-* Employees and hierarchies : You can define your employee with User and display hierarchies
-* HR Departments
-* HR Jobs
-    """,
+    'summary': 'Centralize employee information',
+    'description': "",
     'website': 'https://www.odoo.com/page/employees',
     'images': [
         'images/hr_department.jpeg',
@@ -31,13 +19,15 @@ You can manage:
         'base_setup',
         'mail',
         'resource',
-        'web_kanban',
+        'web',
     ],
     'data': [
         'security/hr_security.xml',
         'security/ir.model.access.csv',
         'views/hr_views.xml',
         'views/hr_templates.xml',
+        'views/res_config_settings_views.xml',
+        'views/mail_channel_views.xml',
         'data/hr_data.xml',
     ],
     'demo': [
@@ -47,4 +37,5 @@ You can manage:
     'application': True,
     'auto_install': False,
     'qweb': [],
+    'license': 'LGPL-3',
 }

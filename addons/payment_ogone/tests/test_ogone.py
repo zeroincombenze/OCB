@@ -2,11 +2,12 @@
 
 from lxml import objectify
 import time
-import urlparse
 
 from odoo.addons.payment.models.payment_acquirer import ValidationError
 from odoo.addons.payment.tests.common import PaymentAcquirerCommon
 from odoo.addons.payment_ogone.controllers.main import OgoneController
+from werkzeug import urls
+
 from odoo.tools import mute_logger
 
 
@@ -40,10 +41,10 @@ class OgonePayment(PaymentAcquirerCommon):
             'OWNERTOWN': 'Sin City',
             'OWNERTELNO': '0032 12 34 56 78',
             'SHASIGN': '815f67b8ff70d234ffcf437c13a9fa7f807044cc',
-            'ACCEPTURL': '%s' % urlparse.urljoin(base_url, OgoneController._accept_url),
-            'DECLINEURL': '%s' % urlparse.urljoin(base_url, OgoneController._decline_url),
-            'EXCEPTIONURL': '%s' % urlparse.urljoin(base_url, OgoneController._exception_url),
-            'CANCELURL': '%s' % urlparse.urljoin(base_url, OgoneController._cancel_url),
+            'ACCEPTURL': urls.url_join(base_url, OgoneController._accept_url),
+            'DECLINEURL': urls.url_join(base_url, OgoneController._decline_url),
+            'EXCEPTIONURL': urls.url_join(base_url, OgoneController._exception_url),
+            'CANCELURL': urls.url_join(base_url, OgoneController._cancel_url),
         }
 
         # render the button
@@ -127,7 +128,7 @@ class OgonePayment(PaymentAcquirerCommon):
             'amount': 1.95,
             'acquirer_id': self.ogone.id,
             'currency_id': self.currency_euro.id,
-            'reference': 'test_ref_2',
+            'reference': 'test_ref_2-1',
             'partner_name': 'Norbert Buyer',
             'partner_country_id': self.country_france.id})
         # validate it
@@ -137,7 +138,13 @@ class OgonePayment(PaymentAcquirerCommon):
         self.assertEqual(tx.ogone_payid, ogone_post_data.get('PAYID'), 'ogone: validation did not update tx payid')
 
         # reset tx
-        tx.write({'state': 'draft', 'date_validate': False, 'ogone_payid': False})
+        tx = self.env['payment.transaction'].create({
+            'amount': 1.95,
+            'acquirer_id': self.ogone.id,
+            'currency_id': self.currency_euro.id,
+            'reference': 'test_ref_2-2',
+            'partner_name': 'Norbert Buyer',
+            'partner_country_id': self.country_france.id})
 
         # now ogone post is ok: try to modify the SHASIGN
         ogone_post_data['SHASIGN'] = 'a4c16bae286317b82edb49188d3399249a784691'
@@ -149,7 +156,7 @@ class OgonePayment(PaymentAcquirerCommon):
         ogone_post_data['SHASIGN'] = 'a4c16bae286317b82edb49188d3399249a784691'
         tx.form_feedback(ogone_post_data)
         # check state
-        self.assertEqual(tx.state, 'error', 'ogone: erroneous validation did not put tx into error state')
+        self.assertEqual(tx.state, 'cancel', 'ogone: erroneous validation did not put tx into error state')
 
     def test_30_ogone_s2s(self):
         test_ref = 'test_ref_%.15f' % time.time()

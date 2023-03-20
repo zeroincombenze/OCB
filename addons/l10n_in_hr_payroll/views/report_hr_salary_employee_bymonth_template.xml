@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <template id="report_hrsalarybymonth">
-        <t t-call="report.html_container">
-        <t t-call="report.internal_layout">
+        <t t-call="web.html_container">
+        <t t-call="web.internal_layout">
         <t t-foreach="docs" t-as="o">
             <div class="page">
                 <div class="text-center">
@@ -11,7 +11,7 @@
 	                    From <u><span t-field="o.start_date"/></u> To <u><span t-field="o.end_date"/></u> of <u><span t-esc="data['form']['category_id'][1]"/></u> Category
 	                </p>
                 </div>
-                <table class="table table-condensed">
+                <table class="table table-sm">
                     <thead>
                         <tr style="border-top: 1px solid black">
                             <th>Name</th>

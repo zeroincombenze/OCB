@@ -3,7 +3,7 @@
 
 {
     'name': 'French Payroll',
-    'category': 'Localization',
+    'category': 'Human Resources',
     'author': 'Yannick Buron (SYNERPGY)',
     'depends': ['hr_payroll', 'l10n_fr'],
     'description': """
@@ -28,8 +28,9 @@ TODO:
     'data': [
         'data/l10n_fr_hr_payroll_data.xml',
         'views/l10n_fr_hr_payroll_view.xml',
+        'views/res_config_settings_views.xml',
         'report/report_l10n_fr_fiche_paye.xml',
         'report/l10n_fr_hr_payroll_report.xml',
-        'views/l10n_fr_hr_payroll_config_settings_views.xml',
     ],
+    'license': 'LGPL-3',
 }

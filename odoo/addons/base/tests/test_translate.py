@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-
-import unittest
-
+from odoo.tools import pycompat
+from odoo.tools import mute_logger
 from odoo.tools.translate import quote, unquote, xml_translate, html_translate
-from odoo.tests.common import TransactionCase
+from odoo.tests.common import TransactionCase, BaseCase
+from psycopg2 import IntegrityError
 
 
-class TranslationToolsTestCase(unittest.TestCase):
+class TranslationToolsTestCase(BaseCase):
+    def assertItemsEqual(self, a, b, msg=None):
+        self.assertEqual(sorted(a), sorted(b), msg)
 
     def test_quote_unquote(self):
 
@@ -48,6 +50,14 @@ class TranslationToolsTestCase(unittest.TestCase):
         """ Test xml_translate() on plain text. """
         terms = []
         source = "Blah blah blah"
+        result = xml_translate(terms.append, source)
+        self.assertEquals(result, source)
+        self.assertItemsEqual(terms, [source])
+
+    def test_translate_xml_unicode(self):
+        """ Test xml_translate() on plain text with unicode characters. """
+        terms = []
+        source = u"Un heureux évènement"
         result = xml_translate(terms.append, source)
         self.assertEquals(result, source)
         self.assertItemsEqual(terms, [source])
@@ -103,6 +113,33 @@ class TranslationToolsTestCase(unittest.TestCase):
         self.assertItemsEqual(terms,
             ['Form stuff', 'Blah blah blah'])
 
+    def test_translate_xml_inline4(self):
+        """ Test xml_translate() with inline elements with translated attrs only. """
+        terms = []
+        source = """<form string="Form stuff">
+                        <div>
+                            <label for="stuff"/>
+                            <span class="fa fa-globe" title="Title stuff"/>
+                        </div>
+                    </form>"""
+        result = xml_translate(terms.append, source)
+        self.assertEquals(result, source)
+        self.assertItemsEqual(terms,
+            ['Form stuff', '<span class="fa fa-globe" title="Title stuff"/>'])
+
+    def test_translate_xml_inline5(self):
+        """ Test xml_translate() with inline elements with empty translated attrs only. """
+        terms = []
+        source = """<form string="Form stuff">
+                        <div>
+                            <label for="stuff"/>
+                            <span class="fa fa-globe" title=""/>
+                        </div>
+                    </form>"""
+        result = xml_translate(terms.append, source)
+        self.assertEquals(result, source)
+        self.assertItemsEqual(terms, ['Form stuff'])
+
     def test_translate_xml_t(self):
         """ Test xml_translate() with t-* attributes. """
         terms = []
@@ -146,27 +183,63 @@ class TranslationToolsTestCase(unittest.TestCase):
         terms = []
         source = """<t t-name="stuff">
                         <ul class="nav navbar-nav">
-                            <li>
-                                <a class="oe_menu_leaf" href="/web#menu_id=42&amp;action=54">
+                            <li class="nav-item">
+                                <a class="nav-link oe_menu_leaf" href="/web#menu_id=42&amp;action=54">
                                     <span class="oe_menu_text">Blah</span>
                                 </a>
-                            </li>
-                            <li class="dropdown" id="menu_more_container" style="display: none;">
-                                <a class="dropdown-toggle" data-toggle="dropdown" href="#">More <b class="caret"/></a>
-                                <ul class="dropdown-menu" id="menu_more"/>
                             </li>
                         </ul>
                     </t>"""
         result = xml_translate(terms.append, source)
         self.assertEquals(result, source)
         self.assertItemsEqual(terms,
-            ['<span class="oe_menu_text">Blah</span>', 'More <b class="caret"/>'])
+            ['<span class="oe_menu_text">Blah</span>'])
+
+    def test_translate_xml_with_namespace(self):
+        """ Test xml_translate() on elements with namespaces. """
+        terms = []
+        # do not slit the long line below, otherwise the result will not match
+        source = """<Invoice xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2" xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2">
+                        <cbc:UBLVersionID t-esc="version_id"/>
+                        <t t-foreach="[1, 2, 3, 4]" t-as="value">
+                            Oasis <cac:Test t-esc="value"/>
+                        </t>
+                    </Invoice>"""
+        result = xml_translate(terms.append, source)
+        self.assertEquals(result, source)
+        self.assertItemsEqual(terms, ['Oasis'])
+        result = xml_translate(lambda term: term, source)
+        self.assertEquals(result, source)
+
+    def test_translate_xml_invalid_translations(self):
+        """ Test xml_translate() with invalid translations. """
+        source = """<form string="Form stuff">
+                        <h1>Blah <i>blah</i> blah</h1>
+                        Put some <b>more text</b> here
+                        <field name="foo"/>
+                    </form>"""
+        translations = {
+            "Put some <b>more text</b> here": "Mettre <b>plus de texte</i> ici",
+        }
+        expect = """<form string="Form stuff">
+                        <h1>Blah <i>blah</i> blah</h1>
+                        Mettre &lt;b&gt;plus de texte&lt;/i&gt; ici
+                        <field name="foo"/>
+                    </form>"""
+        result = xml_translate(translations.get, source)
+        self.assertEquals(result, expect)
 
     def test_translate_html(self):
+        """ Test html_translate(). """
+        source = """<blockquote>A <h2>B</h2> C</blockquote>"""
+        result = html_translate(lambda term: term, source)
+        self.assertEquals(result, source)
+
+    def test_translate_html_i(self):
         """ Test xml_translate() and html_translate() with <i> elements. """
-        source = """<i class="fa-check"></i>"""
+        source = """<p>A <i class="fa-check"></i> B</p>"""
         result = xml_translate(lambda term: term, source)
-        self.assertEquals(result, """<i class="fa-check"/>""")
+        self.assertEquals(result, """<p>A <i class="fa-check"/> B</p>""")
         result = html_translate(lambda term: term, source)
         self.assertEquals(result, source)
 
@@ -207,7 +280,7 @@ class TestTranslation(TransactionCase):
         category = self.customers.with_context({'lang': 'fr_FR'}).copy({'name': 'Clients (copie)'})
 
         category_no = category.with_context({})
-        self.assertEqual(category_no.name, 'Customers', "Duplication erased original untranslated value")
+        self.assertEqual(category_no.name, 'Clients (copie)', "Duplication should set untranslated value")
 
         category_fr = category.with_context({'lang': 'fr_FR'})
         self.assertEqual(category_fr.name, 'Clients (copie)', "Did not used default value for translated value")
@@ -223,6 +296,39 @@ class TestTranslation(TransactionCase):
         self.assertEqual(categories.ids, [padawans.id, self.customers.id],
             "Search ordered by translated name should return Padawans (Apprentis) before Customers (Clients)")
 
+    def test_105_duplicated_translation(self):
+        """ Test synchronizing translations with duplicated source """
+        # create a category with a French translation
+        padawans = self.env['res.partner.category'].create({'name': 'Padawan'})
+        self.env['ir.translation'].create({
+            'type': 'model',
+            'name': 'res.partner.category,name',
+            'module':'base',
+            'lang': 'fr_FR',
+            'res_id': padawans.id,
+            'value': 'Apprenti',
+            'state': 'translated',
+        })
+        # change name and insert a duplicate manually
+        padawans.write({'name': 'Padawans'})
+        with self.assertRaises(IntegrityError), mute_logger('odoo.sql_db'):
+            with self.env.cr.savepoint():
+                self.env['ir.translation'].create({
+                    'type': 'model',
+                    'name': 'res.partner.category,name',
+                    'module':'base',
+                    'lang': 'fr_FR',
+                    'res_id': padawans.id,
+                    'value': 'Apprentis',
+                    'state': 'translated',
+                })
+        self.env['ir.translation'].translate_fields('res.partner.category', padawans.id, 'name')
+        translations = self.env['ir.translation'].search([
+            ('res_id', '=', padawans.id), ('name', '=', 'res.partner.category,name')
+        ])
+        self.assertEqual(len(translations), 1, "Translations were not duplicated after `translate_fields` call")
+        self.assertEqual(translations.value, "Apprenti", "The first translation must stay")
+
 
 class TestXMLTranslation(TransactionCase):
     def setUp(self):
@@ -236,9 +342,9 @@ class TestXMLTranslation(TransactionCase):
             'arch': archf % terms,
         })
         for lang, trans_terms in kwargs.items():
-            for src, val in zip(terms, trans_terms):
+            for src, val in pycompat.izip(terms, trans_terms):
                 self.env['ir.translation'].create({
-                    'type': 'model',
+                    'type': 'model_terms',
                     'name': 'ir.ui.view,arch_db',
                     'lang': lang,
                     'res_id': view.id,
@@ -309,3 +415,31 @@ class TestXMLTranslation(TransactionCase):
         self.assertEqual(view.with_env(env_en).arch_db, archf % terms_en)
         self.assertEqual(view.with_env(env_fr).arch_db, archf % terms_fr)
         self.assertEqual(view.with_env(env_nl).arch_db, archf % terms_nl)
+
+    def test_sync_update(self):
+        """ Check translations after minor change in source terms. """
+        archf = '<form string="X"><div>%s</div><div>%s</div></form>'
+        terms_src = ('Subtotal', 'Subtotal:')
+        terms_en = ('Subtotal', 'Sub total:')
+        view = self.create_view(archf, terms_src, en_US=terms_en)
+
+        translations = self.env['ir.translation'].search([
+            ('type', '=', 'model_terms'),
+            ('name', '=', "ir.ui.view,arch_db"),
+            ('res_id', '=', view.id),
+        ])
+        self.assertEqual(len(translations), 2)
+
+        # modifying the arch should sync existing translations without errors
+        view.write({
+            "arch": archf % ('Subtotal', 'Subtotal:<br/>')
+        })
+
+        translations = self.env['ir.translation'].search([
+            ('type', '=', 'model_terms'),
+            ('name', '=', "ir.ui.view,arch_db"),
+            ('res_id', '=', view.id),
+        ])
+        # 'Subtotal' being src==value, it will be discared
+        # 'Subtotal:' will be discarded as it match 'Subtotal' instead of 'Subtotal:<br/>'
+        self.assertEqual(len(translations), 0)

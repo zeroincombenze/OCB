@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from openerp.tests.common import TransactionCase
+from odoo.tests.common import TransactionCase
 
 
 class One2manyCase(TransactionCase):
@@ -45,12 +45,14 @@ class One2manyCase(TransactionCase):
         # Check the lines first
         self.assertItemsEqual(
             self.multi.lines.mapped('name'),
-            map(str, range(10)))
+            [str(i) for i in range(10)])
         # Modify the first line and drop the last one
         self.multi.lines[0].name = "hello"
         self.multi.lines = self.multi.lines[:-1]
         self.assertEqual(len(self.multi.lines), 9)
         self.assertIn("hello", self.multi.lines.mapped('name'))
+        if not self.multi.id:
+            return
         # Invalidate the cache and check again; this crashes if the value
         # of self.multi.lines in cache contains new records
         self.multi.invalidate_cache()
@@ -89,8 +91,23 @@ class One2manyCase(TransactionCase):
             self.multi.lines = [(0, 0, {"name": str(name)})]
         self.operations()
 
+    def test_rpcstyle_one_by_one_on_new(self):
+        self.multi = self.env["test_new_api.multi"].new({
+            "name": "What is up?"
+        })
+        for name in range(10):
+            self.multi.lines = [(0, 0, {"name": str(name)})]
+        self.operations()
+
     def test_rpcstyle_single(self):
         """Check lines created with RPC style and added in one step"""
+        self.multi.lines = [(0, 0, {'name': str(name)}) for name in range(10)]
+        self.operations()
+
+    def test_rpcstyle_single_on_new(self):
+        self.multi = self.env["test_new_api.multi"].new({
+            "name": "What is up?"
+        })
         self.multi.lines = [(0, 0, {'name': str(name)}) for name in range(10)]
         self.operations()
 
@@ -117,16 +134,35 @@ class One2manyCase(TransactionCase):
         self.assertFalse(t(res_books_with_movie_edition))
 
         res_books_without_movie_edition = self.Book.search([('editions', 'not in', movie_editions.ids)])
-        self.assertItemsEqual(t(res_books_without_movie_edition), t(books_with_edition))
+        self.assertItemsEqual(t(res_books_without_movie_edition), t(books))
 
         res_books_without_one_movie_edition = self.Book.search([('editions', 'not in', movie_editions[:1].ids)])
-        self.assertItemsEqual(t(res_books_without_one_movie_edition), t(books_with_edition))
+        self.assertItemsEqual(t(res_books_without_one_movie_edition), t(books))
 
         res_books_with_one_movie_edition_name = self.Book.search([('editions', '=', movie_editions[:1].name)])
         self.assertFalse(t(res_books_with_one_movie_edition_name))
 
         res_books_without_one_movie_edition_name = self.Book.search([('editions', '!=', movie_editions[:1].name)])
-        self.assertItemsEqual(t(res_books_without_one_movie_edition_name), t(books_with_edition))
+        self.assertItemsEqual(t(res_books_without_one_movie_edition_name), t(books))
 
         res_movies_not_of_edition_name = self.Movie.search([('editions', '!=', one_movie_edition.name)])
         self.assertItemsEqual(t(res_movies_not_of_edition_name), t(movies.filtered(lambda r: one_movie_edition not in r.editions)))
+
+    def test_merge_partner(self):
+        model = self.env['test_new_api.field_with_caps']
+        partner = self.env['res.partner']
+
+        p1 = partner.create({'name': 'test1'})
+        p2 = partner.create({'name': 'test2'})
+
+        model1 = model.create({'pArTneR_321_id': p1.id})
+        model2 = model.create({'pArTneR_321_id': p2.id})
+
+        self.env['base.partner.merge.automatic.wizard']._merge((p1 + p2).ids, p1)
+
+        self.assertFalse(p2.exists())
+        self.assertTrue(p1.exists())
+
+        self.assertEqual(model1.pArTneR_321_id, p1)
+        self.assertTrue(model2.exists())
+        self.assertEqual(model2.pArTneR_321_id, p1)

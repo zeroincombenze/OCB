@@ -20,13 +20,12 @@ import sys
 import threading
 import time
 import traceback
-import urllib2
-import urlparse
 import warnings
 from os.path import join as opj
 from zlib import adler32
 
 import babel.core
+from datetime import datetime, date
 import passlib.utils
 import psycopg2
 import json
@@ -37,6 +36,7 @@ import werkzeug.local
 import werkzeug.routing
 import werkzeug.wrappers
 import werkzeug.wsgi
+from werkzeug import urls
 from werkzeug.wsgi import wrap_file
 
 try:
@@ -45,12 +45,13 @@ except ImportError:
     psutil = None
 
 import odoo
-from odoo.service.server import memory_info
-from odoo.service import security, model as service_model
-from odoo.tools.func import lazy_property
-from odoo.tools import ustr, consteq, frozendict
+from odoo import fields
+from .service.server import memory_info
+from .service import security, model as service_model
+from .tools.func import lazy_property
+from .tools import ustr, consteq, frozendict, pycompat, unique, date_utils
 
-from odoo.modules.module import module_manifest
+from .modules.module import module_manifest
 
 _logger = logging.getLogger(__name__)
 rpc_request = logging.getLogger(__name__ + '.rpc.request')
@@ -58,6 +59,9 @@ rpc_response = logging.getLogger(__name__ + '.rpc.response')
 
 # 1 week cache for statics as advised by Google Page Speed
 STATIC_CACHE = 60 * 60 * 24 * 7
+
+# To remove when corrected in Babel
+babel.core.LOCALE_ALIASES['nb'] = 'nb_NO'
 
 #----------------------------------------------------------
 # RequestHandler
@@ -99,9 +103,9 @@ def dispatch_rpc(service_name, method, params):
         rpc_response_flag = rpc_response.isEnabledFor(logging.DEBUG)
         if rpc_request_flag or rpc_response_flag:
             start_time = time.time()
-            start_rss, start_vms = 0, 0
+            start_memory = 0
             if psutil:
-                start_rss, start_vms = memory_info(psutil.Process(os.getpid()))
+                start_memory = memory_info(psutil.Process(os.getpid()))
             if rpc_request and rpc_response_flag:
                 odoo.netsvc.log(rpc_request, logging.DEBUG, '%s.%s' % (service_name, method), replace_request_password(params))
 
@@ -113,16 +117,14 @@ def dispatch_rpc(service_name, method, params):
             dispatch = odoo.service.db.dispatch
         elif service_name == 'object':
             dispatch = odoo.service.model.dispatch
-        elif service_name == 'report':
-            dispatch = odoo.service.report.dispatch
         result = dispatch(method, params)
 
         if rpc_request_flag or rpc_response_flag:
             end_time = time.time()
-            end_rss, end_vms = 0, 0
+            end_memory = 0
             if psutil:
-                end_rss, end_vms = memory_info(psutil.Process(os.getpid()))
-            logline = '%s.%s time:%.3fs mem: %sk -> %sk (diff: %sk)' % (service_name, method, end_time - start_time, start_vms / 1024, end_vms / 1024, (end_vms - start_vms)/1024)
+                end_memory = memory_info(psutil.Process(os.getpid()))
+            logline = '%s.%s time:%.3fs mem: %sk -> %sk (diff: %sk)' % (service_name, method, end_time - start_time, start_memory / 1024, end_memory / 1024, (end_memory - start_memory)/1024)
             if rpc_response_flag:
                 odoo.netsvc.log(rpc_response, logging.DEBUG, logline, result)
             else:
@@ -131,11 +133,11 @@ def dispatch_rpc(service_name, method, params):
         return result
     except NO_POSTMORTEM:
         raise
-    except odoo.exceptions.DeferredException, e:
+    except odoo.exceptions.DeferredException as e:
         _logger.exception(odoo.tools.exception_to_unicode(e))
         odoo.tools.debugger.post_mortem(odoo.tools.config, e.traceback)
         raise
-    except Exception, e:
+    except Exception as e:
         _logger.exception(odoo.tools.exception_to_unicode(e))
         odoo.tools.debugger.post_mortem(odoo.tools.config, sys.exc_info())
         raise
@@ -163,9 +165,12 @@ def redirect_with_hash(url, code=303):
     # See extensive test page at http://greenbytes.de/tech/tc/httpredirects/
     if request.httprequest.user_agent.browser in ('firefox',):
         return werkzeug.utils.redirect(url, code)
-    url = url.strip()
-    if urlparse.urlparse(url, scheme='http').scheme not in ('http', 'https'):
-        url = 'http://' + url
+    # FIXME: decide whether urls should be bytes or text, apparently
+    # addons/website/controllers/main.py:91 calls this with a bytes url
+    # but addons/web/controllers/main.py:481 uses text... (blows up on login)
+    url = pycompat.to_text(url).strip()
+    if urls.url_parse(url, scheme='http').scheme not in ('http', 'https'):
+        url = u'http://' + url
     url = url.replace("'", "%27").replace("<", "%3C")
     return "<html><head><script>window.location = '%s' + location.hash;</script></head></html>" % url
 
@@ -275,17 +280,23 @@ class WebRequest(object):
         _request_stack.pop()
 
         if self._cr:
-            if exc_type is None and not self._failed:
-                self._cr.commit()
-            self._cr.close()
+            try:
+                if exc_type is None and not self._failed:
+                    self._cr.commit()
+                    if self.registry:
+                        self.registry.signal_changes()
+                elif self.registry:
+                    self.registry.reset_changes()
+            finally:
+                self._cr.close()
         # just to be sure no one tries to re-use the request
         self.disable_db = True
         self.uid = None
 
     def set_handler(self, endpoint, arguments, auth):
         # is this needed ?
-        arguments = dict((k, v) for k, v in arguments.iteritems()
-                         if not k.startswith("_ignored_"))
+        arguments ={k: v for k, v in arguments.items()
+                         if not k.startswith("_ignored_")}
         self.endpoint_arguments = arguments
         self.endpoint = endpoint
         self.auth_method = auth
@@ -299,7 +310,8 @@ class WebRequest(object):
                 and not isinstance(exception, werkzeug.exceptions.HTTPException):
             odoo.tools.debugger.post_mortem(
                 odoo.tools.config, sys.exc_info())
-        raise
+        # otherwise "no active exception to reraise"
+        raise pycompat.reraise(type(exception), exception, sys.exc_info()[2])
 
     def _call_function(self, *args, **kwargs):
         request = self
@@ -347,7 +359,7 @@ class WebRequest(object):
             debug = self.httprequest.environ.get('HTTP_X_DEBUG_MODE')
 
         if not debug and self.httprequest.referrer:
-            debug = bool(urlparse.parse_qs(urlparse.urlparse(self.httprequest.referrer).query, keep_blank_values=True).get('debug'))
+            debug = 'debug' in urls.url_parse(self.httprequest.referrer).decode_query()
         return debug
 
     @contextlib.contextmanager
@@ -365,7 +377,7 @@ class WebRequest(object):
 
             use :attr:`.env`
         """
-        return odoo.registry(self.db) if self.db else None
+        return odoo.registry(self.db)
 
     @property
     def db(self):
@@ -390,7 +402,7 @@ class WebRequest(object):
         msg = '%s%s' % (token, max_ts)
         secret = self.env['ir.config_parameter'].sudo().get_param('database.secret')
         assert secret, "CSRF protection requires a configured database secret"
-        hm = hmac.new(str(secret), msg, hashlib.sha1).hexdigest()
+        hm = hmac.new(secret.encode('ascii'), msg.encode('utf-8'), hashlib.sha1).hexdigest()
         return '%so%s' % (hm, max_ts)
 
     def validate_csrf(self, csrf):
@@ -414,7 +426,7 @@ class WebRequest(object):
         msg = '%s%s' % (token, max_ts)
         secret = self.env['ir.config_parameter'].sudo().get_param('database.secret')
         assert secret, "CSRF protection requires a configured database secret"
-        hm_expected = hmac.new(str(secret), msg, hashlib.sha1).hexdigest()
+        hm_expected = hmac.new(secret.encode('ascii'), msg.encode('utf-8'), hashlib.sha1).hexdigest()
         return consteq(hm, hm_expected)
 
 def route(route=None, **kw):
@@ -508,7 +520,7 @@ def route(route=None, **kw):
             if isinstance(response, Response) or f.routing_type == 'json':
                 return response
 
-            if isinstance(response, basestring):
+            if isinstance(response, (bytes, pycompat.text_type)):
                 return Response(response)
 
             if isinstance(response, werkzeug.exceptions.HTTPException):
@@ -570,6 +582,7 @@ class JsonRequest(WebRequest):
         super(JsonRequest, self).__init__(*args)
 
         self.jsonp_handler = None
+        self.params = {}
 
         args = self.httprequest.args
         jsonp = args.get('jsonp')
@@ -595,7 +608,7 @@ class JsonRequest(WebRequest):
             request = self.session.pop('jsonp_request_%s' % (request_id,), '{}')
         else:
             # regular jsonrpc2
-            request = self.httprequest.stream.read()
+            request = self.httprequest.get_data().decode(self.httprequest.charset)
 
         # Read POST content or POST Form Data named "request"
         try:
@@ -609,6 +622,7 @@ class JsonRequest(WebRequest):
         self.context = self.params.pop('context', dict(self.session.context))
 
     def _json_response(self, result=None, error=None):
+
         response = {
             'jsonrpc': '2.0',
             'id': self.jsonrequest.get('id')
@@ -624,10 +638,10 @@ class JsonRequest(WebRequest):
             # We need then to manage http sessions manually.
             response['session_id'] = self.session.sid
             mime = 'application/javascript'
-            body = "%s(%s);" % (self.jsonp, json.dumps(response),)
+            body = "%s(%s);" % (self.jsonp, json.dumps(response, default=date_utils.json_default))
         else:
             mime = 'application/json'
-            body = json.dumps(response)
+            body = json.dumps(response, default=date_utils.json_default)
 
         return Response(
             body, status=error and error.pop('http_status', 200) or 200,
@@ -674,9 +688,9 @@ class JsonRequest(WebRequest):
                 args = self.params.get('args', [])
 
                 start_time = time.time()
-                _, start_vms = 0, 0
+                start_memory = 0
                 if psutil:
-                    _, start_vms = memory_info(psutil.Process(os.getpid()))
+                    start_memory = memory_info(psutil.Process(os.getpid()))
                 if rpc_request and rpc_response_flag:
                     rpc_request.debug('%s: %s %s, %s',
                         endpoint, model, method, pprint.pformat(args))
@@ -685,18 +699,18 @@ class JsonRequest(WebRequest):
 
             if rpc_request_flag or rpc_response_flag:
                 end_time = time.time()
-                _, end_vms = 0, 0
+                end_memory = 0
                 if psutil:
-                    _, end_vms = memory_info(psutil.Process(os.getpid()))
+                    end_memory = memory_info(psutil.Process(os.getpid()))
                 logline = '%s: %s %s: time:%.3fs mem: %sk -> %sk (diff: %sk)' % (
-                    endpoint, model, method, end_time - start_time, start_vms / 1024, end_vms / 1024, (end_vms - start_vms)/1024)
+                    endpoint, model, method, end_time - start_time, start_memory / 1024, end_memory / 1024, (end_memory - start_memory)/1024)
                 if rpc_response_flag:
                     rpc_response.debug('%s, %s', logline, pprint.pformat(result))
                 else:
                     rpc_request.debug(logline)
 
             return self._json_response(result)
-        except Exception, e:
+        except Exception as e:
             return self._handle_exception(e)
 
 def serialize_exception(e):
@@ -704,7 +718,7 @@ def serialize_exception(e):
         "name": type(e).__module__ + "." + type(e).__name__ if type(e).__module__ else type(e).__name__,
         "debug": traceback.format_exc(),
         "message": ustr(e),
-        "arguments": to_jsonable(e.args),
+        "arguments": e.args,
         "exception_type": "internal_error"
     }
     if isinstance(e, odoo.exceptions.UserError):
@@ -724,19 +738,6 @@ def serialize_exception(e):
     elif isinstance(e, odoo.exceptions.except_orm):
         tmp["exception_type"] = "except_orm"
     return tmp
-
-def to_jsonable(o):
-    if isinstance(o, str) or isinstance(o,unicode) or isinstance(o, int) or isinstance(o, long) \
-        or isinstance(o, bool) or o is None or isinstance(o, float):
-        return o
-    if isinstance(o, list) or isinstance(o, tuple):
-        return [to_jsonable(x) for x in o]
-    if isinstance(o, dict):
-        tmp = {}
-        for k, v in o.items():
-            tmp[u"%s" % k] = to_jsonable(v)
-        return tmp
-    return ustr(o)
 
 class HttpRequest(WebRequest):
     """ Handler for the ``http`` request type.
@@ -778,7 +779,7 @@ class HttpRequest(WebRequest):
             req = request.httprequest
             if req.method == 'POST':
                 request.session.save_request_data()
-                redirect = '/web/proxy/post{r.path}?{r.query_string}'.format(r=req)
+                redirect = '/web/proxy/post{r.full_path}'.format(r=req)
             elif not request.params.get('noredirect'):
                 redirect = req.url
             if redirect:
@@ -786,7 +787,7 @@ class HttpRequest(WebRequest):
                     'redirect': redirect,
                 })
                 return werkzeug.utils.redirect('/web/login?%s' % query)
-        except werkzeug.exceptions.HTTPException, e:
+        except werkzeug.exceptions.HTTPException as e:
             return e
 
     def dispatch(self):
@@ -809,7 +810,7 @@ class HttpRequest(WebRequest):
 
 Odoo URLs are CSRF-protected by default (when accessed with unsafe
 HTTP methods). See
-https://www.odoo.com/documentation/9.0/reference/http.html#csrf for
+https://www.odoo.com/documentation/12.0/developer/reference/http.html#csrf for
 more details.
 
 * if this endpoint is accessed through Odoo via py-QWeb form, embed a CSRF
@@ -852,7 +853,7 @@ more details.
         """
         response = Response(data, headers=headers)
         if cookies:
-            for k, v in cookies.iteritems():
+            for k, v in cookies.items():
                 response.set_cookie(k, v)
         return response
 
@@ -884,7 +885,6 @@ more details.
 #----------------------------------------------------------
 # Controller and route registration
 #----------------------------------------------------------
-addons_module = {}
 addons_manifest = {}
 controllers_per_module = collections.defaultdict(list)
 
@@ -923,8 +923,7 @@ class ControllerType(type):
             return
         controllers_per_module[module].append(name_class)
 
-class Controller(object):
-    __metaclass__ = ControllerType
+Controller = ControllerType('Controller', (object,), {})
 
 class EndPoint(object):
     def __init__(self, method, routing):
@@ -956,14 +955,12 @@ def routing_map(modules, nodb_only, converters=None):
             result = [klass]
         return result
 
-    uniq = lambda it: collections.OrderedDict((id(x), x) for x in it).values()
-
     for module in modules:
         if module not in controllers_per_module:
             continue
 
         for _, cls in controllers_per_module[module]:
-            subclasses = uniq(c for c in get_subclasses(cls) if c is not cls)
+            subclasses = list(unique(c for c in get_subclasses(cls) if c is not cls))
             if subclasses:
                 name = "%s (extended by %s)" % (cls.__name__, ', '.join(sub.__name__ for sub in subclasses))
                 cls = type(name, tuple(reversed(subclasses)), {})
@@ -975,8 +972,8 @@ def routing_map(modules, nodb_only, converters=None):
                     routing = dict(type='http', auth='user', methods=None, routes=None)
                     methods_done = list()
                     # update routing attributes from subclasses(auth, methods...)
-                    for claz in reversed(mv.im_class.mro()):
-                        fn = getattr(claz, mv.func_name, None)
+                    for claz in reversed(mv.__self__.__class__.mro()):
+                        fn = getattr(claz, mv.__name__, None)
                         if fn and hasattr(fn, 'routing') and fn not in methods_done:
                             methods_done.append(fn)
                             routing.update(fn.routing)
@@ -1041,9 +1038,10 @@ class OpenERPSession(werkzeug.contrib.sessions.Session):
                 HTTP_HOST=wsgienv['HTTP_HOST'],
                 REMOTE_ADDR=wsgienv['REMOTE_ADDR'],
             )
-            uid = dispatch_rpc('common', 'authenticate', [db, login, password, env])
+            uid = odoo.registry(db)['res.users'].authenticate(db, login, password, env)
         else:
             security.check(db, uid, password)
+        self.rotate = True
         self.db = db
         self.uid = uid
         self.login = login
@@ -1065,18 +1063,12 @@ class OpenERPSession(werkzeug.contrib.sessions.Session):
         # We create our own environment instead of the request's one.
         # to avoid creating it without the uid since request.uid isn't set yet
         env = odoo.api.Environment(request.cr, self.uid, self.context)
-        #  == BACKWARD COMPATIBILITY TO CONVERT OLD SESSION TYPE TO THE NEW ONES ! REMOVE ME AFTER 11.0 ==
-        if self.get('password'):
-            security.check(self.db, self.uid, self.password)
-            self.session_token = security.compute_session_token(self, env)
-            self.pop('password')
-        # =================================================================================================
         # here we check if the session is still valid
         if not security.check_session(self, env):
             raise SessionExpiredException("Session expired")
 
     def logout(self, keep_db=False):
-        for k in self.keys():
+        for k in list(self):
             if not (keep_db and k == 'db'):
                 del self[k]
         self._default_values()
@@ -1181,7 +1173,7 @@ class OpenERPSession(werkzeug.contrib.sessions.Session):
         try:
             if data:
                 # regenerate files filenames with the current session store
-                for name, (storename, filename, content_type) in data['files'].iteritems():
+                for name, (storename, filename, content_type) in data['files'].items():
                     path = os.path.join(root.session_store.path, storename)
                     files.add(name, (path, filename, content_type))
                 yield werkzeug.datastructures.CombinedMultiDict([data['form'], files])
@@ -1247,6 +1239,7 @@ class Response(werkzeug.wrappers.Response):
     def set_default(self, template=None, qcontext=None, uid=None):
         self.template = template
         self.qcontext = qcontext or dict()
+        self.qcontext['response_template'] = self.template
         self.uid = uid
         # Support for Cross-Origin Resource Sharing
         if request.endpoint and 'cors' in request.endpoint.routing:
@@ -1283,7 +1276,7 @@ class DisableCacheMiddleware(object):
     def __call__(self, environ, start_response):
         def start_wrapped(status, headers):
             referer = environ.get('HTTP_REFERER', '')
-            parsed = urlparse.urlparse(referer)
+            parsed = urls.url_parse(referer)
             debug = parsed.query.count('debug') >= 1
 
             new_headers = []
@@ -1310,7 +1303,8 @@ class Root(object):
         # Setup http sessions
         path = odoo.tools.config.session_dir
         _logger.debug('HTTP sessions stored in: %s', path)
-        return werkzeug.contrib.sessions.FilesystemSessionStore(path, session_class=OpenERPSession)
+        return werkzeug.contrib.sessions.FilesystemSessionStore(
+            path, session_class=OpenERPSession, renew_missing=True)
 
     @lazy_property
     def nodb_routing_map(self):
@@ -1332,21 +1326,17 @@ class Root(object):
         statics = {}
         for addons_path in odoo.modules.module.ad_paths:
             for module in sorted(os.listdir(str(addons_path))):
-                if module not in addons_module:
+                if module not in addons_manifest:
                     mod_path = opj(addons_path, module)
                     manifest_path = module_manifest(mod_path)
                     path_static = opj(addons_path, module, 'static')
                     if manifest_path and os.path.isdir(path_static):
-                        manifest = ast.literal_eval(open(manifest_path).read())
+                        manifest_data = open(manifest_path, 'rb').read()
+                        manifest = ast.literal_eval(pycompat.to_native(manifest_data))
                         if not manifest.get('installable', True):
                             continue
                         manifest['addons_path'] = addons_path
                         _logger.debug("Loading %s", module)
-                        if 'odoo.addons' in sys.modules:
-                            m = __import__('odoo.addons.' + module)
-                        else:
-                            m = None
-                        addons_module[module] = m
                         addons_manifest[module] = manifest
                         statics['/%s/static' % module] = path_static
 
@@ -1411,32 +1401,27 @@ class Root(object):
         if isinstance(result, Response) and result.is_qweb:
             try:
                 result.flatten()
-            except(Exception), e:
+            except Exception as e:
                 if request.db:
                     result = request.registry['ir.http']._handle_exception(e)
                 else:
                     raise
 
-        if isinstance(result, basestring):
+        if isinstance(result, (bytes, pycompat.text_type)):
             response = Response(result, mimetype='text/html')
         else:
             response = result
 
-        # save to cache if requested and possible
-        if getattr(request, 'cache_save', False) and response.status_code == 200:
-            response.freeze()
-            r = response.response
-            if isinstance(r, list) and len(r) == 1 and isinstance(r[0], str):
-                request.registry.cache[request.cache_save] = {
-                    'content': r[0],
-                    'mimetype': response.headers['Content-Type'],
-                    'time': time.time(),
-                }
+        save_session = (not request.endpoint) or request.endpoint.routing.get('save_session', True)
+        if not save_session:
+            return response
 
         if httprequest.session.should_save:
             if httprequest.session.rotate:
                 self.session_store.delete(httprequest.session)
                 httprequest.session.sid = self.session_store.generate_key()
+                if httprequest.session.uid:
+                    httprequest.session.session_token = security.compute_session_token(httprequest.session, request.env)
                 httprequest.session.modified = True
             self.session_store.save(httprequest.session)
         # We must not set the cookie if the session id was specified using a http header or a GET parameter.
@@ -1446,7 +1431,8 @@ class Root(object):
         #   (the one using the cookie). That is a special feature of the Session Javascript class.
         # - It could allow session fixation attacks.
         if not explicit_session and hasattr(response, 'set_cookie'):
-            response.set_cookie('session_id', httprequest.session.sid, max_age=90 * 24 * 60 * 60)
+            response.set_cookie(
+                'session_id', httprequest.session.sid, max_age=90 * 24 * 60 * 60, httponly=True)
 
         return response
 
@@ -1459,6 +1445,9 @@ class Root(object):
             httprequest.app = self
             httprequest.parameter_storage_class = werkzeug.datastructures.ImmutableOrderedMultiDict
             threading.current_thread().url = httprequest.url
+            threading.current_thread().query_count = 0
+            threading.current_thread().query_time = 0
+            threading.current_thread().perf_t0 = time.time()
 
             explicit_session = self.setup_session(httprequest)
             self.setup_db(httprequest)
@@ -1469,7 +1458,7 @@ class Root(object):
             def _dispatch_nodb():
                 try:
                     func, arguments = self.nodb_routing_map.bind_to_environ(request.httprequest.environ).match()
-                except werkzeug.exceptions.HTTPException, e:
+                except werkzeug.exceptions.HTTPException as e:
                     return request._handle_exception(e)
                 request.set_handler(func, arguments, "none")
                 result = request.dispatch()
@@ -1497,14 +1486,13 @@ class Root(object):
                             result = _dispatch_nodb()
                     else:
                         result = ir_http._dispatch()
-                        ir_http.pool.signal_caches_change()
                 else:
                     result = _dispatch_nodb()
 
                 response = self.get_response(httprequest, result, explicit_session)
             return response(environ, start_response)
 
-        except werkzeug.exceptions.HTTPException, e:
+        except werkzeug.exceptions.HTTPException as e:
             return e(environ, start_response)
 
     def get_db_router(self, db):
@@ -1593,7 +1581,7 @@ def send_file(filepath_or_fp, mimetype=None, as_attachment=False, filename=None,
 
     :param cache_timeout: the timeout in seconds for the headers.
     """
-    if isinstance(filepath_or_fp, (str, unicode)):
+    if isinstance(filepath_or_fp, pycompat.string_types):
         if not filename:
             filename = os.path.basename(filepath_or_fp)
         file = open(filepath_or_fp, 'rb')
@@ -1643,7 +1631,7 @@ def send_file(filepath_or_fp, mimetype=None, as_attachment=False, filename=None,
             mtime,
             size,
             adler32(
-                filename.encode('utf-8') if isinstance(filename, unicode)
+                filename.encode('utf-8') if isinstance(filename, pycompat.text_type)
                 else filename
             ) & 0xffffffff
         ))
@@ -1657,25 +1645,14 @@ def send_file(filepath_or_fp, mimetype=None, as_attachment=False, filename=None,
 
 def content_disposition(filename):
     filename = odoo.tools.ustr(filename)
-    escaped = urllib2.quote(filename.encode('utf8'))
-    browser = request.httprequest.user_agent.browser
-    version = int((request.httprequest.user_agent.version or '0').split('.')[0])
-    if browser == 'msie' and version < 9:
-        return "attachment; filename=%s" % escaped
-    elif browser == 'safari' and version < 537:
-        return u"attachment; filename=%s" % filename.encode('ascii', 'replace')
-    else:
-        return "attachment; filename*=UTF-8''%s" % escaped
+    escaped = urls.url_quote(filename, safe='')
+
+    return "attachment; filename*=UTF-8''%s" % escaped
 
 #----------------------------------------------------------
 # RPC controller
 #----------------------------------------------------------
 class CommonController(Controller):
-
-    @route('/jsonrpc', type='json', auth="none")
-    def jsonrpc(self, service, method, args):
-        """ Method used by client APIs to contact OpenERP. """
-        return dispatch_rpc(service, method, args)
 
     @route('/gen_session_id', type='json', auth="none")
     def gen_session_id(self):

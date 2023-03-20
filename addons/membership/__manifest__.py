@@ -3,7 +3,7 @@
 
 
 {
-    'name': 'Membership Management',
+    'name': 'Members',
     'version': '1.0',
     'category': 'Sales',
     'description': """
@@ -29,11 +29,9 @@ invoice and send propositions for membership renewal.
         'views/partner_views.xml',
         'report/report_membership_views.xml',
     ],
-    'demo': [
-        'data/membership_demo.xml',
-    ],
     'website': 'https://www.odoo.com/page/community-builder',
     'test': [
         '../account/test/account_minimal_test.xml',
     ],
+    'license': 'LGPL-3',
 }

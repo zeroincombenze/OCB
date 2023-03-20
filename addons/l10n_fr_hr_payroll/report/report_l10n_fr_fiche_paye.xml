@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 <template id="report_l10n_fr_fiche_paye">
-    <t t-call="report.html_container">
+    <t t-call="web.html_container">
         <t t-foreach="docs" t-as="o">
-            <t t-call="report.internal_layout">
+            <t t-call="web.internal_layout">
                 <div class="page">
                     <div class="oe_structure"/>
                     <div class="row">
-                        <div class="col-xs-4">
+                        <div class="col-4">
                             <h2>Bulletin de paie</h2>
                             <h4>Paie du <span t-field="o.date_from"/> au <span t-field="o.date_to"/></h4>
                         </div>
-                        <div class="col-xs-4 pull-right">
+                        <div class="col-4 ml-auto">
                             <table class="table table-bordered" style="border: 2px solid black;">
                                 <tr>
                                     <td>
@@ -61,7 +61,7 @@
                             </table>
                         </div>
                     </div>
-                    <table class="table table-condensed">
+                    <table class="table table-sm">
                         <thead>
                             <tr>
                                 <th>Code</th>
@@ -107,11 +107,11 @@
                         </tbody>
                     </table>
                      <div class="row">
-                        <div class="col-xs-12">
+                        <div class="col-12">
                             <table class="table  table-round-border">
                                 <tr>
                                     <td>
-                                        <div class="pull-right">         
+                                        <div class="float-right">         
                                         <strong>Net à payer </strong>: <span t-esc="get_total_by_rule_category(o, 'NET')"/>
                                         <strong>Total Charges Patronales</strong> : <span t-esc="get_total_by_rule_category(o, 'COMP')"/>
                                         </div>

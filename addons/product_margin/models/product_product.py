@@ -5,6 +5,7 @@ import time
 
 from odoo import api, fields, models
 
+
 class ProductProduct(models.Model):
     _inherit = "product.product"
 
@@ -16,9 +17,9 @@ class ProductProduct(models.Model):
             ('open_paid', 'Open and Paid'),
             ('draft_open_paid', 'Draft, Open and Paid')
         ], string='Invoice State', readonly=True)
-    sale_avg_price = fields.Float(compute='_compute_product_margin_fields_values', string='Avg. Unit Price',
+    sale_avg_price = fields.Float(compute='_compute_product_margin_fields_values', string='Avg. Sale Unit Price',
         help="Avg. Price in Customer Invoices.")
-    purchase_avg_price = fields.Float(compute='_compute_product_margin_fields_values', string='Avg. Unit Price',
+    purchase_avg_price = fields.Float(compute='_compute_product_margin_fields_values', string='Avg. Purchase Unit Price',
         help="Avg. Price in Vendor Bills ")
     sale_num_invoiced = fields.Float(compute='_compute_product_margin_fields_values', string='# Invoiced in Sale',
         help="Sum of Quantity in Customer Invoices")
@@ -67,8 +68,8 @@ class ProductProduct(models.Model):
                         prod_re[prod.id] = re_ind
                 re_ind += 1
             res_val = tot_products._compute_product_margin_fields_values(field_names=[x for x in fields if fields in fields_list])
-            for key in res_val.keys():
-                for l in res_val[key].keys():
+            for key in res_val:
+                for l in res_val[key]:
                     re = res[prod_re[key]]
                     if re.get(l):
                         re[l] += res_val[key][l]
@@ -103,8 +104,9 @@ class ProductProduct(models.Model):
 
             #Cost price is calculated afterwards as it is a property
             sqlstr = """
+                WITH currency_rate AS ({})
                 select
-                    sum(l.price_unit * l.quantity)/nullif(sum(l.quantity),0) as avg_unit_price,
+                    sum(l.price_unit / (CASE COALESCE(cr.rate, 0) WHEN 0 THEN 1.0 ELSE cr.rate END) * l.quantity)/nullif(sum(l.quantity),0) as avg_unit_price,
                     sum(l.quantity) as num_qty,
                     sum(l.quantity * (l.price_subtotal_signed/(nullif(l.quantity,0)))) as total,
                     sum(l.quantity * pt.list_price) as sale_expected
@@ -112,8 +114,13 @@ class ProductProduct(models.Model):
                 left join account_invoice i on (l.invoice_id = i.id)
                 left join product_product product on (product.id=l.product_id)
                 left join product_template pt on (pt.id = product.product_tmpl_id)
+                left join currency_rate cr on
+                (cr.currency_id = i.currency_id and
+                 cr.company_id = i.company_id and
+                 cr.date_start <= COALESCE(i.date_invoice, NOW()) and
+                 (cr.date_end IS NULL OR cr.date_end > COALESCE(i.date_invoice, NOW())))
                 where l.product_id = %s and i.state in %s and i.type IN %s and (i.date_invoice IS NULL or (i.date_invoice>=%s and i.date_invoice<=%s and i.company_id=%s))
-                """
+                """.format(self.env['res.currency']._select_companies_rates())
             invoice_types = ('out_invoice', 'in_refund')
             self.env.cr.execute(sqlstr, (val.id, states, invoice_types, date_from, date_to, company_id))
             result = self.env.cr.fetchall()[0]

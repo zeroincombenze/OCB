@@ -3,15 +3,15 @@
 # * board
 # 
 # Translators:
-# Sengtha Chay <sengtha@gmail.com>, 2016
+# Sengtha Chay <sengtha@gmail.com>, 2018
 # Lux Sok <sok.lux@gmail.com>, 2019
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0c\n"
+"Project-Id-Version: Odoo Server saas~11.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-07 08:56+0000\n"
-"PO-Revision-Date: 2016-09-07 09:17+0000\n"
+"POT-Creation-Date: 2018-09-18 09:49+0000\n"
+"PO-Revision-Date: 2018-08-24 09:16+0000\n"
 "Last-Translator: Lux Sok <sok.lux@gmail.com>, 2019\n"
 "Language-Team: Khmer (https://www.transifex.com/odoo/teams/41243/km/)\n"
 "MIME-Version: 1.0\n"
@@ -22,6 +22,15 @@ msgstr ""
 
 #. module: board
 #. openerp-web
+#: code:addons/board/static/src/xml/board.xml:53
+#, python-format
+msgid ""
+"\"Add to\n"
+"                Dashboard\""
+msgstr "បន្ថែមទៅកាន់"
+
+#. module: board
+#. openerp-web
 #: code:addons/board/static/src/xml/board.xml:25
 #, python-format
 msgid "&nbsp;"
@@ -29,39 +38,37 @@ msgstr "&nbsp;"
 
 #. module: board
 #. openerp-web
-#: code:addons/board/static/src/js/dashboard.js:409
+#: code:addons/board/static/src/js/favorite_menu.js:103
 #, python-format
 msgid "'%s' added to dashboard"
 msgstr "%sបានបន្ថែមទៅផ្ទៃតាប្លូ"
 
 #. module: board
-#: model:ir.actions.act_window,help:board.open_board_my_dash_action
-msgid "<b>Your personal dashboard is empty.</b>"
-msgstr ""
-
-#. module: board
 #. openerp-web
-#: code:addons/board/static/src/xml/board.xml:70
+#: code:addons/board/static/src/xml/board.xml:83
 #, python-format
 msgid "Add"
 msgstr "បន្ថែម"
 
 #. module: board
 #. openerp-web
-#: code:addons/board/static/src/xml/board.xml:64
+#: code:addons/board/static/src/xml/board.xml:78
 #, python-format
 msgid "Add to my Dashboard"
 msgstr "បន្ថែមទៅផ្ទៃតាប្លូរបស់ខ្ញុំ"
 
 #. module: board
 #. openerp-web
-#: code:addons/board/static/src/js/dashboard.js:141
+#: code:addons/board/static/src/js/board_view.js:362
 #, python-format
-msgid "Are you sure you want to remove this item ?"
-msgstr ""
+msgid "Are you sure you want to remove this item?"
+msgstr "តើអ្នកប្រាកដជាចង់លុបធាតុនេះមែនទេ?"
 
 #. module: board
+#. openerp-web
+#: code:addons/board/static/src/js/board_view.js:439
 #: model:ir.model,name:board.model_board_board
+#, python-format
 msgid "Board"
 msgstr "ក្រុមប្រឹក្សាភិបាល"
 
@@ -81,61 +88,97 @@ msgstr "ផ្លាស់ប្តូរប្លង់ .."
 
 #. module: board
 #. openerp-web
-#: code:addons/board/static/src/xml/board.xml:37
+#: code:addons/board/static/src/xml/board.xml:36
 #, python-format
 msgid "Choose dashboard layout"
 msgstr "ជ្រើសប្លង់ផ្ទាំងគ្រប់គ្រង"
 
 #. module: board
 #. openerp-web
-#: code:addons/board/static/src/js/dashboard.js:411
+#: code:addons/board/static/src/js/favorite_menu.js:107
 #, python-format
 msgid "Could not add filter to dashboard"
 msgstr "មិនអាចបន្ថែមតម្រងទៅផ្ទាំងព័ត៌មានបានទេ"
 
 #. module: board
-#: model:ir.model.fields,field_description:board.field_board_board_display_name
+#: model:ir.model.fields,field_description:board.field_board_board__display_name
 msgid "Display Name"
 msgstr "ឈ្មោះសំរាប់បង្ហាញ"
 
 #. module: board
 #. openerp-web
-#: code:addons/board/static/src/js/dashboard.js:96
+#: code:addons/board/static/src/js/board_view.js:80
 #, python-format
 msgid "Edit Layout"
 msgstr "កែសម្រួលប្លង់"
 
 #. module: board
-#: model:ir.model.fields,field_description:board.field_board_board_id
+#: model:ir.model.fields,field_description:board.field_board_board__id
 msgid "ID"
-msgstr "ID"
+msgstr "អត្តសញ្ញានសំគាល់"
 
 #. module: board
-#: model:ir.model.fields,field_description:board.field_board_board___last_update
+#: model:ir.model.fields,field_description:board.field_board_board____last_update
 msgid "Last Modified on"
 msgstr "កាលបរិច្ឆេតកែប្រែចុងក្រោយ"
 
 #. module: board
 #. openerp-web
-#: code:addons/board/static/src/js/dashboard.js:32
+#: code:addons/board/static/src/xml/board.xml:41
+#, python-format
+msgid "Layout"
+msgstr "ប្លង់"
+
+#. module: board
+#. openerp-web
+#: code:addons/board/static/src/js/board_view.js:43
 #: model:ir.actions.act_window,name:board.open_board_my_dash_action
 #: model:ir.ui.menu,name:board.menu_board_my_dash
-#: model:ir.ui.view,arch_db:board.board_my_dash_view
+#: model_terms:ir.ui.view,arch_db:board.board_my_dash_view
 #, python-format
 msgid "My Dashboard"
 msgstr "ផ្ទាំងគ្រប់គ្រងរបស់ខ្ញុំ"
 
 #. module: board
-#: model:ir.actions.act_window,help:board.open_board_my_dash_action
-msgid ""
-"To add your first report into this dashboard, go to any\n"
-"                    menu, switch to list or graph view, and click <i>'Add to\n"
-"                    Dashboard'</i> in the extended search options."
+#. openerp-web
+#: code:addons/board/static/src/js/favorite_menu.js:104
+#, python-format
+msgid "Please refresh your browser for the changes to take effect."
 msgstr ""
+"សូមផ្ទុកកម្មវិធីរុករករបស់អ្នកឡើងវិញដើម្បីឱ្យការផ្លាស់ប្តូរមានប្រសិទ្ធភាព។"
 
 #. module: board
-#: model:ir.actions.act_window,help:board.open_board_my_dash_action
+#. openerp-web
+#: code:addons/board/static/src/xml/board.xml:51
+#, python-format
+msgid ""
+"To add your first report into this dashboard, go to any\n"
+"                menu, switch to list or graph view, and click"
+msgstr ""
+"ដើម្បីបន្ថែមរបាយការណ៏ដំបូងរបស់អ្នកនៅក្នុងផ្ទាំងគ្រប់គ្រងនេះសូមចូលទៅកាន់ណាមួយ"
+"                 ម៉ឺនុយប្ដូរទៅបញ្ជីឬទិដ្ឋភាពក្រាហ្វហើយចុច"
+
+#. module: board
+#. openerp-web
+#: code:addons/board/static/src/xml/board.xml:55
+#, python-format
 msgid ""
 "You can filter and group data before inserting into the\n"
-"                    dashboard using the search options."
+"                dashboard using the search options."
 msgstr ""
+"អ្នកអាចត្រងនិងបញ្ចូលទិន្នន័យមុនពេលបញ្ចូលទៅក្នុង "
+"                ផ្ទាំងគ្រប់គ្រងដោយប្រើជម្រើសស្វែងរក។"
+
+#. module: board
+#. openerp-web
+#: code:addons/board/static/src/xml/board.xml:49
+#, python-format
+msgid "Your personal dashboard is empty"
+msgstr "ផ្ទៃតាប្លូផ្ទាល់ខ្លួនរបស់អ្នកគឺទទេ"
+
+#. module: board
+#. openerp-web
+#: code:addons/board/static/src/xml/board.xml:53
+#, python-format
+msgid "in the extended search options."
+msgstr "នៅក្នុងជម្រើសស្វែងរកដែលបានពង្រីក។"

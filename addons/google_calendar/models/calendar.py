@@ -20,11 +20,15 @@ class Meeting(models.Model):
     @api.multi
     def write(self, values):
         sync_fields = set(self.get_fields_need_update_google())
-        if (set(values.keys()) and sync_fields) and 'oe_update_date' not in values.keys() and 'NewMeeting' not in self._context:
-            values['oe_update_date'] = fields.Datetime.now()
+        if (set(values) and sync_fields) and 'oe_update_date' not in values and 'NewMeeting' not in self._context:
+            if 'oe_update_date' in self._context:
+                values['oe_update_date'] = self._context.get('oe_update_date')
+            else:
+                values['oe_update_date'] = fields.Datetime.now()
         return super(Meeting, self).write(values)
 
     @api.multi
+    @api.returns('self', lambda value: value.id)
     def copy(self, default=None):
         default = default or {}
         if default.get('write_type', False):

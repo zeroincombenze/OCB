@@ -1,9 +1,11 @@
+# -*- coding: utf-8 -*-
+# Part of Odoo. See LICENSE file for full copyright and licensing details.
 from datetime import datetime, timedelta
 
-from openerp import models, api, fields
-from openerp.fields import Datetime as FieldDateTime
-from openerp.tools.translate import _
-from openerp.exceptions import UserError
+from odoo import models, api, fields
+from odoo.fields import Datetime as FieldDateTime
+from odoo.tools.translate import _
+from odoo.exceptions import UserError
 
 
 class AccountClosing(models.Model):
@@ -15,6 +17,7 @@ class AccountClosing(models.Model):
     """
     _name = 'account.sale.closing'
     _order = 'date_closing_stop desc, sequence_number desc'
+    _description = "Sale Closing"
 
     name = fields.Char(help="Frequency and unique sequence number", required=True)
     company_id = fields.Many2one('res.company', string='Company', readonly=True, required=True)

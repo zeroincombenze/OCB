@@ -3,29 +3,22 @@
 
 import logging
 import re
-import unicodedata
 
 from odoo import _, api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools import ustr
+from odoo.tools import remove_accents
 from odoo.tools.safe_eval import safe_eval
 
 _logger = logging.getLogger(__name__)
 
-
-# Inspired by http://stackoverflow.com/questions/517923
-def remove_accents(input_str):
-    """Suboptimal-but-better-than-nothing way to replace accented
-    latin letters by an ASCII equivalent. Will obviously change the
-    meaning of input_str and work only for some cases"""
-    input_str = ustr(input_str)
-    nkfd_form = unicodedata.normalize('NFKD', input_str)
-    return u''.join([c for c in nkfd_form if not unicodedata.combining(c)])
+# see rfc5322 section 3.2.3
+atext = r"[a-zA-Z0-9!#$%&'*+\-/=?^_`{|}~]"
+dot_atom_text = re.compile(r"^%s+(\.%s+)*$" % (atext, atext))
 
 
 class Alias(models.Model):
-    """A Mail Alias is a mapping of an email address with a given OpenERP Document
-       model. It is used by OpenERP's mail gateway when processing incoming emails
+    """A Mail Alias is a mapping of an email address with a given Odoo Document
+       model. It is used by Odoo's mail gateway when processing incoming emails
        sent to the system. If the recipient address (To) of the message matches
        a Mail Alias, the message will be either processed following the rules
        of that alias. If the message is a reply it will be attached to the
@@ -34,7 +27,7 @@ class Alias(models.Model):
 
        This is meant to be used in combination with a catch-all email configuration
        on the company's mail server, so that as soon as a new mail.alias is
-       created, it becomes immediately usable and OpenERP will accept email for it.
+       created, it becomes immediately usable and Odoo will accept email for it.
      """
     _name = 'mail.alias'
     _description = "Email Aliases"
@@ -63,7 +56,7 @@ class Alias(models.Model):
         help="Optional ID of a thread (record) to which all incoming messages will be attached, even "
              "if they did not reply to it. If set, this will disable the creation of new records completely.")
     alias_domain = fields.Char('Alias domain', compute='_get_alias_domain',
-                               default=lambda self: self.env["ir.config_parameter"].get_param("mail.catchall.domain"))
+                               default=lambda self: self.env["ir.config_parameter"].sudo().get_param("mail.catchall.domain"))
     alias_parent_model_id = fields.Many2one(
         'ir.model', 'Parent Model',
         help="Parent model holding the alias. The model holding the alias reference "
@@ -84,9 +77,20 @@ class Alias(models.Model):
         ('alias_unique', 'UNIQUE(alias_name)', 'Unfortunately this email alias is already used, please choose a unique one')
     ]
 
+    @api.constrains('alias_name')
+    def _alias_is_ascii(self):
+        """ The local-part ("display-name" <local-part@domain>) of an
+            address only contains limited range of ascii characters.
+            We DO NOT allow anything else than ASCII dot-atom formed
+            local-part. Quoted-string and internationnal characters are
+            to be rejected. See rfc5322 sections 3.4.1 and 3.2.3
+        """
+        if any(alias.alias_name and not dot_atom_text.match(alias.alias_name) for alias in self):
+            raise ValidationError(_("You cannot use anything else than unaccented latin characters in the alias address."))
+
     @api.multi
     def _get_alias_domain(self):
-        alias_domain = self.env["ir.config_parameter"].get_param("mail.catchall.domain")
+        alias_domain = self.env["ir.config_parameter"].sudo().get_param("mail.catchall.domain")
         for record in self:
             record.alias_domain = alias_domain
 
@@ -111,10 +115,10 @@ class Alias(models.Model):
         if vals.get('alias_name'):
             vals['alias_name'] = self._clean_and_make_unique(vals.get('alias_name'))
         if model_name:
-            model = self.env['ir.model'].search([('model', '=', model_name)])
+            model = self.env['ir.model']._get(model_name)
             vals['alias_model_id'] = model.id
         if parent_model_name:
-            model = self.env['ir.model'].search([('model', '=', parent_model_name)])
+            model = self.env['ir.model']._get(parent_model_name)
             vals['alias_parent_model_id'] = model.id
         return super(Alias, self).create(vals)
 
@@ -163,6 +167,7 @@ class Alias(models.Model):
         # when an alias name appears to already be an email, we keep the local part only
         name = remove_accents(name).lower().split('@')[0]
         name = re.sub(r'[^\w+.]+', '-', name)
+        name = name.encode('ascii', errors='replace').decode()
         return self._find_unique(name, alias_ids=alias_ids)
 
     @api.multi
@@ -197,6 +202,7 @@ class AliasMixin(models.AbstractModel):
     """
     _name = 'mail.alias.mixin'
     _inherits = {'mail.alias': 'alias_id'}
+    _description = 'Email Aliases Mixin'
 
     alias_id = fields.Many2one('mail.alias', string='Alias', ondelete="restrict", required=True)
 
@@ -239,6 +245,11 @@ class AliasMixin(models.AbstractModel):
         if name != 'alias_id':
             return
 
+        # both self and the alias model must be present in 'ir.model'
+        IM = self.env['ir.model']
+        IM._reflect_model(self)
+        IM._reflect_model(self.env[self.get_alias_model_name({})])
+
         alias_ctx = {
             'alias_model_name': self.get_alias_model_name({}),
             'alias_parent_model_name': self._name,
@@ -254,6 +265,35 @@ class AliasMixin(models.AbstractModel):
         for record in child_model.search([('alias_id', '=', False)]):
             # create the alias, and link it to the current record
             alias = alias_model.create(record.get_alias_values())
-            record.with_context({'mail_notrack': True}).alias_id = alias
+            record.with_context(mail_notrack=True).alias_id = alias
             _logger.info('Mail alias created for %s %s (id %s)',
                          record._name, record.display_name, record.id)
+
+    def _alias_check_contact(self, message, message_dict, alias):
+        """ Main mixin method that inheriting models may inherit in order
+        to implement a specifc behavior. """
+        return self._alias_check_contact_on_record(self, message, message_dict, alias)
+
+    def _alias_check_contact_on_record(self, record, message, message_dict, alias):
+        """ Generic method that takes a record not necessarily inheriting from
+        mail.alias.mixin. """
+        author = self.env['res.partner'].browse(message_dict.get('author_id', False))
+        if alias.alias_contact == 'followers':
+            if not record.ids:
+                return {
+                    'error_message': _('incorrectly configured alias (unknown reference record)'),
+                }
+            if not hasattr(record, "message_partner_ids") or not hasattr(record, "message_channel_ids"):
+                return {
+                    'error_message': _('incorrectly configured alias'),
+                }
+            accepted_partner_ids = record.message_partner_ids | record.message_channel_ids.mapped('channel_partner_ids')
+            if not author or author not in accepted_partner_ids:
+                return {
+                    'error_message': _('restricted to followers'),
+                }
+        elif alias.alias_contact == 'partners' and not author:
+            return {
+                'error_message': _('restricted to known authors')
+            }
+        return True

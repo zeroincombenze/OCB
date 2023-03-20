@@ -22,7 +22,7 @@ class FetchmailServer(models.Model):
     """Incoming POP/IMAP mail server account"""
 
     _name = 'fetchmail.server'
-    _description = "POP/IMAP Server"
+    _description = 'Incoming Mail Server'
     _order = 'priority'
 
     name = fields.Char('Name', required=True)
@@ -46,7 +46,6 @@ class FetchmailServer(models.Model):
     date = fields.Datetime(string='Last Fetch Date', readonly=True)
     user = fields.Char(string='Username', readonly=True, states={'draft': [('readonly', False)]})
     password = fields.Char(readonly=True, states={'draft': [('readonly', False)]})
-    action_id = fields.Many2one('ir.actions.server', string='Server Action', help="Optional custom server action to trigger for each incoming mail, on the record that was created or updated by this mail")
     object_id = fields.Many2one('ir.model', string="Create a New Record", help="Process each incoming mail as part of a conversation "
                                                                                 "corresponding to this document type. This will create "
                                                                                 "new documents for new conversations, or attach follow-up "
@@ -63,8 +62,6 @@ class FetchmailServer(models.Model):
             self.port = self.is_ssl and 995 or 110
         elif self.type == 'imap':
             self.port = self.is_ssl and 993 or 143
-        else:
-            self.server = ''
 
         conf = {
             'dbname': self.env.cr.dbname,
@@ -112,7 +109,7 @@ class FetchmailServer(models.Model):
                 connection = IMAP4_SSL(self.server, int(self.port))
             else:
                 connection = IMAP4(self.server, int(self.port))
-            connection.login(self.user, self.password)
+            self._imap_login(connection)
         elif self.type == 'pop':
             if self.is_ssl:
                 connection = POP3_SSL(self.server, int(self.port))
@@ -126,13 +123,23 @@ class FetchmailServer(models.Model):
         connection.sock.settimeout(MAIL_TIMEOUT)
         return connection
 
+    def _imap_login(self, connection):
+        """Authenticate the IMAP connection.
+
+        Can be overridden in other module for different authentication methods.
+
+        :param connection: The IMAP connection to authenticate
+        """
+        self.ensure_one()
+        connection.login(self.user, self.password)
+
     @api.multi
     def button_confirm_login(self):
         for server in self:
             try:
                 connection = server.connect()
                 server.write({'state': 'done'})
-            except Exception, err:
+            except Exception as err:
                 _logger.info("Failed to connect to %s server %s.", server.type, server.name, exc_info=True)
                 raise UserError(_("Connection test failed: %s") % tools.ustr(err))
             finally:
@@ -180,12 +187,6 @@ class FetchmailServer(models.Model):
                         except Exception:
                             _logger.info('Failed to process mail from %s server %s.', server.type, server.name, exc_info=True)
                             failed += 1
-                        if res_id and server.action_id:
-                            server.action_id.with_context({
-                                'active_id': res_id,
-                                'active_ids': [res_id],
-                                'active_model': self.env.context.get("thread_model", server.object_id.model)
-                            }).run()
                         imap_server.store(num, '+FLAGS', '\\Seen')
                         self._cr.commit()
                         count += 1
@@ -204,7 +205,7 @@ class FetchmailServer(models.Model):
                         pop_server.list()
                         for num in range(1, min(MAX_POP_MESSAGES, num_messages) + 1):
                             (header, messages, octets) = pop_server.retr(num)
-                            message = '\n'.join(messages)
+                            message = (b'\n').join(messages)
                             res_id = None
                             try:
                                 res_id = MailThread.with_context(**additionnal_context).message_process(server.object_id.model, message, save_original=server.original, strip_attachments=(not server.attach))
@@ -212,12 +213,6 @@ class FetchmailServer(models.Model):
                             except Exception:
                                 _logger.info('Failed to process mail from %s server %s.', server.type, server.name, exc_info=True)
                                 failed += 1
-                            if res_id and server.action_id:
-                                server.action_id.with_context({
-                                    'active_id': res_id,
-                                    'active_ids': [res_id],
-                                    'active_model': self.env.context.get("thread_model", server.object_id.model)
-                                }).run()
                             self.env.cr.commit()
                         if num_messages < MAX_POP_MESSAGES:
                             break

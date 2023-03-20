@@ -3,14 +3,18 @@
 # * payment_payumoney
 # 
 # Translators:
-# Maria Boyadjieva <marabo2000@gmail.com>, 2016
+# Bernard <bernard@abv.bg>, 2019
+# Iliana Ilieva <i.ilieva@sunservice-bg.com>, 2019
+# Albena Mincheva <albena_vicheva@abv.bg>, 2019
+# Maria Boyadjieva <marabo2000@gmail.com>, 2019
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0c\n"
+"Project-Id-Version: Odoo Server saas~11.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-07 08:57+0000\n"
-"PO-Revision-Date: 2016-09-07 08:57+0000\n"
-"Last-Translator: Maria Boyadjieva <marabo2000@gmail.com>, 2016\n"
+"POT-Creation-Date: 2018-09-18 09:49+0000\n"
+"PO-Revision-Date: 2018-08-24 09:22+0000\n"
+"Last-Translator: Maria Boyadjieva <marabo2000@gmail.com>, 2019\n"
 "Language-Team: Bulgarian (https://www.transifex.com/odoo/teams/41243/bg/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -19,41 +23,65 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. module: payment_payumoney
-#: model:ir.model.fields,field_description:payment_payumoney.field_payment_acquirer_payumoney_merchant_key
+#: selection:payment.acquirer,provider:0
+msgid "Adyen"
+msgstr "Adyen"
+
+#. module: payment_payumoney
+#: selection:payment.acquirer,provider:0
+msgid "Authorize.Net"
+msgstr "Authorize.Net"
+
+#. module: payment_payumoney
+#: selection:payment.acquirer,provider:0
+msgid "Buckaroo"
+msgstr "Buckaroo"
+
+#. module: payment_payumoney
+#: selection:payment.acquirer,provider:0
+msgid "Manual Configuration"
+msgstr "Механична конфигурация"
+
+#. module: payment_payumoney
+#: model:ir.model.fields,field_description:payment_payumoney.field_payment_acquirer__payumoney_merchant_key
 msgid "Merchant Key"
 msgstr "Търговски ключ"
 
 #. module: payment_payumoney
-#: model:ir.model.fields,field_description:payment_payumoney.field_payment_acquirer_payumoney_merchant_salt
+#: model:ir.model.fields,field_description:payment_payumoney.field_payment_acquirer__payumoney_merchant_salt
 msgid "Merchant Salt"
 msgstr "Защита на търговец"
 
 #. module: payment_payumoney
-#: code:addons/payment_payumoney/models/payment.py:145
-#, python-format
-msgid "PayUmoney: feedback error"
-msgstr "PayUmoney: грешка при обратна връзка"
+#: selection:payment.acquirer,provider:0
+msgid "Ogone"
+msgstr "Ogone"
 
 #. module: payment_payumoney
-#: code:addons/payment_payumoney/models/payment.py:107
+#: selection:payment.acquirer,provider:0
+msgid "PayUmoney"
+msgstr "PayUmoney"
+
+#. module: payment_payumoney
+#: code:addons/payment_payumoney/models/payment.py:108
 #, python-format
 msgid "PayUmoney: invalid shasign, received %s, computed %s, for data %s"
 msgstr "PayUmoney: невалиден шасинг, получен %s, изчислен %s, за данни %s"
 
 #. module: payment_payumoney
-#: code:addons/payment_payumoney/models/payment.py:101
+#: code:addons/payment_payumoney/models/payment.py:102
 #, python-format
 msgid "PayUmoney: received data for reference %s; multiple orders found"
 msgstr "PayUmoney: получени данни за референция %s; открити множество поръчки"
 
 #. module: payment_payumoney
-#: code:addons/payment_payumoney/models/payment.py:98
+#: code:addons/payment_payumoney/models/payment.py:99
 #, python-format
 msgid "PayUmoney: received data for reference %s; no order found"
 msgstr "PayUmoney: получени данни за референция %s; не е открита поръчка"
 
 #. module: payment_payumoney
-#: code:addons/payment_payumoney/models/payment.py:93
+#: code:addons/payment_payumoney/models/payment.py:94
 #, python-format
 msgid ""
 "PayUmoney: received data with missing reference (%s) or pay_id (%s) or "
@@ -71,3 +99,28 @@ msgstr "Обработчик на плащане"
 #: model:ir.model,name:payment_payumoney.model_payment_transaction
 msgid "Payment Transaction"
 msgstr "Платежна транзакция"
+
+#. module: payment_payumoney
+#: selection:payment.acquirer,provider:0
+msgid "Paypal"
+msgstr "PayPal"
+
+#. module: payment_payumoney
+#: model:ir.model.fields,field_description:payment_payumoney.field_payment_acquirer__provider
+msgid "Provider"
+msgstr "Доставчик"
+
+#. module: payment_payumoney
+#: selection:payment.acquirer,provider:0
+msgid "Sips"
+msgstr "Sips"
+
+#. module: payment_payumoney
+#: selection:payment.acquirer,provider:0
+msgid "Stripe"
+msgstr "Stripe"
+
+#. module: payment_payumoney
+#: selection:payment.acquirer,provider:0
+msgid "Wire Transfer"
+msgstr "Банков превод"

@@ -3,15 +3,17 @@
 # * base_geolocalize
 # 
 # Translators:
-# ExcaliberX <excaliberx@gmail.com>, 2017
+# Yihya Hugirat <hugirat@gmail.com>, 2018
+# דודי מלכה <Dudimalka6@gmail.com>, 2019
+# ZVI BLONDER <ZVIBLONDER@gmail.com>, 2019
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0c\n"
+"Project-Id-Version: Odoo Server 12.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-07 08:56+0000\n"
-"PO-Revision-Date: 2016-09-07 09:17+0000\n"
-"Last-Translator: ExcaliberX <excaliberx@gmail.com>, 2017\n"
+"POT-Creation-Date: 2019-11-14 07:34+0000\n"
+"PO-Revision-Date: 2018-08-24 09:16+0000\n"
+"Last-Translator: ZVI BLONDER <ZVIBLONDER@gmail.com>, 2019\n"
 "Language-Team: Hebrew (https://www.transifex.com/odoo/teams/41243/he/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,22 +22,22 @@ msgstr ""
 "Plural-Forms: nplurals=4; plural=(n == 1 && n % 1 == 0) ? 0 : (n == 2 && n % 1 == 0) ? 1: (n % 10 == 0 && n % 1 == 0 && n > 10) ? 2 : 3;\n"
 
 #. module: base_geolocalize
-#: model:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
+#: model_terms:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
 msgid "<span class=\"oe_inline\"> ( On  </span>"
-msgstr ""
+msgstr "<span class=\"oe_inline\"> ( מופעל  </span>"
 
 #. module: base_geolocalize
-#: model:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
+#: model_terms:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
 msgid "<span> : Lat : </span>"
-msgstr ""
+msgstr "<span> : קו רוחב : </span>"
 
 #. module: base_geolocalize
-#: model:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
+#: model_terms:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
 msgid "<span> ;  Long:  </span>"
-msgstr ""
+msgstr "<span> ;  ארוך:  </span>"
 
 #. module: base_geolocalize
-#: code:addons/base_geolocalize/models/res_partner.py:18
+#: code:addons/base_geolocalize/models/res_partner.py:19
 #, python-format
 msgid ""
 "API key for GeoCoding (Places) required.\n"
@@ -46,50 +48,54 @@ msgid ""
 msgstr ""
 
 #. module: base_geolocalize
-#: code:addons/base_geolocalize/models/res_partner.py:29
+#: code:addons/base_geolocalize/models/res_partner.py:28
 #, python-format
 msgid ""
 "Cannot contact geolocation servers. Please make sure that your Internet "
 "connection is up and running (%s)."
 msgstr ""
-
-#. module: base_geolocalize
-#: model:ir.model.fields,field_description:base_geolocalize.field_res_partner_partner_latitude
-msgid "Geo Latitude"
-msgstr ""
-
-#. module: base_geolocalize
-#: model:ir.model.fields,field_description:base_geolocalize.field_res_partner_partner_longitude
-msgid "Geo Longitude"
-msgstr ""
-
-#. module: base_geolocalize
-#: model:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
-msgid "Geolocate"
-msgstr ""
-
-#. module: base_geolocalize
-#: model:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
-msgid "Geolocation"
-msgstr ""
-
-#. module: base_geolocalize
-#: model:ir.model.fields,field_description:base_geolocalize.field_res_partner_date_localization
-msgid "Geolocation Date"
-msgstr ""
+"לא ניתן ליצור קשר עם שרתי מיקום גיאוגרפי. ודא שחיבור האינטרנט שלך פועל (%s)."
 
 #. module: base_geolocalize
 #: model:ir.model,name:base_geolocalize.model_res_partner
-msgid "Partner"
-msgstr "שותף"
+msgid "Contact"
+msgstr "איש קשר"
 
 #. module: base_geolocalize
-#: model:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
+#: model:ir.model.fields,field_description:base_geolocalize.field_res_partner__partner_latitude
+#: model:ir.model.fields,field_description:base_geolocalize.field_res_users__partner_latitude
+msgid "Geo Latitude"
+msgstr "קו רוחב גיאוגרפי"
+
+#. module: base_geolocalize
+#: model:ir.model.fields,field_description:base_geolocalize.field_res_partner__partner_longitude
+#: model:ir.model.fields,field_description:base_geolocalize.field_res_users__partner_longitude
+msgid "Geo Longitude"
+msgstr "קו אורך גיאוגרפי"
+
+#. module: base_geolocalize
+#: model_terms:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
+msgid "Geolocate"
+msgstr "איכון"
+
+#. module: base_geolocalize
+#: model_terms:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
+msgid "Geolocation"
+msgstr "מיקום גיאוגרפי"
+
+#. module: base_geolocalize
+#: model:ir.model.fields,field_description:base_geolocalize.field_res_partner__date_localization
+#: model:ir.model.fields,field_description:base_geolocalize.field_res_users__date_localization
+msgid "Geolocation Date"
+msgstr "תאריך מיקום גיאוגרפי"
+
+#. module: base_geolocalize
+#: model_terms:ir.ui.view,arch_db:base_geolocalize.view_crm_partner_geo_form
 msgid "Partner Assignation"
-msgstr ""
+msgstr "שיוך לקוח/ספק"
 
 #. module: base_geolocalize
-#: code:addons/base_geolocalize/models/res_partner.py:34
+#: code:addons/base_geolocalize/models/res_partner.py:33
 #, python-format
 msgid ""
 "Unable to geolocate, received the error:\n"

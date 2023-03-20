@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, fields, models, SUPERUSER_ID, _
+from odoo import api, fields, models, _
 from odoo.osv import expression
 from odoo.tools import html2plaintext
 from odoo.exceptions import AccessError
@@ -25,6 +25,11 @@ class MailMessage(models.Model):
 
     description = fields.Char(compute="_compute_description", help='Message description: either the subject, or the beginning of the body')
     website_published = fields.Boolean(string='Published', help="Visible on the website as a comment", copy=False)
+
+    @api.model
+    def _non_employee_message_domain(self):
+        domain = super(MailMessage, self)._non_employee_message_domain()
+        return expression.AND([domain, [('website_published', '=', True)]])
 
     @api.multi
     def _compute_description(self):
@@ -60,8 +65,7 @@ class MailMessage(models.Model):
                 )
         return super(MailMessage, self).check_access_rule(operation=operation)
 
-
-class MailThread(models.AbstractModel):
-    _inherit = 'mail.thread'
-
-    _mail_post_token_field = 'access_token' # token field for external posts, to be overridden
+    @api.multi
+    def _portal_message_format(self, fields_list):
+        fields_list += ['website_published']
+        return super(MailMessage, self)._portal_message_format(fields_list)

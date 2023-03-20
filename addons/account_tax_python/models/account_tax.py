@@ -28,6 +28,8 @@ class AccountTaxPython(models.Model):
 
     def _compute_amount(self, base_amount, price_unit, quantity=1.0, product=None, partner=None):
         self.ensure_one()
+        if product and product._name == 'product.template':
+            product = product.product_variant_id
         if self.amount_type == 'code':
             company = self.env.user.company_id
             localdict = {'base_amount': base_amount, 'price_unit':price_unit, 'quantity': quantity, 'product':product, 'partner':partner, 'company': company}
@@ -39,8 +41,11 @@ class AccountTaxPython(models.Model):
     def compute_all(self, price_unit, currency=None, quantity=1.0, product=None, partner=None):
         taxes = self.filtered(lambda r: r.amount_type != 'code')
         company = self.env.user.company_id
+        if product and product._name == 'product.template':
+            product = product.product_variant_id
         for tax in self.filtered(lambda r: r.amount_type == 'code'):
-            localdict = {'price_unit': price_unit, 'quantity': quantity, 'product': product, 'partner': partner, 'company': company}
+            localdict = self._context.get('tax_computation_context', {})
+            localdict.update({'price_unit': price_unit, 'quantity': quantity, 'product': product, 'partner': partner, 'company': company})
             safe_eval(tax.python_applicable, localdict, mode="exec", nocopy=True)
             if localdict.get('result', False):
                 taxes += tax
@@ -66,11 +71,11 @@ class AccountTaxTemplatePython(models.Model):
             ":param product: product.product recordset singleton or None\n"
             ":param partner: res.partner recordset singleton or None")
 
-    def _get_tax_vals(self, company):
+    def _get_tax_vals(self, company, tax_template_to_tax):
         """ This method generates a dictionnary of all the values for the tax that will be created.
         """
         self.ensure_one()
-        res = super(AccountTaxTemplatePython, self)._get_tax_vals(company)
+        res = super(AccountTaxTemplatePython, self)._get_tax_vals(company, tax_template_to_tax)
         res['python_compute'] = self.python_compute
         res['python_applicable'] = self.python_applicable
         return res

@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from odoo import api, models
+from odoo import api, models, _
+
+from odoo.tools import float_round
+from odoo.exceptions import UserError
 
 
 class MrpProduction(models.Model):
@@ -25,20 +28,63 @@ class MrpProduction(models.Model):
                 'location_dest_id': production.location_dest_id.id,
                 'operation_id': sub_product.operation_id.id,
                 'production_id': production.id,
+                'warehouse_id': production.location_dest_id.get_warehouse().id,
                 'origin': production.name,
                 'unit_factor': qty1 / (production.product_qty - production.qty_produced),
+                'propagate': self.propagate,
+                'group_id': self.move_dest_ids and self.move_dest_ids.mapped('group_id')[0].id or self.procurement_group_id.id,
                 'subproduct_id': sub_product.id
             }
             move = Move.create(data)
-            move.action_confirm()
+            move._action_confirm()
 
     @api.multi
     def _generate_moves(self):
         """ Generates moves and work orders
         @return: Newly generated picking Id.
         """
+        for production in self:
+            if production.product_id in production.bom_id.sub_products.mapped('product_id'):
+                raise UserError(_("You cannot have %s  as the finished product and in the Byproducts") % production.product_id.name)
         res = super(MrpProduction, self)._generate_moves()
         for production in self.filtered(lambda production: production.bom_id):
             for sub_product in production.bom_id.sub_products:
                 production._create_byproduct_move(sub_product)
         return res
+
+
+class MrpProductProduce(models.TransientModel):
+    _name = "mrp.product.produce"
+    _description = "Record Production"
+    _inherit = "mrp.product.produce"
+
+    @api.multi
+    def check_finished_move_lots(self):
+        """ Handle by product tracked """
+        by_product_moves = self.production_id.move_finished_ids.filtered(lambda m: m.product_id != self.product_id and m.product_id.tracking != 'none' and m.state not in ('done', 'cancel'))
+        for by_product_move in by_product_moves:
+            rounding = by_product_move.product_uom.rounding
+            quantity = float_round(self.product_qty * by_product_move.unit_factor, precision_rounding=rounding)
+            location_dest_id = by_product_move.location_dest_id.get_putaway_strategy(by_product_move.product_id).id or by_product_move.location_dest_id.id
+            values = {
+                'move_id': by_product_move.id,
+                'product_id': by_product_move.product_id.id,
+                'production_id': self.production_id.id,
+                'product_uom_id': by_product_move.product_uom.id,
+                'location_id': by_product_move.location_id.id,
+                'location_dest_id': location_dest_id,
+            }
+            if by_product_move.product_id.tracking == 'lot':
+                values.update({
+                    'product_uom_qty': quantity,
+                    'qty_done': quantity,
+                })
+                self.env['stock.move.line'].create(values)
+            else:
+                values.update({
+                    'product_uom_qty': 1.0,
+                    'qty_done': 1.0,
+                })
+                for i in range(0, int(quantity)):
+                    self.env['stock.move.line'].create(values)
+        return super(MrpProductProduce, self).check_finished_move_lots()

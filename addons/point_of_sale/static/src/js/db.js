@@ -225,7 +225,10 @@ var PosDB = core.Class.extend({
         if(partner.email){
             str += '|' + partner.email;
         }
-        str = '' + partner.id + ':' + str.replace(':','') + '\n';
+        if(partner.vat){
+            str += '|' + partner.vat;
+        }
+        str = '' + partner.id + ':' + str.replace(':', '').replace(/\n/g, ' ') + '\n';
         return str;
     },
     add_partners: function(partners){
@@ -481,7 +484,7 @@ var PosDB = core.Class.extend({
     },
     set_cashier: function(cashier) {
         // Always update if the user is the same as before
-        this.save('cashier', cashier);
+        this.save('cashier', cashier || null);
     },
     get_cashier: function() {
         return this.load('cashier');

@@ -10,6 +10,7 @@ import time
 import odoo
 from odoo import api, fields, models, SUPERUSER_ID
 from odoo.tools.misc import DEFAULT_SERVER_DATETIME_FORMAT
+from odoo.tools import date_utils
 
 _logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ TIMEOUT = 50
 # Bus
 #----------------------------------------------------------
 def json_dump(v):
-    return json.dumps(v, separators=(',', ':'))
+    return json.dumps(v, separators=(',', ':'), default=date_utils.json_default)
 
 def hashable(key):
     if isinstance(key, list):
@@ -31,8 +32,8 @@ def hashable(key):
 class ImBus(models.Model):
 
     _name = 'bus.bus'
+    _description = 'Communication Bus'
 
-    create_date = fields.Datetime('Create date')
     channel = fields.Char('Channel')
     message = fields.Char('Message')
 
@@ -52,8 +53,6 @@ class ImBus(models.Model):
                 "message": json_dump(message)
             }
             self.sudo().create(values)
-            if random.random() < 0.01:
-                self.gc()
         if channels:
             # We have to wait until the notifications are commited in database.
             # When calling `NOTIFY imbus`, some concurrent threads will be
@@ -118,7 +117,8 @@ class ImDispatch(object):
         # it will handle a longpolling request
         if not odoo.evented:
             current = threading.current_thread()
-            current._Thread__daemonic = True
+            current._Thread__daemonic = True # PY2
+            current._daemonic = True         # PY3
             # rename the thread to avoid tests waiting for a longpolling
             current.setName("openerp.longpolling.request.%s" % current.ident)
 
@@ -141,7 +141,7 @@ class ImDispatch(object):
 
             event = self.Event()
             for channel in channels:
-                self.channels.setdefault(hashable(channel), []).append(event)
+                self.channels.setdefault(hashable(channel), set()).add(event)
             try:
                 event.wait(timeout=timeout)
                 with registry.cursor() as cr:
@@ -150,6 +150,12 @@ class ImDispatch(object):
             except Exception:
                 # timeout
                 pass
+            finally:
+                # gc pointers to event
+                for channel in channels:
+                    channel_events = self.channels.get(hashable(channel))
+                    if channel_events and event in channel_events:
+                        channel_events.remove(event)
         return notifications
 
     def loop(self):
@@ -170,7 +176,7 @@ class ImDispatch(object):
                     # dispatch to local threads/greenlets
                     events = set()
                     for channel in channels:
-                        events.update(self.channels.pop(hashable(channel), []))
+                        events.update(self.channels.pop(hashable(channel), set()))
                     for event in events:
                         event.set()
 
@@ -178,7 +184,7 @@ class ImDispatch(object):
         while True:
             try:
                 self.loop()
-            except Exception, e:
+            except Exception as e:
                 _logger.exception("Bus.loop error, sleep and retry")
                 time.sleep(TIMEOUT)
 

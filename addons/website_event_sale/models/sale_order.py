@@ -41,8 +41,11 @@ class SaleOrder(models.Model):
             values['product_id'] = ticket.product_id.id
             values['event_id'] = ticket.event_id.id
             values['event_ticket_id'] = ticket.id
-            values['price_unit'] = ticket.price_reduce
-            values['name'] = "%s\n%s" % (ticket.event_id.display_name, ticket.name)
+            if order.pricelist_id.discount_policy == 'without_discount':
+                values['price_unit'] = ticket.price
+            else:
+                values['price_unit'] = ticket.price_reduce
+            values['name'] = ticket.get_ticket_multiline_description_sale()
 
         # avoid writing related values that end up locking the product record
         values.pop('event_ok', None)
@@ -52,6 +55,17 @@ class SaleOrder(models.Model):
     @api.multi
     def _cart_update(self, product_id=None, line_id=None, add_qty=0, set_qty=0, **kwargs):
         OrderLine = self.env['sale.order.line']
+
+        try:
+            if add_qty:
+                add_qty = float(add_qty)
+        except ValueError:
+            add_qty = 1
+        try:
+            if set_qty:
+                set_qty = float(set_qty)
+        except ValueError:
+            set_qty = 0
 
         if line_id:
             line = OrderLine.browse(line_id)
@@ -71,7 +85,7 @@ class SaleOrder(models.Model):
             values['warning'] = _('Sorry, The %(ticket)s tickets for the %(event)s event are sold out.') % {
                 'ticket': ticket.name,
                 'event': ticket.event_id.name}
-            new_qty, set_qty, add_qty = 0, 0, 0
+            new_qty, set_qty, add_qty = 0, 0, -old_qty
         # case: buying tickets, too much attendees
         elif ticket and ticket.seats_availability == 'limited' and new_qty > ticket.seats_available:
             values['warning'] = _('Sorry, only %(remaining_seats)d seats are still available for the %(ticket)s ticket for the %(event)s event.') % {
@@ -92,7 +106,22 @@ class SaleOrder(models.Model):
         # adding attendees
         elif ticket and new_qty > old_qty:
             line = OrderLine.browse(values['line_id'])
-            line._update_registrations(confirm=False, registration_data=kwargs.get('registration_data', []))
+            line._update_registrations(confirm=False, cancel_to_draft=True, registration_data=kwargs.get('registration_data', []))
             # add in return values the registrations, to display them on website (or not)
             values['attendee_ids'] = self.env['event.registration'].search([('sale_order_line_id', '=', line.id), ('state', '!=', 'cancel')]).ids
         return values
+
+
+class SaleOrderLine(models.Model):
+    _inherit = "sale.order.line"
+
+    @api.multi
+    @api.depends('product_id.display_name', 'event_ticket_id.display_name')
+    def _compute_name_short(self):
+        """ If the sale order line concerns a ticket, we don't want the product name, but the ticket name instead.
+        """
+        super(SaleOrderLine, self)._compute_name_short()
+
+        for record in self:
+            if record.event_ticket_id:
+                record.name_short = record.event_ticket_id.display_name

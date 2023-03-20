@@ -2,10 +2,10 @@
 
 import json
 import logging
-import urlparse
 
 import dateutil.parser
 import pytz
+from werkzeug import urls
 
 from odoo import api, fields, models, _
 from odoo.addons.payment.models.payment_acquirer import ValidationError
@@ -25,6 +25,7 @@ class AcquirerPaypal(models.Model):
         'Paypal Merchant ID', groups='base.group_user',
         help='The Merchant ID is used to ensure communications coming from Paypal are valid and secured.')
     paypal_use_ipn = fields.Boolean('Use IPN', default=True, help='Paypal Instant Payment Notification', groups='base.group_user')
+    paypal_pdt_token = fields.Char(string='Paypal PDT Token', help='Payment Data Transfer allows you to receive notification of successful payments as they are made.', groups='base.group_user')
     # Server 2 server
     paypal_api_enabled = fields.Boolean('Use Rest API', default=False)
     paypal_api_username = fields.Char('Rest API Username', groups='base.group_user')
@@ -90,7 +91,7 @@ class AcquirerPaypal(models.Model):
 
     @api.multi
     def paypal_form_generate_values(self, values):
-        base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
+        base_url = self.get_base_url()
 
         paypal_tx_values = dict(values)
         paypal_tx_values.update({
@@ -108,9 +109,9 @@ class AcquirerPaypal(models.Model):
             'zip_code': values.get('partner_zip'),
             'first_name': values.get('partner_first_name'),
             'last_name': values.get('partner_last_name'),
-            'paypal_return': '%s' % urlparse.urljoin(base_url, PaypalController._return_url),
-            'notify_url': '%s' % urlparse.urljoin(base_url, PaypalController._notify_url),
-            'cancel_return': '%s' % urlparse.urljoin(base_url, PaypalController._cancel_url),
+            'paypal_return': urls.url_join(base_url, PaypalController._return_url),
+            'notify_url': urls.url_join(base_url, PaypalController._notify_url),
+            'cancel_return': urls.url_join(base_url, PaypalController._cancel_url),
             'handling': '%.2f' % paypal_tx_values.pop('fees', 0.0) if self.fees_active else False,
             'custom': json.dumps({'return_url': '%s' % paypal_tx_values.pop('return_url')}) if paypal_tx_values.get('return_url') else False,
         })
@@ -164,7 +165,7 @@ class TxPaypal(models.Model):
             invalid_parameters.append(('txn_id', data.get('txn_id'), self.acquirer_reference))
         # check what is buyed
         if float_compare(float(data.get('mc_gross', '0.0')), (self.amount + self.fees), 2) != 0:
-            invalid_parameters.append(('mc_gross', data.get('mc_gross'), '%.2f' % self.amount))  # mc_gross is amount + fees
+            invalid_parameters.append(('mc_gross', data.get('mc_gross'), '%.2f' % (self.amount + self.fees)))  # mc_gross is amount + fees
         if data.get('mc_currency') != self.currency_id.name:
             invalid_parameters.append(('mc_currency', data.get('mc_currency'), self.currency_id.name))
         if 'handling_amount' in data and float_compare(float(data.get('handling_amount')), self.fees, 2) != 0:
@@ -190,29 +191,39 @@ class TxPaypal(models.Model):
     @api.multi
     def _paypal_form_validate(self, data):
         status = data.get('payment_status')
+        former_tx_state = self.state
         res = {
             'acquirer_reference': data.get('txn_id'),
             'paypal_txn_type': data.get('payment_type'),
         }
         if status in ['Completed', 'Processed']:
-            _logger.info('Validated Paypal payment for tx %s: set as done' % (self.reference))
             try:
                 # dateutil and pytz don't recognize abbreviations PDT/PST
                 tzinfos = {
                     'PST': -8 * 3600,
                     'PDT': -7 * 3600,
                 }
-                date_validate = dateutil.parser.parse(data.get('payment_date'), tzinfos=tzinfos).astimezone(pytz.utc)
+                date = dateutil.parser.parse(data.get('payment_date'), tzinfos=tzinfos).astimezone(pytz.utc)
             except:
-                date_validate = fields.Datetime.now()
-            res.update(state='done', date_validate=date_validate)
-            return self.write(res)
+                date = fields.Datetime.now()
+            res.update(date=date)
+            self._set_transaction_done()
+            if self.state == 'done' and self.state != former_tx_state:
+                _logger.info('Validated Paypal payment for tx %s: set as done' % (self.reference))
+                return self.write(res)
+            return True
         elif status in ['Pending', 'Expired']:
-            _logger.info('Received notification for Paypal payment %s: set as pending' % (self.reference))
-            res.update(state='pending', state_message=data.get('pending_reason', ''))
-            return self.write(res)
+            res.update(state_message=data.get('pending_reason', ''))
+            self._set_transaction_pending()
+            if self.state == 'pending' and self.state != former_tx_state:
+                _logger.info('Received notification for Paypal payment %s: set as pending' % (self.reference))
+                return self.write(res)
+            return True
         else:
             error = 'Received unrecognized status for Paypal payment %s: %s, set as error' % (self.reference, status)
-            _logger.info(error)
-            res.update(state='error', state_message=error)
-            return self.write(res)
+            res.update(state_message=error)
+            self._set_transaction_cancel()
+            if self.state == 'cancel' and self.state != former_tx_state:
+                _logger.info(error)
+                return self.write(res)
+            return True

@@ -3,10 +3,11 @@
 
 
 {
-    'name': 'Timesheets',
+    'name': 'Task Logs',
     'version': '1.0',
     'category': 'Human Resources',
     'sequence': 23,
+    'summary': 'Track employee time on tasks',
     'description': """
 This module implements a timesheet system.
 ==========================================
@@ -18,27 +19,26 @@ Lots of reporting on time and employee tracking are provided.
 It is completely integrated with the cost accounting module. It allows you to set
 up a management by affair.
     """,
-    'website': 'https://www.odoo.com/page/employees',
-    'depends': ['account', 'hr', 'project'],
+    'website': 'https://www.odoo.com/page/timesheet-mobile-app',
+    'depends': ['hr', 'analytic', 'project', 'uom'],
     'data': [
         'security/hr_timesheet_security.xml',
         'security/ir.model.access.csv',
-        'hr_timesheet_view.xml',
-        'project_timesheet_view.xml',
+        'views/assets.xml',
+        'views/hr_timesheet_views.xml',
+        'views/res_config_settings_views.xml',
+        'views/project_views.xml',
+        'views/project_portal_templates.xml',
         'report/hr_timesheet_report_view.xml',
         'report/report_timesheet_templates.xml',
-        'hr_timesheet_installer.xml',
-        'hr_dashboard.xml',
+        'views/hr_views.xml',
+        'data/hr_timesheet_data.xml',
     ],
     'demo': [
-        'hr_timesheet_demo.yml',
-    ],
-    'test': [
-        '../account/test/account_minimal_test.xml',
-        'test/hr_timesheet_users.yml',
-        'test/worktask_entry_to_timesheetline_entry.yml',
+        'data/hr_timesheet_demo.xml',
     ],
     'installable': True,
-    'application': True,
+    'application': False,
     'auto_install': False,
+    'license': 'LGPL-3',
 }

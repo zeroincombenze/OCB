@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-
+import base64
 import random
 import re
 from datetime import datetime, timedelta
 
-from odoo import api, fields, models, modules, tools
-
+from odoo import api, fields, models, modules, tools, _
 
 class ImLivechatChannel(models.Model):
     """ Livechat Channel
@@ -20,7 +19,7 @@ class ImLivechatChannel(models.Model):
 
     def _default_image(self):
         image_path = modules.get_module_resource('im_livechat', 'static/src/img', 'default.png')
-        return tools.image_resize_image_big(open(image_path, 'rb').read().encode('base64'))
+        return tools.image_resize_image_big(base64.b64encode(open(image_path, 'rb').read()))
 
     def _default_user_ids(self):
         return [(6, 0, [self._uid])]
@@ -31,7 +30,7 @@ class ImLivechatChannel(models.Model):
         help="Default text displayed on the Livechat Support Button")
     default_message = fields.Char('Welcome Message', default='How may I help you?',
         help="This is an automated 'welcome' message that your visitor will see when they initiate a new conversation.")
-    input_placeholder = fields.Char('Chat Input Placeholder')
+    input_placeholder = fields.Char('Chat Input Placeholder', help='Text that prompts the user to initiate the chat.')
 
     # computed fields
     web_page = fields.Char('Web Page', compute='_compute_web_page_link', store=False, readonly=True,
@@ -132,8 +131,8 @@ class ImLivechatChannel(models.Model):
             :returns : the ir.action 'action_view_rating' with the correct domain
         """
         self.ensure_one()
-        action = self.env['ir.actions.act_window'].for_xml_id('rating', 'action_view_rating')
-        action['domain'] = [('res_id', 'in', [s.id for s in self.channel_ids]), ('res_model', '=', 'mail.channel')]
+        action = self.env['ir.actions.act_window'].for_xml_id('im_livechat', 'rating_rating_action_view_livechat_rating')
+        action['domain'] = [('parent_res_id', '=', self.id), ('parent_res_model', '=', 'im_livechat.channel')]
         return action
 
     # --------------------------
@@ -178,6 +177,7 @@ class ImLivechatChannel(models.Model):
             'public': 'private',
             'email_send': False,
         })
+        mail_channel._broadcast([operator_partner_id])
         return mail_channel.sudo().with_context(im_livechat_operator_partner_id=operator_partner_id).channel_info()[0]
 
     @api.model
@@ -193,9 +193,11 @@ class ImLivechatChannel(models.Model):
 
     @api.model
     def get_livechat_info(self, channel_id, username='Visitor'):
+        if username == 'Visitor':
+            username = _('Visitor')
         info = {}
         info['available'] = len(self.browse(channel_id).get_available_users()) > 0
-        info['server_url'] = self.env['ir.config_parameter'].get_param('web.base.url')
+        info['server_url'] = self.env['ir.config_parameter'].sudo().get_param('web.base.url')
         if info['available']:
             info['options'] = self.sudo().get_channel_infos(channel_id)
             info['options']["default_username"] = username
@@ -209,7 +211,7 @@ class ImLivechatChannelRule(models.Model):
     """
 
     _name = 'im_livechat.channel.rule'
-    _description = 'Channel Rules'
+    _description = 'Livechat Channel Rules'
     _order = 'sequence asc'
 
 
@@ -239,7 +241,9 @@ class ImLivechatChannelRule(models.Model):
         """
         def _match(rules):
             for rule in rules:
-                if re.search(rule.regex_url or '', url):
+                # url might not be set because it comes from referer, in that
+                # case match the first rule with no regex_url
+                if re.search(rule.regex_url or '', url or ''):
                     return rule
             return False
         # first, search the country specific rules (the first match is returned)

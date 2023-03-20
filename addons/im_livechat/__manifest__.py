@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 {
-    'name' : 'Website Live Chat',
+    'name' : 'Live Chat',
     'version': '1.0',
     'sequence': 170,
-    'summary': 'Website Live Chat with Visitors/Customers',
+    'summary': 'Chat with your website visitors',
     'category': 'Website',
     'complexity': 'easy',
     'website': 'https://www.odoo.com/page/live-chat',
     'description':
         """
-Website Live Chat Support
+Live Chat Support
 ==========================
 
 Allow to drop instant messaging widgets on any web page that will communicate
@@ -19,24 +19,24 @@ Help your customers with this chat, and analyse their feedback.
 
         """,
     'data': [
+        "data/mail_shortcode_data.xml",
         "security/im_livechat_channel_security.xml",
         "security/ir.model.access.csv",
+        "views/rating_views.xml",
         "views/mail_channel_views.xml",
         "views/im_livechat_channel_views.xml",
         "views/im_livechat_channel_templates.xml",
         "report/im_livechat_report_channel_views.xml",
-        "report/im_livechat_report_operator_views.xml",
-        "data/im_livechat_channel_data.xml"
+        "report/im_livechat_report_operator_views.xml"
     ],
     'demo': [
         "data/im_livechat_channel_demo.xml",
         'data/mail_shortcode_demo.xml',
     ],
     'depends': ["mail", "rating"],
-    'qweb': [
-        'static/src/xml/im_livechat_backend.xml',
-    ],
+    'qweb': ['static/src/xml/*.xml'],
     'installable': True,
     'auto_install': False,
     'application': True,
+    'license': 'LGPL-3',
 }

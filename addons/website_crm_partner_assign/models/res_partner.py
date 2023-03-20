@@ -2,12 +2,13 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models
-from odoo.addons.website.models.website import slug
+from odoo.addons.http_routing.models.ir_http import slug
 
 
 class ResPartnerGrade(models.Model):
     _name = 'res.partner.grade'
     _inherit = ['website.published.mixin']
+    _description = 'Partner Grade'
 
     website_published = fields.Boolean(default=True)
     sequence = fields.Integer('Sequence')
@@ -26,6 +27,7 @@ class ResPartnerGrade(models.Model):
 class ResPartnerActivation(models.Model):
     _name = 'res.partner.activation'
     _order = 'sequence'
+    _description = 'Partner Activation'
 
     sequence = fields.Integer('Sequence')
     name = fields.Char('Name', required=True)
@@ -34,10 +36,11 @@ class ResPartnerActivation(models.Model):
 class ResPartner(models.Model):
     _inherit = "res.partner"
 
-    partner_weight = fields.Integer('Level Weight', default=lambda *args: 0,
-        help="Gives the probability to assign a lead to this partner. (0 means no assignation.)")
-    grade_id = fields.Many2one('res.partner.grade', 'Level')
-    activation = fields.Many2one('res.partner.activation', 'Activation', index=True)
+    partner_weight = fields.Integer('Level Weight', default=0, track_visibility='onchange',
+        help="This should be a numerical value greater than 0 which will decide the contention for this partner to take this lead/opportunity.")
+    grade_id = fields.Many2one('res.partner.grade', 'Level', track_visibility='onchange')
+    grade_sequence = fields.Integer(related='grade_id.sequence', readonly=True, store=True)
+    activation = fields.Many2one('res.partner.activation', 'Activation', index=True, track_visibility='onchange')
     date_partnership = fields.Date('Partnership Date')
     date_review = fields.Date('Latest Partner Review')
     date_review_next = fields.Date('Next Partner Review')
@@ -49,6 +52,12 @@ class ResPartner(models.Model):
         'res.partner', 'assigned_partner_id',
         string='Implementation References',
     )
+    implemented_count = fields.Integer(compute='_compute_implemented_partner_count', store=True)
+
+    @api.one
+    @api.depends('implemented_partner_ids', 'implemented_partner_ids.website_published', 'implemented_partner_ids.active')
+    def _compute_implemented_partner_count(self):
+        self.implemented_count = len(self.implemented_partner_ids.filtered('website_published'))
 
     @api.onchange('grade_id')
     def _onchange_grade_id(self):

@@ -3,7 +3,9 @@
 
 import json
 import pkgutil
+import re
 
+from odoo import fields
 from odoo.tests import common
 from odoo.tools.misc import mute_logger
 
@@ -101,7 +103,7 @@ class test_ids_stuff(ImporterCase):
         self.assertEqual(len(result['ids']), 1)
         self.assertFalse(result['messages'])
         self.assertEqual(
-            'somexmlid',
+            '__import__.somexmlid',
             self.xid(self.browse()[0]))
 
     def test_update_with_id(self):
@@ -333,7 +335,6 @@ class test_float_field(ImporterCase):
         self.assertEqual(result['messages'], [
             message(u"'foobar' does not seem to be a number for field 'Value'")])
 
-
 class test_string_field(ImporterCase):
     model_name = 'export.string.bounded'
 
@@ -397,6 +398,20 @@ class test_required_string_field(ImporterCase):
             u"Missing required value for the field 'Value' (value)")])
         self.assertIs(result['ids'], False)
 
+    @mute_logger('odoo.sql_db', 'odoo.models')
+    def test_ignore_excess_messages(self):
+        result = self.import_(['const'], [[str(n)] for n in range(100)])
+        self.assertIs(result['ids'], False)
+        self.assertEqual(len(result['messages']), 11)
+        for m in result['messages'][:-1]:
+            self.assertEqual(m['type'], 'error')
+            self.assertEqual(m['message'], u"Missing required value for the field 'Value' (value)")
+        last = result['messages'][-1]
+        self.assertEqual(last['type'], 'warning')
+        self.assertEqual(
+            last['message'],
+            u"Found more than 10 errors and more than one error per 10 records, interrupted to avoid showing too many errors."
+        )
 
 class test_text(ImporterCase):
     model_name = 'export.text'
@@ -674,6 +689,34 @@ class test_m2o(ImporterCase):
             u"name, external id or database id")])
         self.assertIs(result['ids'], False)
 
+    def test_name_create_enabled_m2o(self):
+        result = self.import_(['value'], [[101]])
+        self.assertEqual(result['messages'], [message(
+            u"No matching record found for name '101' "
+            u"in field 'Value'", moreinfo=moreaction(
+                res_model='export.integer'))])
+        self.assertIs(result['ids'], False)
+        context = {
+            'name_create_enabled_fields': {'value': True},
+        }
+        result = self.import_(['value'], [[101]], context=context)
+        self.assertFalse(result['messages'])
+        self.assertEqual(len(result['ids']), 1)
+
+class TestInvalidStrings(ImporterCase):
+    model_name = 'export.m2o.str'
+
+    @mute_logger('odoo.sql_db')
+    def test_fail_unpaired_surrogate(self):
+        result = self.import_(['child_id'], [['\uddff']])
+        self.assertTrue(result['messages'])
+        self.assertIn('surrogates', result['messages'][0]['message'])
+
+    @mute_logger('odoo.sql_db')
+    def test_fail_nul(self):
+        result = self.import_(['child_id'], [['\x00']])
+        self.assertTrue(result['messages'])
+        self.assertIn('NUL', result['messages'][0]['message'])
 
 class test_m2m(ImporterCase):
     model_name = 'export.many2many'
@@ -964,7 +1007,7 @@ class test_o2m_multiple(ImporterCase):
 
 class test_realworld(common.TransactionCase):
     def test_bigfile(self):
-        data = json.loads(pkgutil.get_data(self.__module__, 'contacts_big.json'))
+        data = json.loads(pkgutil.get_data(self.__module__, 'contacts_big.json').decode('utf-8'))
         result = self.env['res.partner'].load(['name', 'mobile', 'email', 'image'], data)
         self.assertFalse(result['messages'])
         self.assertEqual(len(result['ids']), len(data))
@@ -972,7 +1015,7 @@ class test_realworld(common.TransactionCase):
     def test_backlink(self):
         fnames = ["name", "type", "street", "city", "country_id", "category_id",
                   "supplier", "customer", "is_company", "parent_id"]
-        data = json.loads(pkgutil.get_data(self.__module__, 'contacts.json'))
+        data = json.loads(pkgutil.get_data(self.__module__, 'contacts.json').decode('utf-8'))
         result = self.env['res.partner'].load(fnames, data)
         self.assertFalse(result['messages'])
         self.assertEqual(len(result['ids']), len(data))
@@ -1064,7 +1107,7 @@ class test_datetime(ImporterCase):
             ['value'], [['2012-02-03 11:11:11']], {'tz': 'Pacific/Kiritimati'})
         self.assertFalse(result['messages'])
         self.assertEqual(
-            values(self.read(domain=[('id', 'in', result['ids'])])),
+            [fields.Datetime.to_string(value['value']) for value in self.read(domain=[('id', 'in', result['ids'])])],
             ['2012-02-02 21:11:11'])
 
         # UTC-0930
@@ -1072,7 +1115,7 @@ class test_datetime(ImporterCase):
             ['value'], [['2012-02-03 11:11:11']], {'tz': 'Pacific/Marquesas'})
         self.assertFalse(result['messages'])
         self.assertEqual(
-            values(self.read(domain=[('id', 'in', result['ids'])])),
+            [fields.Datetime.to_string(value['value']) for value in self.read(domain=[('id', 'in', result['ids'])])],
             ['2012-02-03 20:41:11'])
 
     def test_usertz(self):
@@ -1086,7 +1129,7 @@ class test_datetime(ImporterCase):
             ['value'], [['2012-02-03 11:11:11']])
         self.assertFalse(result['messages'])
         self.assertEqual(
-            values(self.read(domain=[('id', 'in', result['ids'])])),
+            [fields.Datetime.to_string(value['value']) for value in self.read(domain=[('id', 'in', result['ids'])])],
             ['2012-02-03 01:11:11'])
 
     def test_notz(self):
@@ -1098,7 +1141,7 @@ class test_datetime(ImporterCase):
         result = self.import_(['value'], [['2012-02-03 11:11:11']])
         self.assertFalse(result['messages'])
         self.assertEqual(
-            values(self.read(domain=[('id', 'in', result['ids'])])),
+            [fields.Datetime.to_string(value['value']) for value in self.read(domain=[('id', 'in', result['ids'])])],
             ['2012-02-03 11:11:11'])
 
 
@@ -1116,14 +1159,41 @@ class test_unique(ImporterCase):
         ])
         self.assertFalse(result['ids'])
         self.assertEqual(result['messages'], [
-            dict(message=u"The value for the field 'value' already exists. "
-                         u"This might be 'Value' in the current model, "
-                         u"or a field of the same name in an o2m.",
+            dict(message=u"The value for the field 'value' already exists "
+                         u"(this is probably 'Value' in the current model).",
                  type='error', rows={'from': 1, 'to': 1},
                  record=1, field='value'),
-            dict(message=u"The value for the field 'value' already exists. "
-                         u"This might be 'Value' in the current model, "
-                         u"or a field of the same name in an o2m.",
+            dict(message=u"The value for the field 'value' already exists "
+                         u"(this is probably 'Value' in the current model).",
                  type='error', rows={'from': 4, 'to': 4},
                  record=4, field='value'),
         ])
+
+    @mute_logger('odoo.sql_db')
+    def test_unique_pair(self):
+        result = self.import_(['value2', 'value3'], [
+            ['0', '1'],
+            ['1', '0'],
+            ['1', '1'],
+            ['1', '1'],
+        ])
+        self.assertFalse(result['ids'])
+        self.assertEqual(len(result['messages']), 1)
+        message = result['messages'][0]
+        self.assertEqual(message['type'], 'error')
+        self.assertEqual(message['record'], 3)
+        self.assertEqual(message['rows'], {'from': 3, 'to': 3})
+        m = re.match(
+            r"The values for the fields '([^']+)' already exist "
+            r"\(they are probably '([^']+)' in the current model\)\.",
+            message['message']
+        )
+        self.assertIsNotNone(m)
+        self.assertItemsEqual(
+            m.group(1).split(', '),
+            ['value2', 'value3']
+        )
+        self.assertItemsEqual(
+            m.group(2).split(', '),
+            ['Value2', 'Value3']
+        )

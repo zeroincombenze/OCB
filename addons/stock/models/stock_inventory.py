@@ -3,13 +3,14 @@
 
 from odoo import api, fields, models, _
 from odoo.addons import decimal_precision as dp
-from odoo.exceptions import UserError
-from odoo.tools import float_utils
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools import float_utils, float_compare
 
 
 class Inventory(models.Model):
     _name = "stock.inventory"
     _description = "Inventory"
+    _order = "date desc, id desc"
 
     @api.model
     def _default_location_id(self):
@@ -28,7 +29,8 @@ class Inventory(models.Model):
         'Inventory Date',
         readonly=True, required=True,
         default=fields.Datetime.now,
-        help="The date that will be used for the stock level check of the products and the validation of the stock move related to this inventory.")
+        help="If the inventory adjustment is not validated, date at which the theoritical quantities have been checked.\n"
+             "If the inventory adjustment is validated, date at which the inventory adjustment has been validated.")
     line_ids = fields.One2many(
         'stock.inventory.line', 'inventory_id', string='Inventories',
         copy=True, readonly=False,
@@ -82,7 +84,7 @@ class Inventory(models.Model):
              "system propose for a single product / lot /... ")
     total_qty = fields.Float('Total Quantity', compute='_compute_total_qty')
     category_id = fields.Many2one(
-        'product.category', 'Inventoried Category',
+        'product.category', 'Product Category',
         readonly=True, states={'draft': [('readonly', False)]},
         help="Specify Product Category to focus your inventory on a particular Category.")
     exhausted = fields.Boolean('Include Exhausted Products', readonly=True, states={'draft': [('readonly', False)]})
@@ -122,7 +124,7 @@ class Inventory(models.Model):
         return res_filter
 
     @api.onchange('filter')
-    def onchange_filter(self):
+    def _onchange_filter(self):
         if self.filter not in ('product', 'product_owner'):
             self.product_id = False
         if self.filter != 'lot':
@@ -133,11 +135,15 @@ class Inventory(models.Model):
             self.package_id = False
         if self.filter != 'category':
             self.category_id = False
+        if self.filter != 'product':
+            self.exhausted = False
         if self.filter == 'product':
             self.exhausted = True
+            if self.product_id:
+                return {'domain': {'product_id': [('product_tmpl_id', '=', self.product_id.product_tmpl_id.id)]}}
 
     @api.onchange('location_id')
-    def onchange_location_id(self):
+    def _onchange_location_id(self):
         if self.location_id.company_id:
             self.company_id = self.location_id.company_id
 
@@ -147,67 +153,74 @@ class Inventory(models.Model):
         if self.filter == 'none' and self.product_id and self.location_id and self.lot_id:
             return
         if self.filter not in ('product', 'product_owner') and self.product_id:
-            raise UserError(_('The selected inventory options are not coherent.'))
+            raise ValidationError(_('The selected product doesn\'t belong to that owner..'))
         if self.filter != 'lot' and self.lot_id:
-            raise UserError(_('The selected inventory options are not coherent.'))
+            raise ValidationError(_('The selected lot number doesn\'t exist.'))
         if self.filter not in ('owner', 'product_owner') and self.partner_id:
-            raise UserError(_('The selected inventory options are not coherent.'))
+            raise ValidationError(_('The selected owner doesn\'t have the proprietary of that product.'))
         if self.filter != 'pack' and self.package_id:
-            raise UserError(_('The selected inventory options are not coherent.'))
+            raise ValidationError(_('The selected inventory options are not coherent, the package doesn\'t exist.'))
 
-    @api.multi
     def action_reset_product_qty(self):
         self.mapped('line_ids').write({'product_qty': 0})
         return True
-    reset_real_qty = action_reset_product_qty
 
-    @api.multi
-    def action_done(self):
+    def action_validate(self):
+        inventory_lines = self.line_ids.filtered(lambda l: l.product_id.tracking in ['lot', 'serial'] and not l.prod_lot_id and l.theoretical_qty != l.product_qty)
+        lines = self.line_ids.filtered(lambda l: float_compare(l.product_qty, 1, precision_rounding=l.product_uom_id.rounding) > 0 and l.product_id.tracking == 'serial' and l.prod_lot_id)
+        if inventory_lines and not lines:
+            wiz_lines = [(0, 0, {'product_id': product.id, 'tracking': product.tracking}) for product in inventory_lines.mapped('product_id')]
+            wiz = self.env['stock.track.confirmation'].create({'inventory_id': self.id, 'tracking_line_ids': wiz_lines})
+            return {
+                    'name': _('Tracked Products in Inventory Adjustment'),
+                    'type': 'ir.actions.act_window',
+                    'view_mode': 'form',
+                    'res_model': 'stock.track.confirmation',
+                    'target': 'new',
+                    'res_id': wiz.id,
+                }
+        else:
+            self._action_done()
+
+    def _action_done(self):
         negative = next((line for line in self.mapped('line_ids') if line.product_qty < 0 and line.product_qty != line.theoretical_qty), False)
         if negative:
             raise UserError(_('You cannot set a negative product quantity in an inventory line:\n\t%s - qty: %s') % (negative.product_id.name, negative.product_qty))
         self.action_check()
-        self.write({'state': 'done'})
+        self.write({'state': 'done', 'date': fields.Datetime.now()})
         self.post_inventory()
         return True
 
-    @api.multi
     def post_inventory(self):
         # The inventory is posted as a single step which means quants cannot be moved from an internal location to another using an inventory
         # as they will be moved to inventory loss, and other quants will be created to the encoded quant location. This is a normal behavior
         # as quants cannot be reuse from inventory location (users can still manually move the products before/after the inventory if they want).
-        self.mapped('move_ids').filtered(lambda move: move.state != 'done').action_done()
+        self.mapped('move_ids').filtered(lambda move: move.state != 'done')._action_done()
+        return True
 
-    @api.multi
     def action_check(self):
         """ Checks the inventory and computes the stock move to do """
         # tde todo: clean after _generate_moves
-        for inventory in self:
+        for inventory in self.filtered(lambda x: x.state not in ('done','cancel')):
             # first remove the existing stock moves linked to this inventory
-            inventory.mapped('move_ids').unlink()
-            for line in inventory.line_ids:
-                # compare the checked quantities on inventory lines to the theorical one
-                stock_move = line._generate_moves()
+            inventory.with_context(prefetch_fields=False).mapped('move_ids').unlink()
+            inventory.line_ids._generate_moves()
 
-    @api.multi
     def action_cancel_draft(self):
-        self.mapped('move_ids').action_cancel()
+        self.mapped('move_ids')._action_cancel()
         self.write({
             'line_ids': [(5,)],
             'state': 'draft'
         })
 
-    @api.multi
     def action_start(self):
-        for inventory in self:
+        for inventory in self.filtered(lambda x: x.state not in ('done','cancel')):
             vals = {'state': 'confirm', 'date': fields.Datetime.now()}
             if (inventory.filter != 'partial') and not inventory.line_ids:
                 vals.update({'line_ids': [(0, 0, line_values) for line_values in inventory._get_inventory_lines_values()]})
             inventory.write(vals)
         return True
-    prepare_inventory = action_start
 
-    @api.multi
     def action_inventory_line_tree(self):
         action = self.env.ref('stock.action_inventory_line_tree').read()[0]
         action['context'] = {
@@ -220,11 +233,10 @@ class Inventory(models.Model):
         }
         return action
 
-    @api.multi
     def _get_inventory_lines_values(self):
         # TDE CLEANME: is sql really necessary ? I don't think so
         locations = self.env['stock.location'].search([('id', 'child_of', [self.location_id.id])])
-        domain = ' location_id in %s AND active = TRUE'
+        domain = ' location_id in %s AND quantity != 0 AND active = TRUE'
         args = (tuple(locations.ids),)
 
         vals = []
@@ -238,7 +250,7 @@ class Inventory(models.Model):
         if self.company_id:
             domain += ' AND company_id = %s'
             args += (self.company_id.id,)
-        
+
         #case 1: Filter on One owner only or One product for a specific owner
         if self.partner_id:
             domain += ' AND owner_id = %s'
@@ -258,12 +270,12 @@ class Inventory(models.Model):
             args += (self.package_id.id,)
         #case 5: Filter on One product category + Exahausted Products
         if self.category_id:
-            categ_products = Product.search([('categ_id', '=', self.category_id.id)])
+            categ_products = Product.search([('categ_id', 'child_of', self.category_id.id)])
             domain += ' AND product_id = ANY (%s)'
             args += (categ_products.ids,)
             products_to_filter |= categ_products
 
-        self.env.cr.execute("""SELECT product_id, sum(qty) as product_qty, location_id, lot_id as prod_lot_id, package_id, owner_id as partner_id
+        self.env.cr.execute("""SELECT product_id, sum(quantity) as product_qty, location_id, lot_id as prod_lot_id, package_id, owner_id as partner_id
             FROM stock_quant
             LEFT JOIN product_product
             ON product_product.id = stock_quant.product_id
@@ -306,10 +318,11 @@ class Inventory(models.Model):
             })
         return vals
 
+
 class InventoryLine(models.Model):
     _name = "stock.inventory.line"
     _description = "Inventory Line"
-    _order = "product_name ,inventory_id, location_name, product_code, prodlot_name"
+    _order = "product_id, inventory_id, location_id, prod_lot_id"
 
     inventory_id = fields.Many2one(
         'stock.inventory', 'Inventory',
@@ -317,33 +330,23 @@ class InventoryLine(models.Model):
     partner_id = fields.Many2one('res.partner', 'Owner')
     product_id = fields.Many2one(
         'product.product', 'Product',
+        domain=[('type', '=', 'product')],
         index=True, required=True)
-    product_name = fields.Char(
-        'Product Name', related='product_id.name', store=True, readonly=True)
-    product_code = fields.Char(
-        'Product Code', related='product_id.default_code', store=True)
     product_uom_id = fields.Many2one(
-        'product.uom', 'Product Unit of Measure',
-        required=True,
-        default=lambda self: self.env.ref('product.product_uom_unit', raise_if_not_found=True))
+        'uom.uom', 'Product Unit of Measure',
+        required=True)
+    product_uom_category_id = fields.Many2one(string='Uom category', related='product_uom_id.category_id', readonly=True)
     product_qty = fields.Float(
         'Checked Quantity',
         digits=dp.get_precision('Product Unit of Measure'), default=0)
     location_id = fields.Many2one(
         'stock.location', 'Location',
         index=True, required=True)
-    # TDE FIXME: necessary ? only in order -> replace by location_id
-    location_name = fields.Char(
-        'Location Name', related='location_id.complete_name', store=True)
     package_id = fields.Many2one(
         'stock.quant.package', 'Pack', index=True)
     prod_lot_id = fields.Many2one(
         'stock.production.lot', 'Lot/Serial Number',
         domain="[('product_id','=',product_id)]")
-    # TDE FIXME: necessary ? -> replace by location_id
-    prodlot_name = fields.Char(
-        'Serial Number Name',
-        related='prod_lot_id.name', store=True, readonly=True)
     company_id = fields.Many2one(
         'res.company', 'Company', related='inventory_id.company_id',
         index=True, readonly=True, store=True)
@@ -354,7 +357,8 @@ class InventoryLine(models.Model):
         'Theoretical Quantity', compute='_compute_theoretical_qty',
         digits=dp.get_precision('Product Unit of Measure'), readonly=True, store=True)
     inventory_location_id = fields.Many2one(
-        'stock.location', 'Location', related='inventory_id.location_id', related_sudo=False)
+        'stock.location', 'Inventory Location', related='inventory_id.location_id', related_sudo=False, readonly=False)
+    product_tracking = fields.Selection('Tracking', related='product_id.tracking', readonly=True)
 
     @api.one
     @api.depends('location_id', 'product_id', 'package_id', 'product_uom_id', 'company_id', 'prod_lot_id', 'partner_id')
@@ -362,13 +366,18 @@ class InventoryLine(models.Model):
         if not self.product_id:
             self.theoretical_qty = 0
             return
-        theoretical_qty = sum([x.qty for x in self._get_quants()])
-        if theoretical_qty and self.product_uom_id and self.product_id.uom_id != self.product_uom_id:
-            theoretical_qty = self.product_id.uom_id._compute_quantity(theoretical_qty, self.product_uom_id)
+        theoretical_qty = self.product_id.get_theoretical_quantity(
+            self.product_id.id,
+            self.location_id.id,
+            lot_id=self.prod_lot_id.id,
+            package_id=self.package_id.id,
+            owner_id=self.partner_id.id,
+            to_uom=self.product_uom_id.id,
+        )
         self.theoretical_qty = theoretical_qty
 
     @api.onchange('product_id')
-    def onchange_product(self):
+    def _onchange_product(self):
         res = {}
         # If no UoM or incorrect UoM put default one from product
         if self.product_id:
@@ -377,47 +386,51 @@ class InventoryLine(models.Model):
         return res
 
     @api.onchange('product_id', 'location_id', 'product_uom_id', 'prod_lot_id', 'partner_id', 'package_id')
-    def onchange_quantity_context(self):
+    def _onchange_quantity_context(self):
         if self.product_id and self.location_id and self.product_id.uom_id.category_id == self.product_uom_id.category_id:  # TDE FIXME: last part added because crash
             self._compute_theoretical_qty()
             self.product_qty = self.theoretical_qty
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        for values in vals_list:
+            if 'product_id' in values and 'product_uom_id' not in values:
+                values['product_uom_id'] = self.env['product.product'].browse(values['product_id']).uom_id.id
+        res = super(InventoryLine, self).create(vals_list)
+        res._check_no_duplicate_line()
+        return res
+
     @api.multi
-    def write(self, values):
-        values.pop('product_name', False)
-        res = super(InventoryLine, self).write(values)
+    def write(self,vals):
+        res = super(InventoryLine, self).write(vals)
+        self._check_no_duplicate_line()
         return res
 
-    @api.model
-    def create(self, values):
-        values.pop('product_name', False)
-        if 'product_id' in values and 'product_uom_id' not in values:
-            values['product_uom_id'] = self.env['product.product'].browse(values['product_id']).uom_id.id
-        existings = self.search([
-            ('product_id', '=', values.get('product_id')),
-            ('inventory_id.state', '=', 'confirm'),
-            ('location_id', '=', values.get('location_id')),
-            ('partner_id', '=', values.get('partner_id')),
-            ('package_id', '=', values.get('package_id')),
-            ('prod_lot_id', '=', values.get('prod_lot_id'))])
-        res = super(InventoryLine, self).create(values)
-        if existings:
-            raise UserError(_("You cannot have two inventory adjustements in state 'in Progess' with the same product"
-                              "(%s), same location(%s), same package, same owner and same lot. Please first validate"
-                              "the first inventory adjustement with this product before creating another one.") %
-                            (res.product_id.display_name, res.location_id.display_name))
-        return res
+    def _check_no_duplicate_line(self):
+        for line in self:
+            existings = self.search([
+                ('id', '!=', line.id),
+                ('product_id', '=', line.product_id.id),
+                ('inventory_id.state', '=', 'confirm'),
+                ('location_id', '=', line.location_id.id),
+                ('partner_id', '=', line.partner_id.id),
+                ('package_id', '=', line.package_id.id),
+                ('prod_lot_id', '=', line.prod_lot_id.id)])
+            if existings:
+                raise UserError(_("You cannot have two inventory adjustments in state 'In Progress' with the same product (%s),"
+                                   " same location, same package, same owner and same lot. Please first validate"
+                                   " the first inventory adjustment before creating another one.") % (line.product_id.display_name))
 
-    def _get_quants(self):
-        return self.env['stock.quant'].search([
-            ('company_id', '=', self.company_id.id),
-            ('location_id', '=', self.location_id.id),
-            ('lot_id', '=', self.prod_lot_id.id),
-            ('product_id', '=', self.product_id.id),
-            ('owner_id', '=', self.partner_id.id),
-            ('package_id', '=', self.package_id.id)])
+    @api.constrains('product_id')
+    def _check_product_id(self):
+        """ As no quants are created for consumable products, it should not be possible do adjust
+        their quantity.
+        """
+        for line in self:
+            if line.product_id.type != 'product':
+                raise ValidationError(_("You can only adjust storable products.") + '\n\n%s -> %s' % (line.product_id.display_name, line.product_id.type))
 
-    def _get_move_values(self, qty, location_id, location_dest_id):
+    def _get_move_values(self, qty, location_id, location_dest_id, out):
         self.ensure_one()
         return {
             'name': _('INV:') + (self.inventory_id.name or ''),
@@ -428,60 +441,32 @@ class InventoryLine(models.Model):
             'company_id': self.inventory_id.company_id.id,
             'inventory_id': self.inventory_id.id,
             'state': 'confirmed',
-            'restrict_lot_id': self.prod_lot_id.id,
             'restrict_partner_id': self.partner_id.id,
             'location_id': location_id,
             'location_dest_id': location_dest_id,
+            'move_line_ids': [(0, 0, {
+                'product_id': self.product_id.id,
+                'lot_id': self.prod_lot_id.id,
+                'product_uom_qty': 0,  # bypass reservation here
+                'product_uom_id': self.product_uom_id.id,
+                'qty_done': qty,
+                'package_id': out and self.package_id.id or False,
+                'result_package_id': (not out) and self.package_id.id or False,
+                'location_id': location_id,
+                'location_dest_id': location_dest_id,
+                'owner_id': self.partner_id.id,
+            })]
         }
 
-    def _fixup_negative_quants(self):
-        """ This will handle the irreconciable quants created by a force availability followed by a
-        return. When generating the moves of an inventory line, we look for quants of this line's
-        product created to compensate a force availability. If there are some and if the quant
-        which it is propagated from is still in the same location, we move it to the inventory
-        adjustment location before getting it back. Getting the quantity from the inventory
-        location will allow the negative quant to be compensated.
-        """
-        self.ensure_one()
-        for quant in self._get_quants().filtered(lambda q: q.propagated_from_id.location_id.id == self.location_id.id):
-            # send the quantity to the inventory adjustment location
-            move_out_vals = self._get_move_values(quant.qty, self.location_id.id, self.product_id.property_stock_inventory.id)
-            move_out = self.env['stock.move'].create(move_out_vals)
-            self.env['stock.quant'].quants_reserve([(quant, quant.qty)], move_out)
-            move_out.action_done()
-
-            # get back the quantity from the inventory adjustment location
-            move_in_vals = self._get_move_values(quant.qty, self.product_id.property_stock_inventory.id, self.location_id.id)
-            move_in = self.env['stock.move'].create(move_in_vals)
-            move_in.action_done()
-
     def _generate_moves(self):
-        moves = self.env['stock.move']
-        Quant = self.env['stock.quant']
+        vals_list = []
         for line in self:
-            line._fixup_negative_quants()
-
             if float_utils.float_compare(line.theoretical_qty, line.product_qty, precision_rounding=line.product_id.uom_id.rounding) == 0:
                 continue
             diff = line.theoretical_qty - line.product_qty
             if diff < 0:  # found more than expected
-                vals = line._get_move_values(abs(diff), line.product_id.property_stock_inventory.id, line.location_id.id)
+                vals = line._get_move_values(abs(diff), line.product_id.property_stock_inventory.id, line.location_id.id, False)
             else:
-                vals = line._get_move_values(abs(diff), line.location_id.id, line.product_id.property_stock_inventory.id)
-            move = moves.create(vals)
-
-            if diff > 0:
-                domain = [('qty', '>', 0.0), ('package_id', '=', line.package_id.id), ('lot_id', '=', line.prod_lot_id.id), ('location_id', '=', line.location_id.id)]
-                preferred_domain_list = [[('reservation_id', '=', False)], [('reservation_id.inventory_id', '!=', line.inventory_id.id)]]
-                quants = Quant.quants_get_preferred_domain(move.product_qty, move, domain=domain, preferred_domain_list=preferred_domain_list)
-                Quant.quants_reserve(quants, move)
-            elif line.package_id:
-                move.action_done()
-                move.quant_ids.write({'package_id': line.package_id.id})
-                quants = Quant.search([('qty', '<', 0.0), ('product_id', '=', move.product_id.id),
-                                       ('location_id', '=', move.location_dest_id.id), ('package_id', '!=', False)], limit=1)
-                if quants:
-                    for quant in move.quant_ids:
-                        if quant.location_id.id == move.location_dest_id.id:  #To avoid we take a quant that was reconcile already
-                            quant._quant_reconcile_negative(move)
-        return moves
+                vals = line._get_move_values(abs(diff), line.location_id.id, line.product_id.property_stock_inventory.id, True)
+            vals_list.append(vals)
+        return self.env['stock.move'].create(vals_list)

@@ -2,8 +2,11 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import itertools
+import pstats
+from cProfile import Profile
 
 from odoo.tests import common
+from odoo.tools import pycompat
 
 
 class CreatorCase(common.TransactionCase):
@@ -17,14 +20,31 @@ class CreatorCase(common.TransactionCase):
         super(CreatorCase, self).setUp()
         self.model = self.env[self.model_name]
 
-    def make(self, value):
-        return self.model.create({'value': value})
+    def make(self, value, context=None):
+        return self.model.with_context(**(context or {})).create({'value': value})
 
     def export(self, value, fields=('value',), context=None):
-        record = self.make(value)
+        record = self.make(value, context=context)
         record.invalidate_cache()
         return record._export_rows([f.split('/') for f in fields])
 
+class test_xids(CreatorCase):
+    model_name = 'export.boolean'
+
+    def test_no_module(self):
+        record = self.make(True)
+        # add existing xid without module
+        self.env['ir.model.data'].create({
+            'module': '',
+            'name': 'x',
+            'model': self.model_name,
+            'res_id': record.id,
+        })
+        record.invalidate_cache()
+        self.assertEqual(
+            record._export_rows([['id'], ['value']]),
+            [[u'x', u'True']]
+        )
 
 class test_boolean_field(CreatorCase):
     model_name = 'export.boolean'
@@ -68,7 +88,7 @@ class test_integer_field(CreatorCase):
     def test_huge(self):
         self.assertEqual(
             self.export(2**31-1),
-            [[unicode(2**31-1)]])
+            [[pycompat.text_type(2**31-1)]])
 
 
 class test_float_field(CreatorCase):
@@ -223,19 +243,21 @@ class test_datetime(CreatorCase):
             [['']])
 
     def test_basic(self):
+        """ Export value with no TZ set on the user
+        """
+        self.env.user.write({'tz': False})
         self.assertEqual(
             self.export('2011-11-07 21:05:48'),
             [[u'2011-11-07 21:05:48']])
 
     def test_tz(self):
-        """ Export ignores the timezone and always exports to UTC
+        """ Export converts the value in the user's TZ
 
         .. note:: on the other hand, export uses user lang for name_get
         """
-        # NOTE: ignores user timezone, always exports to UTC
         self.assertEqual(
             self.export('2011-11-07 21:05:48', context={'tz': 'Pacific/Norfolk'}),
-            [[u'2011-11-07 21:05:48']])
+            [[u'2011-11-08 08:35:48']])
 
 
 class test_selection(CreatorCase):
@@ -271,7 +293,7 @@ class test_selection(CreatorCase):
             })
         self.assertEqual(
             self.export(2, context={'lang': 'fr_FR'}),
-            [[u'Bar']])
+            [[u'titi']])
 
 
 class test_selection_function(CreatorCase):
@@ -318,17 +340,32 @@ class test_m2o(CreatorCase):
         record = self.env['export.integer'].create({'value': 42})
         self.assertEqual(
             self.export(record.id, fields=['value/.id', 'value/value']),
-            [[unicode(record.id), u'42']])
+            [[pycompat.text_type(record.id), u'42']])
 
     def test_external_id(self):
         record = self.env['export.integer'].create({'value': 42})
         # Expecting the m2o target model name in the external id,
         # not this model's name
-        external_id = u'__export__.export_integer_%d' % record.id
-        self.assertEqual(
-            self.export(record.id, fields=['value/id']),
-            [[external_id]])
+        self.assertRegex(
+            self.export(record.id, fields=['value/id'])[0][0],
+            u'__export__.export_integer_%d_[0-9a-f]{8}' % record.id)
 
+    def test_identical(self):
+        m2o = self.env['export.integer'].create({'value': 42}).id
+        records = \
+          ( self.make(m2o)
+          | self.make(m2o)
+          | self.make(m2o)
+          | self.make(m2o)
+        )
+        records.invalidate_cache()
+        xp = [r[0] for r in records._export_rows([['value', 'id']])]
+        self.assertEqual(len(xp), 4)
+        self.assertRegex(
+            xp[0],
+            u'__export__.export_integer_%d_[0-9a-f]{8}' % m2o
+        )
+        self.assertEqual(set(xp), {xp[0]})
 
 class test_o2m(CreatorCase):
     model_name = 'export.one2many'
@@ -502,9 +539,9 @@ class test_o2m_multiple(CreatorCase):
         """
         fields = ['const', 'child1/value', 'child2/value']
         child1 = [(0, False, {'value': v, 'str': 'record%.02d' % index})
-                  for index, v in zip(itertools.count(), [4, 42, 36, 4, 13])]
+                  for index, v in pycompat.izip(itertools.count(), [4, 42, 36, 4, 13])]
         child2 = [(0, False, {'value': v, 'str': 'record%.02d' % index})
-                  for index, v in zip(itertools.count(10), [8, 12, 8, 55, 33, 13])]
+                  for index, v in pycompat.izip(itertools.count(10), [8, 12, 8, 55, 33, 13])]
 
         self.assertEqual(
             self.export(child1=child1, child2=False, fields=fields),
@@ -659,3 +696,49 @@ class test_function(CreatorCase):
         self.assertEqual(
             self.export(42),
             [[u'3']])
+
+
+@common.tagged('-standard', 'bench')
+class test_xid_perfs(common.TransactionCase):
+    def setUp(self):
+        super(test_xid_perfs, self).setUp()
+
+        self.profile = Profile()
+        @self.addCleanup
+        def _dump():
+            stats = pstats.Stats(self.profile)
+            stats.strip_dirs()
+            stats.sort_stats('cumtime')
+            stats.print_stats(20)
+            self.profile = None
+
+    def test_basic(self):
+        Model = self.env['export.integer']
+        for i in range(10000):
+            Model.create({'value': i})
+        Model.invalidate_cache()
+        records = Model.search([])
+
+        self.profile.runcall(records._export_rows, [['id'], ['value']])
+
+    def test_m2o_single(self):
+        rid = self.env['export.integer'].create({'value': 42}).id
+        Model = self.env['export.many2one']
+        for _ in range(10000):
+            Model.create({'value': rid})
+        Model.invalidate_cache()
+        records = Model.search([])
+
+        self.profile.runcall(records._export_rows, [['id'], ['value','id']])
+
+    def test_m2o_each(self):
+        Model = self.env['export.many2one']
+        Integer = self.env['export.integer']
+        for i in range(10000):
+            Model.create({
+                'value': Integer.create({'value': i}).id
+            })
+        Model.invalidate_cache()
+        records = Model.search([])
+
+        self.profile.runcall(records._export_rows, [['id'], ['value', 'id']])

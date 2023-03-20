@@ -2,6 +2,8 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models
+from odoo.tools import pycompat
+
 
 def selection_fn(model):
     return [(str(key), val) for key, val in enumerate(["Corge", "Grault", "Wheee", "Moog"])]
@@ -38,6 +40,8 @@ MODELS = [
 for name, field in MODELS:
     class NewModel(models.Model):
         _name = 'export.%s' % name
+        _description = 'Export: %s' % name
+        _rec_name = 'value'
         const = fields.Integer(default=4)
         value = field
 
@@ -46,16 +50,16 @@ for name, field in MODELS:
             return [(record.id, "%s:%s" % (self._name, record.value)) for record in self]
 
         @api.model
-        def name_search(self, name='', args=None, operator='ilike', limit=100):
-            if isinstance(name, basestring) and name.split(':')[0] == self._name:
-                records = self.search([('value', operator, int(name.split(':')[1]))])
-                return records.name_get()
+        def _name_search(self, name, args=None, operator='ilike', limit=100, name_get_uid=None):
+            if isinstance(name, pycompat.string_types) and name.split(':')[0] == self._name:
+                record_ids = self._search([('value', operator, int(name.split(':')[1]))], access_rights_uid=name_get_uid)
+                return self.browse(record_ids).name_get()
             else:
                 return []
 
-
 class One2ManyChild(models.Model):
     _name = 'export.one2many.child'
+    _description = 'Export One to Many Child'
     # FIXME: orm.py:1161, fix to name_get on m2o field
     _rec_name = 'value'
 
@@ -68,16 +72,17 @@ class One2ManyChild(models.Model):
         return [(record.id, "%s:%s" % (self._name, record.value)) for record in self]
 
     @api.model
-    def name_search(self, name='', args=None, operator='ilike', limit=100):
-        if isinstance(name, basestring) and name.split(':')[0] == self._name:
-            records = self.search([('value', operator, int(name.split(':')[1]))])
-            return records.name_get()
+    def _name_search(self, name, args=None, operator='ilike', limit=100, name_get_uid=None):
+        if isinstance(name, pycompat.string_types) and name.split(':')[0] == self._name:
+            record_ids = self._search([('value', operator, int(name.split(':')[1]))], access_rights_uid=name_get_uid)
+            return self.browse(record_ids).name_get()
         else:
             return []
 
 
 class One2ManyMultiple(models.Model):
     _name = 'export.one2many.multiple'
+    _description = 'Export One To Many Multiple'
 
     parent_id = fields.Many2one('export.one2many.recursive')
     const = fields.Integer(default=36)
@@ -89,6 +94,7 @@ class One2ManyChildMultiple(models.Model):
     _name = 'export.one2many.multiple.child'
     # FIXME: orm.py:1161, fix to name_get on m2o field
     _rec_name = 'value'
+    _description = 'Export One To Many Multiple Child'
 
     parent_id = fields.Many2one('export.one2many.multiple')
     str = fields.Char()
@@ -102,15 +108,18 @@ class One2ManyChildMultiple(models.Model):
 class One2ManyChild1(models.Model):
     _name = 'export.one2many.child.1'
     _inherit = 'export.one2many.multiple.child'
+    _description = 'Export One to Many Child 1'
 
 
 class One2ManyChild2(models.Model):
     _name = 'export.one2many.child.2'
     _inherit = 'export.one2many.multiple.child'
+    _description = 'Export One To Many Child 2'
 
 
 class Many2ManyChild(models.Model):
     _name = 'export.many2many.other'
+    _description = 'Export Many to Many Other'
     # FIXME: orm.py:1161, fix to name_get on m2o field
     _rec_name = 'value'
 
@@ -122,16 +131,17 @@ class Many2ManyChild(models.Model):
         return [(record.id, "%s:%s" % (self._name, record.value)) for record in self]
 
     @api.model
-    def name_search(self, name='', args=None, operator='ilike', limit=100):
-        if isinstance(name, basestring) and name.split(':')[0] == self._name:
-            records = self.search([('value', operator, int(name.split(':')[1]))])
-            return records.name_get()
+    def _name_search(self, name, args=None, operator='ilike', limit=100, name_get_uid=None):
+        if isinstance(name, pycompat.string_types) and name.split(':')[0] == self._name:
+            record_ids = self._search([('value', operator, int(name.split(':')[1]))], access_rights_uid=name_get_uid)
+            return self.browse(record_ids).name_get()
         else:
             return []
 
 
 class SelectionWithDefault(models.Model):
     _name = 'export.selection.withdefault'
+    _description = 'Export Selection With Default'
 
     const = fields.Integer(default=4)
     value = fields.Selection([(1, "Foo"), (2, "Bar")], default=2)
@@ -139,6 +149,7 @@ class SelectionWithDefault(models.Model):
 
 class RecO2M(models.Model):
     _name = 'export.one2many.recursive'
+    _description = 'Export One To Many Recursive'
 
     value = fields.Integer()
     child = fields.One2many('export.one2many.multiple', 'parent_id')
@@ -146,9 +157,24 @@ class RecO2M(models.Model):
 
 class OnlyOne(models.Model):
     _name = 'export.unique'
+    _description = 'Export Unique'
 
     value = fields.Integer()
+    value2 = fields.Integer()
+    value3 = fields.Integer()
 
     _sql_constraints = [
         ('value_unique', 'unique (value)', "The value must be unique"),
+        ('pair_unique', 'unique (value2, value3)', "The values must be unique"),
     ]
+
+
+class Many2String(models.Model):
+    _name = _description = 'export.m2o.str'
+
+    child_id = fields.Many2one('export.m2o.str.child')
+
+class ChidToString(models.Model):
+    _name = _description = 'export.m2o.str.child'
+
+    name = fields.Char()

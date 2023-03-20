@@ -7,6 +7,7 @@ from datetime import date, datetime, timedelta
 
 from odoo import api, fields, models, _, exceptions
 from odoo.osv import expression
+from odoo.tools import pycompat
 from odoo.tools.safe_eval import safe_eval
 
 _logger = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ class GoalDefinition(models.Model):
     a new gamification_goal_definition
     """
     _name = 'gamification.goal.definition'
-    _description = 'Gamification goal definition'
+    _description = 'Gamification Goal Definition'
 
     name = fields.Char("Goal Definition", required=True, translate=True)
     description = fields.Text("Goal Description")
@@ -85,8 +86,10 @@ class GoalDefinition(models.Model):
                 })
                 # dummy search to make sure the domain is valid
                 Obj.search_count(domain)
-            except (ValueError, SyntaxError), e:
-                msg = e.message or (e.msg + '\n' + e.text)
+            except (ValueError, SyntaxError) as e:
+                msg = e
+                if isinstance(e, SyntaxError):
+                    msg = (e.msg + '\n' + e.text)
                 raise exceptions.UserError(_("The domain for the definition %s seems incorrect, please check it.\n\n%s") % (definition.name, msg))
         return True
 
@@ -102,9 +105,9 @@ class GoalDefinition(models.Model):
                 if not (field and field.store):
                     raise exceptions.UserError(
                         _("The model configuration for the definition %s seems incorrect, please check it.\n\n%s not stored") % (definition.name, definition.field_id.name))
-            except KeyError, e:
+            except KeyError as e:
                 raise exceptions.UserError(
-                    _("The model configuration for the definition %s seems incorrect, please check it.\n\n%s not found") % (definition.name, e.message))
+                    _("The model configuration for the definition %s seems incorrect, please check it.\n\n%s not found") % (definition.name, e))
 
     @api.model
     def create(self, vals):
@@ -143,7 +146,7 @@ class Goal(models.Model):
     An individual goal for a user on a specified time period"""
 
     _name = 'gamification.goal'
-    _description = 'Gamification goal instance'
+    _description = 'Gamification Goal'
     _order = 'start_date desc, end_date desc, definition_id, id'
 
     definition_id = fields.Many2one('gamification.goal.definition', string="Goal Definition", required=True, ondelete="cascade")
@@ -169,7 +172,7 @@ class Goal(models.Model):
     to_update = fields.Boolean('To update')
     closed = fields.Boolean('Closed goal', help="These goals will not be recomputed.")
 
-    computation_mode = fields.Selection(related='definition_id.computation_mode')
+    computation_mode = fields.Selection(related='definition_id.computation_mode', readonly=False)
     remind_update_delay = fields.Integer(
         "Remind delay", help="The number of days after which the user "
                              "assigned to a manual goal will be reminded. "
@@ -193,7 +196,7 @@ class Goal(models.Model):
                 if goal.current >= goal.target_goal:
                     goal.completeness = 100.0
                 else:
-                    goal.completeness = round(100.0 * goal.current / goal.target_goal, 2)
+                    goal.completeness = round(100.0 * goal.current / goal.target_goal, 2) if goal.target_goal else 0.0
             elif goal.current < goal.target_goal:
                 # a goal 'lower than' has only two values possible: 0 or 100%
                 goal.completeness = 100.0
@@ -218,11 +221,12 @@ class Goal(models.Model):
         template = self.env.ref('gamification.email_template_goal_reminder')\
                            .get_email_template(self.id)
         body_html = self.env['mail.template'].with_context(template._context)\
-            .render_template(template.body_html, 'gamification.goal', self.id)
+            ._render_template(template.body_html, 'gamification.goal', self.id)
         self.env['mail.thread'].message_post(
             body=body_html,
-            partner_ids=[ self.user_id.partner_id.id],
-            subtype='mail.mt_comment'
+            partner_ids=[self.user_id.partner_id.id],
+            subtype='mail.mt_comment',
+            notif_layout='mail.mail_notification_light',
         )
 
         return {'to_update': True}
@@ -256,7 +260,7 @@ class Goal(models.Model):
         If the end date is passed (at least +1 day, time not considered) without
         the target value being reached, the goal is set as failed."""
         goals_by_definition = {}
-        for goal in self:
+        for goal in self.with_context(prefetch_fields=False):
             goals_by_definition.setdefault(goal.definition_id, []).append(goal)
 
         for definition, goals in goals_by_definition.items():
@@ -281,7 +285,7 @@ class Goal(models.Model):
                     safe_eval(code, cxt, mode="exec", nocopy=True)
                     # the result of the evaluated codeis put in the 'result' local variable, propagated to the context
                     result = cxt.get('result')
-                    if result is not None and isinstance(result, (float, int, long)):
+                    if result is not None and isinstance(result, (float, pycompat.integer_types)):
                         goals_to_write.update(goal._get_write_values(result))
                     else:
                         _logger.error(
@@ -322,7 +326,7 @@ class Goal(models.Model):
                         for goal in [g for g in goals if g.id in query_goals]:
                             for user_value in user_values:
                                 queried_value = field_name in user_value and user_value[field_name] or False
-                                if isinstance(queried_value, tuple) and len(queried_value) == 2 and isinstance(queried_value[0], (int, long)):
+                                if isinstance(queried_value, tuple) and len(queried_value) == 2 and isinstance(queried_value[0], pycompat.integer_types):
                                     queried_value = queried_value[0]
                                 if queried_value == query_goals[goal.id]:
                                     new_value = user_value.get(field_name+'_count', goal.current)
@@ -350,7 +354,7 @@ class Goal(models.Model):
 
                         goals_to_write.update(goal._get_write_values(new_value))
 
-            for goal, values in goals_to_write.iteritems():
+            for goal, values in goals_to_write.items():
                 if not values:
                     continue
                 goal.write(values)

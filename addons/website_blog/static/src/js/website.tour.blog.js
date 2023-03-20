@@ -21,7 +21,7 @@ odoo.define("website_blog.tour", function (require) {
         position: "top",
         run: "text",
     }, {
-        trigger: "#oe_manipulators .oe_overlay.oe_active a.btn.btn-primary.btn-sm",
+        trigger: "#oe_manipulators .oe_overlay.oe_active a.btn.btn-primary",
         extra_trigger: "#wrap h1[data-oe-expression=\"blog_post.name\"]:not(:containsExact(\"\"))",
         content: _t("Set a blog post <b>cover</b>."),
         position: "bottom",
@@ -31,11 +31,11 @@ odoo.define("website_blog.tour", function (require) {
         position: "right",
     }, {
         trigger: ".o_select_media_dialog .o_existing_attachment_cell:nth(1) img",
-        extra_trigger: ".modal:has(.o_existing_attachment_cell:nth(1))",
+        extra_trigger: '.modal:has(.o_existing_attachment_cell:nth(1))',
         content: _t("Choose an image from the library."),
         position: "top",
     }, {
-        trigger: ".o_select_media_dialog .btn.o_save_button",
+        trigger: ".o_select_media_dialog .modal-footer > .btn-primary",
         extra_trigger: ".o_existing_attachment_cell.o_selected",
         content: _t("Click on <b>Save</b> to set the picture as cover."),
         position: "top",
@@ -59,17 +59,17 @@ odoo.define("website_blog.tour", function (require) {
         position: "bottom",
     }, {
         trigger: "button[data-dismiss=modal]",
-        extra_trigger: ".modal:has(#mobile-viewport)",
+        extra_trigger: '.modal:has(#mobile-viewport)',
         content: _t("Once you have reviewed the content on mobile, close the preview."),
         position: "right",
     }, {
-        trigger: "button.btn-danger.js_publish_btn",
+        trigger: ".js_publish_management .js_publish_btn",
         extra_trigger: "body:not(.editor_enable)",
         position: "bottom",
         content: _t("<b>Publish your blog post</b> to make it visible to your visitors."),
     }, {
-        trigger: "#customize-menu-button",
-        extra_trigger: "body:not(.editor_enable) .js_publish_management button.js_publish_btn.btn-success:visible",
+        trigger: "#customize-menu > a",
+        extra_trigger: ".js_publish_management .js_publish_btn .css_unpublish:visible",
         content: _t("<b>That's it, your blog post is published!</b> Discover more features through the <i>Customize</i> menu."),
         position: "bottom",
         width: 500,

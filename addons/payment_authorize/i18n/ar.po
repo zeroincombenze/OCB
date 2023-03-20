@@ -3,16 +3,17 @@
 # * payment_authorize
 # 
 # Translators:
-# Martin Trigaux, 2016
-# hoxhe Aits <hoxhe0@gmail.com>, 2016
+# hoxhe Aits <hoxhe0@gmail.com>, 2018
+# Osama Ahmaro <osamaahmaro@gmail.com>, 2018
+# Shaima Safar <shaima.safar@open-inside.com>, 2018
 # Mustafa Rawi <mustafa@cubexco.com>, 2019
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0c\n"
+"Project-Id-Version: Odoo Server 12.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-07 08:57+0000\n"
-"PO-Revision-Date: 2016-09-07 09:24+0000\n"
+"POT-Creation-Date: 2019-11-14 07:34+0000\n"
+"PO-Revision-Date: 2018-08-24 09:21+0000\n"
 "Last-Translator: Mustafa Rawi <mustafa@cubexco.com>, 2019\n"
 "Language-Team: Arabic (https://www.transifex.com/odoo/teams/41243/ar/)\n"
 "MIME-Version: 1.0\n"
@@ -22,30 +23,45 @@ msgstr ""
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
 #. module: payment_authorize
-#: model:ir.model.fields,field_description:payment_authorize.field_payment_acquirer_authorize_login
+#: code:addons/payment_authorize/controllers/main.py:62
+#, python-format
+msgid ""
+" If you don't have any account, ask your salesperson to grant you a portal "
+"access. "
+msgstr ""
+
+#. module: payment_authorize
+#: model:ir.model.fields,field_description:payment_authorize.field_payment_acquirer__authorize_login
 msgid "API Login Id"
 msgstr "معرف تسجيل الدخول لواجهة برمجة التطبيقات API"
 
 #. module: payment_authorize
-#: model:ir.model.fields,field_description:payment_authorize.field_payment_acquirer_authorize_transaction_key
+#: model:ir.model.fields,field_description:payment_authorize.field_payment_acquirer__authorize_signature_key
+msgid "API Signature Key"
+msgstr ""
+
+#. module: payment_authorize
+#: model:ir.model.fields,field_description:payment_authorize.field_payment_acquirer__authorize_transaction_key
 msgid "API Transaction Key"
 msgstr "مفتاح معاملة واجهة برمجة التطبيقات API"
 
 #. module: payment_authorize
-#: code:addons/payment_authorize/models/authorize_request.py:66
-#, python-format
-msgid ""
-"Authorize.net Error Message(s):\n"
-" %s"
-msgstr ""
+#: selection:payment.acquirer,provider:0
+msgid "Adyen"
+msgstr "Adyen"
 
 #. module: payment_authorize
-#: model:ir.model.fields,field_description:payment_authorize.field_payment_token_authorize_profile
+#: selection:payment.acquirer,provider:0
+msgid "Authorize.Net"
+msgstr "Authorize.Net"
+
+#. module: payment_authorize
+#: model:ir.model.fields,field_description:payment_authorize.field_payment_token__authorize_profile
 msgid "Authorize.net Profile ID"
 msgstr "معرف ملف Authorize.net الشخصي"
 
 #. module: payment_authorize
-#: code:addons/payment_authorize/models/payment.py:167
+#: code:addons/payment_authorize/models/payment.py:177
 #, python-format
 msgid ""
 "Authorize: received data with missing reference (%s) or trans_id (%s) or "
@@ -55,46 +71,69 @@ msgstr ""
 "(%s)"
 
 #. module: payment_authorize
-#: model:ir.ui.view,arch_db:payment_authorize.authorize_s2s_form
+#: selection:payment.acquirer,provider:0
+msgid "Buckaroo"
+msgstr "Buckaroo"
+
+#. module: payment_authorize
+#: model_terms:ir.ui.view,arch_db:payment_authorize.authorize_s2s_form
 msgid "CVC"
 msgstr "رمز التحقق من البطاقة"
 
 #. module: payment_authorize
-#: model:ir.ui.view,arch_db:payment_authorize.authorize_s2s_form
+#: model_terms:ir.ui.view,arch_db:payment_authorize.authorize_s2s_form
 msgid "Card number"
 msgstr "رقم البطاقة"
 
 #. module: payment_authorize
-#: model:ir.ui.view,arch_db:payment_authorize.authorize_s2s_form
-msgid "Confirm <span class=\"fa fa-long-arrow-right\"/>"
-msgstr ""
+#: model_terms:ir.ui.view,arch_db:payment_authorize.authorize_s2s_form
+msgid "Cardholder name"
+msgstr "اسم حامل البطاقة"
 
 #. module: payment_authorize
-#: model:ir.ui.view,arch_db:payment_authorize.authorize_s2s_form
-msgid "Expires"
-msgstr "تنتهي"
+#: model_terms:ir.ui.view,arch_db:payment_authorize.authorize_s2s_form
+msgid "Expires (MM / YY)"
+msgstr "تنتهي صلاحيته في (MM / YY)"
 
 #. module: payment_authorize
-#: model:ir.ui.view,arch_db:payment_authorize.acquirer_form_authorize
+#: model_terms:ir.ui.view,arch_db:payment_authorize.acquirer_form_authorize
+msgid "How to get paid with Authorize.Net"
+msgstr "كيفية تلقي أموال من خلال Authorize.Net"
+
+#. module: payment_authorize
+#: code:addons/payment_authorize/models/payment.py:292
+#, python-format
 msgid ""
-"How to configure your Authorize.Net account (look for Getting Started Guide)"
-" ?"
+"Invalid token found: the Authorize profile is missing.Please make sure the "
+"token has a valid acquirer reference."
 msgstr ""
+"تم العثور على رمز سري غير صالح: حساب Authorize مفقود. برجاء التأكد من صحة "
+"رقم إشارة معالج كلمة السر."
 
 #. module: payment_authorize
-#: model:ir.ui.view,arch_db:payment_authorize.authorize_s2s_form
-msgid "MM / YY"
-msgstr "MM / YY"
+#: selection:payment.acquirer,provider:0
+msgid "Manual Configuration"
+msgstr "الإعدادات اليدوية"
 
 #. module: payment_authorize
-#: model:ir.ui.view,arch_db:payment_authorize.authorize_s2s_form
-msgid "Name"
-msgstr "الاسم"
+#: selection:payment.acquirer,provider:0
+msgid "Ogone"
+msgstr "Ogone"
+
+#. module: payment_authorize
+#: selection:payment.acquirer,provider:0
+msgid "PayUmoney"
+msgstr "PayUmoney"
 
 #. module: payment_authorize
 #: model:ir.model,name:payment_authorize.model_payment_acquirer
 msgid "Payment Acquirer"
-msgstr "طريقة السداد الإلكتروني"
+msgstr "معالج السداد"
+
+#. module: payment_authorize
+#: model:ir.model,name:payment_authorize.model_payment_token
+msgid "Payment Token"
+msgstr "رمز السداد السري"
 
 #. module: payment_authorize
 #: model:ir.model,name:payment_authorize.model_payment_transaction
@@ -102,13 +141,60 @@ msgid "Payment Transaction"
 msgstr "معاملة السداد"
 
 #. module: payment_authorize
-#: code:addons/payment_authorize/models/payment.py:347
+#: selection:payment.acquirer,provider:0
+msgid "Paypal"
+msgstr "المستحق"
+
+#. module: payment_authorize
+#: code:addons/payment_authorize/controllers/main.py:66
+#, python-format
+msgid "Please complete your profile. "
+msgstr "برجاء إكمال ملفك الشخصي. "
+
+#. module: payment_authorize
+#: code:addons/payment_authorize/controllers/main.py:61
+#, python-format
+msgid "Please sign in to complete the payment."
+msgstr ""
+
+#. module: payment_authorize
+#: model:ir.model.fields,field_description:payment_authorize.field_payment_acquirer__provider
+#: model:ir.model.fields,field_description:payment_authorize.field_payment_token__provider
+msgid "Provider"
+msgstr "المزود"
+
+#. module: payment_authorize
+#: model:ir.model.fields,field_description:payment_authorize.field_payment_token__save_token
+msgid "Save Cards"
+msgstr "حفظ البطاقات"
+
+#. module: payment_authorize
+#: selection:payment.acquirer,provider:0
+msgid "Sips"
+msgstr "Sips"
+
+#. module: payment_authorize
+#: selection:payment.acquirer,provider:0
+msgid "Stripe"
+msgstr "Stripe"
+
+#. module: payment_authorize
+#: code:addons/payment_authorize/models/payment.py:365
 #, python-format
 msgid "The Customer Profile creation in Authorize.NET failed."
 msgstr "فشلت عملية إنشاء حساب العميل الشخصي في Authorize.NET."
 
 #. module: payment_authorize
-#: model:ir.model.fields,help:payment_authorize.field_payment_token_authorize_profile
+#: code:addons/payment_authorize/controllers/main.py:58
+#, python-format
+msgid ""
+"The transaction cannot be processed because some contact details are missing"
+" or invalid: "
+msgstr ""
+"لم نتمكن من معالجة المعاملة لأن بعض تفاصيل الاتصال مفقودة أو غير صالحة: "
+
+#. module: payment_authorize
+#: model:ir.model.fields,help:payment_authorize.field_payment_token__authorize_profile
 msgid ""
 "This contains the unique reference for this partner/payment token "
 "combination in the Authorize.net backend"
@@ -117,6 +203,18 @@ msgstr ""
 "الواجهة الخلفية لـAuthorize.net"
 
 #. module: payment_authorize
-#: model:ir.model,name:payment_authorize.model_payment_token
-msgid "payment.token"
+#: model:ir.model.fields,help:payment_authorize.field_payment_token__save_token
+msgid ""
+"This option allows customers to save their credit card as a payment token "
+"and to reuse it for a later purchase. If you manage subscriptions (recurring"
+" invoicing), you need it to automatically charge the customer when you issue"
+" an invoice."
 msgstr ""
+"يسمح هذا الخيار للعملاء بحفظ بطاقاتك الائتمانية كرمز سري للسداد وإعادة "
+"استخدامها في عمليات شراء لاحقة. إذا كنت تقدم خدمة الاشتراكات (فواتير "
+"متكررة)، ستحتاج لتحصيل رسوم تلقائيًا عند إصدار فاتورة."
+
+#. module: payment_authorize
+#: selection:payment.acquirer,provider:0
+msgid "Wire Transfer"
+msgstr "تحويل بنكي"

@@ -12,14 +12,15 @@
             <title>Odoo Editor layout</title>
             <meta name="viewport" content="initial-scale=1"/>
             <script type="text/javascript">
-                var snippets_url = '<t t-esc="snippets or ''"/>';
                 var callback = window.location.href.match(/callback=([^&amp;=]+)/)[1];
 
                 var odoo = {
                     session_info: {
-                        is_superuser: <t t-esc="json.dumps(request.env.user._is_superuser())"/>,
+                        is_admin: <t t-esc="json.dumps(request.env.user._is_admin())"/>,
                         is_frontend: true, // this is not really the frontend here but this key is used to detect if xml has to be manually loaded
                     },
+                    _modules: ['web_editor'],
+                    snippetsURL: '<t t-esc="snippets or ''"/>',
                 };
             </script>
             <t t-if="not dont_load_assets">
@@ -33,6 +34,8 @@
                 <t t-call-assets="web_editor.assets_editor" t-css="false"/>
 
                 <script type="text/javascript" src="/web/static/src/js/services/session.js"></script>
+                <script type="text/javascript" src="/web_editor/static/src/js/content/body_manager.js"/>
+                <script type="text/javascript" src="/web_editor/static/src/js/root_widget.js"/>
                 <script type="text/javascript" src="/web_editor/static/src/js/iframe.js"></script>
                 <script t-if="enable_editor and inline_mode" type="text/javascript" src="/web_editor/static/src/js/inline.js"></script>
             </t>
@@ -56,7 +59,8 @@
             </script>
             <t t-raw="head or ''"/>
         </head>
-        <body id="web_editor_inside_iframe" onload="var fn=window.top.odoo &amp;&amp; window.top.odoo[callback+'_content']; if(fn) {fn();} else {console.warn('Please don\'t open iframe without the odoo backend');}">
+        <t t-set="direction" t-value="request.env['res.lang'].search([('code', '=', request.env.lang)]).direction"/>
+        <body id="web_editor_inside_iframe" onload="var fn=window.top.odoo &amp;&amp; window.top.odoo[callback+'_content']; if(fn) {fn();} else {console.warn('Please don\'t open iframe without the odoo backend');}" t-attf-style="direction: #{direction};">
             <div id="wrapwrap">
                 <main>
                     <t t-raw="0"/>

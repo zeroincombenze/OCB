@@ -3,7 +3,7 @@
 
 {
     'name': 'Belgium - Payroll',
-    'category': 'Localization',
+    'category': 'Human Resources',
     'depends': ['hr_payroll'],
     'description': """
 Belgian Payroll Rules.
@@ -16,15 +16,14 @@ Belgian Payroll Rules.
     * Allow to configure Basic/Gross/Net Salary
     * Employee Payslip
     * Monthly Payroll Register
-    * Integrated with Holiday Management
+    * Integrated with Leaves Management
     * Salary Maj, ONSS, Withholding Tax, Child Allowance, ...
     """,
 
-    'demo': ['data/l10n_be_hr_payroll_demo.xml'],
-    'website': 'https://www.odoo.com/page/accounting',
-    'data':[
+    'data': [
         'views/l10n_be_hr_payroll_view.xml',
         'data/l10n_be_hr_payroll_data.xml',
         'data/hr.salary.rule.csv',
     ],
+    'license': 'LGPL-3',
 }

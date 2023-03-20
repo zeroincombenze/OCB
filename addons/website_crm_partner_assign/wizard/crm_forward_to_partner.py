@@ -8,6 +8,7 @@ from odoo.exceptions import UserError
 class CrmLeadForwardToPartner(models.TransientModel):
     """ Forward info history to partners. """
     _name = 'crm.lead.forward.to.partner'
+    _description = 'Lead forward to partner'
 
     @api.model
     def _convert_to_assignation_line(self, lead, partner):
@@ -107,14 +108,14 @@ class CrmLeadForwardToPartner(models.TransientModel):
         action = type == 'opportunity' and 'action_portal_opportunities' or 'action_portal_leads'
         action_ref = self.env.ref('website_crm_partner_assign.%s' % (action,), False)
         portal_link = "%s/?db=%s#id=%s&action=%s&view_type=form" % (
-            self.env['ir.config_parameter'].get_param('web.base.url'),
+            self.env['ir.config_parameter'].sudo().get_param('web.base.url'),
             self.env.cr.dbname,
             lead_id,
             action_ref and action_ref.id or False)
         return portal_link
 
     def get_portal_url(self):
-        portal_link = "%s/?db=%s" % (self.env['ir.config_parameter'].get_param('web.base.url'), self.env.cr.dbname)
+        portal_link = "%s/?db=%s" % (self.env['ir.config_parameter'].sudo().get_param('web.base.url'), self.env.cr.dbname)
         return portal_link
 
     forward_type = fields.Selection([
@@ -128,13 +129,14 @@ class CrmLeadForwardToPartner(models.TransientModel):
 
 class CrmLeadAssignation(models.TransientModel):
     _name = 'crm.lead.assignation'
+    _description = 'Lead Assignation'
 
     forward_id = fields.Many2one('crm.lead.forward.to.partner', 'Partner Assignation')
     lead_id = fields.Many2one('crm.lead', 'Lead')
     lead_location = fields.Char('Lead Location')
     partner_assigned_id = fields.Many2one('res.partner', 'Assigned Partner')
     partner_location = fields.Char('Partner Location')
-    lead_link = fields.Char('Lead Single Links')
+    lead_link = fields.Char('Link to Lead')
 
     @api.onchange('lead_id')
     def _onchange_lead_id(self):

@@ -12,11 +12,11 @@ tour.register('event_buy_tickets', {
     [
         {
             content: "Go to the `Events` page",
-            trigger: 'a[href*="/event"]:contains("Conference on Business Apps"):first',
+            trigger: 'a[href*="/event"]:contains("Conference for Architects"):first',
         },
         {
             content: "Select 1 unit of `Standard` ticket type",
-            extra_trigger: '#wrap:not(:has(a[href*="/event"]:contains("Conference on Business Apps")))',
+            extra_trigger: '#wrap:not(:has(a[href*="/event"]:contains("Conference for Architects")))',
             trigger: 'select:eq(0)',
             run: 'text 1',
         },
@@ -29,7 +29,7 @@ tour.register('event_buy_tickets', {
         {
             content: "Click on `Order Now` button",
             extra_trigger: 'select:eq(1):has(option:contains(2):propSelected)',
-            trigger: '.btn-primary:contains("Order Now")',
+            trigger: '.btn-primary:contains("Register Now")',
         },
         {
             content: "Fill attendees details",
@@ -53,7 +53,7 @@ tour.register('event_buy_tickets', {
         },
         {
             content: "Check that the cart contains exactly 3 triggers",
-            trigger: 'a:has(.my_cart_quantity:containsExact(3))',
+            trigger: 'a:has(.my_cart_quantity:containsExact(3)),.o_extra_menu_items .fa-plus',
             run: function () {}, // it's a check
         },
         {
@@ -67,12 +67,8 @@ tour.register('event_buy_tickets', {
         },
         {
             content: "Now click on `Process Checkout`",
-            extra_trigger: 'a:has(.my_cart_quantity):contains(4)',
+            extra_trigger: 'a:has(.my_cart_quantity):contains(4),#cart_products input.js_quantity[value="3"]',
             trigger: '.btn-primary:contains("Process Checkout")'
-        },
-        {
-            content: "Complete the checkout",
-            trigger: 'a[href="/shop/confirm_order"]:contains("Confirm")',
         },
         {
             content: "Check that the subtotal is 5,500.00 USD", // this test will fail if the currency of the main company is not USD
@@ -81,16 +77,17 @@ tour.register('event_buy_tickets', {
         },
         {
             content: "Select `Wire Transfer` payment method",
-            trigger: '#payment_method label:contains(Wire Transfer) input',
+            trigger: '#payment_method label:contains("Wire Transfer")',
         },
         {
             content: "Pay",
-            extra_trigger: '#payment_method label:contains(Wire Transfer) input:checked',
-            trigger: '.oe_sale_acquirer_button .btn[type="submit"]:visible',
+            //Either there are multiple payment methods, and one is checked, either there is only one, and therefore there are no radio inputs
+            extra_trigger: '#payment_method label:contains("Wire Transfer") input:checked,#payment_method:not(:has("input:radio:visible"))',
+            trigger: 'button[id="o_payment_form_pay"]:visible',
         },
         {
             content: "Last step",
-            trigger: '.oe_website_sale:contains("Thank you for your order")',
+            trigger: '.oe_website_sale:contains("Pending... The order will be validated after the payment.")',
             timeout: 30000,
         }
     ]

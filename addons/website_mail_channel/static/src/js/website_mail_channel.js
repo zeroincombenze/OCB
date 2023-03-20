@@ -33,13 +33,13 @@ $(document).ready(function () {
             if (! data) {
                 return true;
             }
-            var $thread_container = $link.parents('.o_mg_replies').first().find('ul.media-list');
+            var $thread_container = $link.parents('.o_mg_replies').first().find('ul.list-unstyled');
             if ($thread_container) {
                 var $last_msg = $thread_container.find('li.media').last();
                 $(data).find('li.media').insertAfter($last_msg);
-                $(data).find('p.well').appendTo($thread_container);
+                $(data).find('.o_mg_read_more').parent().appendTo($thread_container);
             }
-            var $show_more = $link.parents('p.well').first();
+            var $show_more = $link.parent();
             $show_more.remove();
             return true;
         });

@@ -3,18 +3,17 @@
 # * pos_discount
 # 
 # Translators:
-# Fahad Alqahtani <fahad@cloudland.sa>, 2016
-# hoxhe Aits <hoxhe0@gmail.com>, 2016
-# Martin Trigaux, 2016
-# mohamed eboda <m.eboda@gmail.com>, 2016
+# Martin Trigaux, 2018
+# hoxhe Aits <hoxhe0@gmail.com>, 2018
+# mohamed eboda <m.eboda@gmail.com>, 2018
 # Mustafa Rawi <mustafa@cubexco.com>, 2019
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 10.0c\n"
+"Project-Id-Version: Odoo Server saas~11.5\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-09-07 08:55+0000\n"
-"PO-Revision-Date: 2016-09-07 09:26+0000\n"
+"POT-Creation-Date: 2018-09-21 13:16+0000\n"
+"PO-Revision-Date: 2018-08-24 09:22+0000\n"
 "Last-Translator: Mustafa Rawi <mustafa@cubexco.com>, 2019\n"
 "Language-Team: Arabic (https://www.transifex.com/odoo/teams/41243/ar/)\n"
 "MIME-Version: 1.0\n"
@@ -24,9 +23,9 @@ msgstr ""
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
 
 #. module: pos_discount
-#: model:ir.model.fields,help:pos_discount.field_pos_config_iface_discount
+#: model:ir.model.fields,help:pos_discount.field_pos_config__iface_discount
 msgid "Allow the cashier to give discounts on the whole order."
-msgstr "السماح لأمين الصندوق بعمل تخفيض على امر البيع"
+msgstr "السماح للكاشير بعمل خصومات على الأمر بالكامل."
 
 #. module: pos_discount
 #. openerp-web
@@ -36,22 +35,23 @@ msgid "Discount"
 msgstr "الخصم"
 
 #. module: pos_discount
+#: model_terms:ir.ui.view,arch_db:pos_discount.pos_config_view_form_inherit_pos_discount
+msgid "Discount %"
+msgstr "خصم %"
+
+#. module: pos_discount
 #. openerp-web
 #: code:addons/pos_discount/static/src/js/discount.js:14
-#: model:ir.model.fields,field_description:pos_discount.field_pos_config_discount_pc
+#: model:ir.model.fields,field_description:pos_discount.field_pos_config__discount_pc
 #, python-format
 msgid "Discount Percentage"
 msgstr "نسبة الخصم"
 
 #. module: pos_discount
-#: model:ir.model.fields,field_description:pos_discount.field_pos_config_discount_product_id
+#: model:ir.model.fields,field_description:pos_discount.field_pos_config__discount_product_id
+#: model_terms:ir.ui.view,arch_db:pos_discount.pos_config_view_form_inherit_pos_discount
 msgid "Discount Product"
 msgstr "منتج الخصم"
-
-#. module: pos_discount
-#: model:ir.ui.view,arch_db:pos_discount.view_pos_config_form
-msgid "Discounts"
-msgstr "الخصومات"
 
 #. module: pos_discount
 #. openerp-web
@@ -61,12 +61,17 @@ msgid "No discount product found"
 msgstr "لا يوجد منتج لتطبيق خصم عليه"
 
 #. module: pos_discount
-#: model:ir.model.fields,field_description:pos_discount.field_pos_config_iface_discount
+#: model:ir.model.fields,field_description:pos_discount.field_pos_config__iface_discount
 msgid "Order Discounts"
 msgstr "خصم على الطلب"
 
 #. module: pos_discount
-#: model:ir.model.fields,help:pos_discount.field_pos_config_discount_pc
+#: model:ir.model,name:pos_discount.model_pos_config
+msgid "Point of Sale Configuration"
+msgstr "إعدادات نقطة البيع"
+
+#. module: pos_discount
+#: model:ir.model.fields,help:pos_discount.field_pos_config__discount_pc
 msgid "The default discount percentage"
 msgstr "نسبة الخصم الافتراضي"
 
@@ -82,11 +87,6 @@ msgstr ""
 "و'متاح في نقطة البيع'."
 
 #. module: pos_discount
-#: model:ir.model.fields,help:pos_discount.field_pos_config_discount_product_id
-msgid "The product used to model the discount"
-msgstr "المنتج المستخدم لتطبيق الخصم"
-
-#. module: pos_discount
-#: model:ir.model,name:pos_discount.model_pos_config
-msgid "pos.config"
-msgstr "pos.config"
+#: model:ir.model.fields,help:pos_discount.field_pos_config__discount_product_id
+msgid "The product used to model the discount."
+msgstr "المنتج المستخدم كمثال على تطبيق الخصم."

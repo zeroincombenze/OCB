@@ -44,7 +44,7 @@ class AccountJournal(models.Model):
             rec._create_check_sequence()
         return rec
 
-    @api.one
+    @api.multi
     @api.returns('self', lambda value: value.id)
     def copy(self, default=None):
         rec = super(AccountJournal, self).copy(default)
@@ -88,7 +88,7 @@ class AccountJournal(models.Model):
         ]
         return dict(
             super(AccountJournal, self).get_journal_dashboard_datas(),
-            num_checks_to_print=len(self.env['account.payment'].search(domain_checks_to_print))
+            num_checks_to_print=self.env['account.payment'].search_count(domain_checks_to_print),
         )
 
     @api.multi

@@ -3,13 +3,16 @@ odoo.define('web.core', function (require) {
 
 var Bus = require('web.Bus');
 var Class = require('web.Class');
-var mixins = require('web.mixins');
+var config = require('web.config');
 var QWeb = require('web.QWeb');
 var Registry = require('web.Registry');
 var translation = require('web.translation');
 
-var debug = $.deparam($.param.querystring()).debug !== undefined;
-
+/**
+ * Whether the client is currently in "debug" mode
+ *
+ * @type Boolean
+ */
 var bus = new Bus ();
 
 _.each('click,dblclick,keydown,keypress,keyup'.split(','), function(evtype) {
@@ -24,12 +27,10 @@ _.each('resize,scroll'.split(','), function(evtype) {
 });
 
 return {
-    debug: debug,
-    qweb: new QWeb(debug),
+    qweb: new QWeb(config.debug),
 
     // core classes and functions
     Class: Class,
-    mixins: mixins,
     bus: bus,
     main_bus: new Bus(),
     _t: translation._t,
@@ -38,15 +39,12 @@ return {
     // registries
     action_registry : new Registry(),
     crash_registry: new Registry(),
-    form_custom_registry: new Registry(),
-    form_tag_registry: new Registry(),
-    form_widget_registry: new Registry(),
-    list_widget_registry: new Registry(),
-    one2many_view_registry: new Registry(),
     search_filters_registry: new Registry(),
     search_widgets_registry: new Registry(),
-    view_registry: new Registry(),
-
+    serviceRegistry: new Registry(),
+    /**
+     * @type {String}
+     */
     csrf_token: odoo.csrf_token,
 };
 

@@ -2,19 +2,17 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import base64
-import json
 import logging
 import psycopg2
 import werkzeug
 
-from operator import itemgetter
 from werkzeug import url_encode
 
 from odoo import api, http, registry, SUPERUSER_ID, _
 from odoo.addons.web.controllers.main import binary_content
 from odoo.exceptions import AccessError
 from odoo.http import request
-from odoo.tools import consteq
+from odoo.tools import consteq, pycompat
 
 _logger = logging.getLogger(__name__)
 
@@ -24,8 +22,7 @@ class MailController(http.Controller):
 
     @classmethod
     def _redirect_to_messaging(cls):
-        messaging_action = request.env['mail.thread']._get_inbox_action_xml_id()
-        url = '/web#%s' % url_encode({'action': messaging_action})
+        url = '/web#%s' % url_encode({'action': 'mail.action_discuss'})
         return werkzeug.utils.redirect(url)
 
     @classmethod
@@ -33,7 +30,7 @@ class MailController(http.Controller):
         base_link = request.httprequest.path
         params = dict(request.params)
         params.pop('token', '')
-        valid_token = request.env['mail.thread']._generate_notification_token(base_link, params)
+        valid_token = request.env['mail.thread']._notify_encode_link(base_link, params)
         return consteq(valid_token, str(token))
 
     @classmethod
@@ -52,7 +49,9 @@ class MailController(http.Controller):
         return comparison, record, redirect
 
     @classmethod
-    def _redirect_to_record(cls, model, res_id):
+    def _redirect_to_record(cls, model, res_id, access_token=None, **kwargs):
+        # access_token and kwargs are used in the portal controller override for the Send by email or Share Link
+        # to give access to the record to a recipient that has normally no access.
         uid = request.session.uid
 
         # no model / res_id, meaning no possible record -> redirect to login
@@ -65,19 +64,6 @@ class MailController(http.Controller):
         if not record_sudo:
             # record does not seem to exist -> redirect to login
             return cls._redirect_to_messaging()
-        record_action = record_sudo.get_access_action()
-        record_target_type = record_action.pop('target_type', 'dummy')
-
-        # the record has a public URL redirection: use it directly
-        if record_action['type'] == 'ir.actions.act_url':
-            if record_target_type == 'public' and not uid:
-                return werkzeug.utils.redirect(record_action['url'])
-            else:
-                # user connected or non-public URL, handled below
-                pass
-        # other choice: act_window (no support of anything else currently)
-        elif not record_action['type'] == 'ir.actions.act_window':
-            return cls._redirect_to_messaging()
 
         # the record has a window redirection: check access rights
         if uid is not None:
@@ -87,46 +73,41 @@ class MailController(http.Controller):
                 record_sudo.sudo(uid).check_access_rule('read')
             except AccessError:
                 return cls._redirect_to_messaging()
-            if record_action['type'] == 'ir.actions.act_url':
-                return werkzeug.utils.redirect(record_action['url'])
+            else:
+                record_action = record_sudo.get_access_action(access_uid=uid)
         else:
-            # Specific case in 10.0 only: not logged users could receive an act_url that is
-            # not public. As we don't handle fully access tokens in 10.0 we have to redirect
-            # to the login to avoid access issues and/or crash when computing url_params.
-            # CHS-note: do not forward-port me as in saas-16 it is already managed
-            if record_action['type'] == 'ir.actions.act_url':
+            record_action = record_sudo.get_access_action()
+            if record_action['type'] == 'ir.actions.act_url' and record_action.get('target_type') != 'public':
                 return cls._redirect_to_messaging()
+
+        record_action.pop('target_type', None)
+        # the record has an URL redirection: use it directly
+        if record_action['type'] == 'ir.actions.act_url':
+            return werkzeug.utils.redirect(record_action['url'])
+        # other choice: act_window (no support of anything else currently)
+        elif not record_action['type'] == 'ir.actions.act_window':
+            return cls._redirect_to_messaging()
 
         url_params = {
             'view_type': record_action['view_type'],
             'model': model,
             'id': res_id,
             'active_id': res_id,
-            'view_id': record_sudo.get_formview_id(),
             'action': record_action.get('id'),
         }
+        view_id = record_sudo.get_formview_id()
+        if view_id:
+            url_params['view_id'] = view_id
+
         url = '/web?#%s' % url_encode(url_params)
         return werkzeug.utils.redirect(url)
-
-    @http.route('/mail/receive', type='json', auth='none')
-    def receive(self, req):
-        """ End-point to receive mail from an external SMTP server. """
-        dbs = req.jsonrequest.get('databases')
-        for db in dbs:
-            message = dbs[db].decode('base64')
-            try:
-                db_registry = registry(db)
-                with db_registry.cursor() as cr:
-                    env = api.Environment(cr, SUPERUSER_ID, {})
-                    env['mail.thread'].message_process(None, message)
-            except psycopg2.Error:
-                pass
-        return True
 
     @http.route('/mail/read_followers', type='json', auth='user')
     def read_followers(self, follower_ids, res_model):
         followers = []
-        is_editable = request.env.user.has_group('base.group_no_one')
+        # When editing the followers, the "pencil" icon that leads to the edition of subtypes
+        # should be always be displayed and not only when "debug" mode is activated.
+        is_editable = True
         partner_id = request.env.user.partner_id
         follower_id = None
         follower_recs = request.env['mail.followers'].sudo().browse(follower_ids)
@@ -138,6 +119,7 @@ class MailController(http.Controller):
             followers.append({
                 'id': follower.id,
                 'name': follower.partner_id.name or follower.channel_id.name,
+                'display_name': follower.partner_id.display_name or follower.channel_id.display_name,
                 'email': follower.partner_id.email if follower.partner_id else None,
                 'res_model': 'res.partner' if follower.partner_id else 'mail.channel',
                 'res_id': follower.partner_id.id or follower.channel_id.id,
@@ -165,68 +147,42 @@ class MailController(http.Controller):
             'default': subtype.default,
             'internal': subtype.internal,
             'followed': subtype.id in followers.mapped('subtype_ids').ids,
-            'parent_model': subtype.parent_id and subtype.parent_id.res_model or False,
+            'parent_model': subtype.parent_id.res_model,
             'id': subtype.id
         } for subtype in subtypes]
-        subtypes_list = sorted(subtypes_list, key=itemgetter('parent_model', 'res_model', 'internal', 'sequence'))
+        subtypes_list = sorted(subtypes_list, key=lambda it: (it['parent_model'] or '', it['res_model'] or '', it['internal'], it['sequence']))
         return subtypes_list
 
     @http.route('/mail/view', type='http', auth='none')
-    def mail_action_view(self, model=None, res_id=None, message_id=None):
+    def mail_action_view(self, model=None, res_id=None, access_token=None, **kwargs):
         """ Generic access point from notification emails. The heuristic to
-        choose where to redirect the user is the following :
+            choose where to redirect the user is the following :
 
          - find a public URL
          - if none found
           - users with a read access are redirected to the document
           - users without read access are redirected to the Messaging
           - not logged users are redirected to the login page
+
+            models that have an access_token may apply variations on this.
         """
-        if message_id:
+        # ==============================================================================================
+        # This block of code disappeared on saas-11.3 to be reintroduced by TBE.
+        # This is needed because after a migration from an older version to saas-11.3, the link
+        # received by mail with a message_id no longer work.
+        # So this block of code is needed to guarantee the backward compatibility of those links.
+        if kwargs.get('message_id'):
             try:
-                message = request.env['mail.message'].sudo().browse(int(message_id)).exists()
+                message = request.env['mail.message'].sudo().browse(int(kwargs['message_id'])).exists()
             except:
                 message = request.env['mail.message']
             if message:
                 model, res_id = message.model, message.res_id
-            else:
-                # either a wrong message_id, either someone trying ids -> just go to messaging
-                return self._redirect_to_messaging()
-        elif res_id and isinstance(res_id, basestring):
+        # ==============================================================================================
+
+        if res_id and isinstance(res_id, pycompat.string_types):
             res_id = int(res_id)
-
-        return self._redirect_to_record(model, res_id)
-
-    @http.route('/mail/follow', type='http', auth='user', methods=['GET'])
-    def mail_action_follow(self,  model, res_id, token=None):
-        comparison, record, redirect = self._check_token_and_record_or_redirect(model, int(res_id), token)
-        if comparison and record:
-            try:
-                record.sudo().message_subscribe_users()
-            except Exception:
-                return self._redirect_to_messaging()
-        return redirect
-
-    @http.route('/mail/unfollow', type='http', auth='user', methods=['GET'])
-    def mail_action_unfollow(self, model, res_id, token=None):
-        comparison, record, redirect = self._check_token_and_record_or_redirect(model, int(res_id), token)
-        if comparison and record:
-            try:
-                # TDE CHECKME: is sudo really necessary ?
-                record.sudo().message_unsubscribe_users([request.uid])
-            except Exception:
-                return self._redirect_to_messaging()
-        return redirect
-
-    @http.route('/mail/new', type='http', auth='user')
-    def mail_action_new(self, model, res_id, action_id):
-        if model not in request.env:
-            return self._redirect_to_messaging()
-        params = {'view_type': 'form', 'model': model}
-        if action_id:
-            # Probably something to do
-            params['action'] = action_id
-        return werkzeug.utils.redirect('/web?#%s' % url_encode(params))
+        return self._redirect_to_record(model, res_id, access_token, **kwargs)
 
     @http.route('/mail/assign', type='http', auth='user', methods=['GET'])
     def mail_action_assign(self, model, res_id, token=None):
@@ -266,15 +222,19 @@ class MailController(http.Controller):
     def needaction(self):
         return request.env['res.partner'].get_needaction_count()
 
-    @http.route('/mail/client_action', type='json', auth='user')
-    def mail_client_action(self):
+    @http.route('/mail/init_messaging', type='json', auth='user')
+    def mail_init_messaging(self):
         values = {
             'needaction_inbox_counter': request.env['res.partner'].get_needaction_count(),
             'starred_counter': request.env['res.partner'].get_starred_count(),
             'channel_slots': request.env['mail.channel'].channel_fetch_slot(),
+            'mail_failures': request.env['mail.message'].message_fetch_failed(),
             'commands': request.env['mail.channel'].get_mention_commands(),
             'mention_partner_suggestions': request.env['res.partner'].get_static_mention_suggestions(),
-            'shortcodes': request.env['mail.shortcode'].sudo().search_read([], ['shortcode_type', 'source', 'substitution', 'description']),
-            'menu_id': request.env['ir.model.data'].xmlid_to_res_id('mail.mail_channel_menu_root_chat'),
+            'shortcodes': request.env['mail.shortcode'].sudo().search_read([], ['source', 'substitution', 'description']),
+            'menu_id': request.env['ir.model.data'].xmlid_to_res_id('mail.menu_root_discuss'),
+            'is_moderator': request.env.user.is_moderator,
+            'moderation_counter': request.env.user.moderation_counter,
+            'moderation_channel_ids': request.env.user.moderation_channel_ids.ids,
         }
         return values

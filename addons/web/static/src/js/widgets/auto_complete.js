@@ -51,14 +51,12 @@ return Widget.extend({
                 }
                 return;
             }
-            var search_string = self.get_search_string();
-            if (self.search_string !== search_string) {
-                if (search_string.length) {
-                    self.search_string = search_string;
-                    self.initiate_search(search_string);
-                } else {
-                    self.close();
-                }
+            self._updateSearch();
+        });
+        this.$input.on('input', function (ev) {
+            if (ev.originalEvent && ev.originalEvent.inputType === 'insertCompositionText') {
+                // click inside keyboard IME suggestions menu
+                self._updateSearch();
             }
         });
         this.$input.on('keypress', function (ev) {
@@ -137,12 +135,22 @@ return Widget.extend({
             var $item = self.make_list_item(result).appendTo($list);
             result.$el = $item;
         });
+        // IE9 doesn't support addEventListener with option { once: true }
+        this.el.onmousemove = function (ev) {
+            self.$('li').each(function (index, li) {
+                li.onmouseenter = self.focus_element.bind(self, $(li));
+            });
+            var targetFocus = ev.target.tagName === 'LI' ?
+                ev.target :
+                ev.target.closest('li');
+            self.focus_element($(targetFocus));
+            self.el.onmousemove = null;
+        };
         this.show();
     },
     make_list_item: function (result) {
         var self = this;
         var $li = $('<li>')
-            .hover(function () {self.focus_element($li);})
             .mousedown(function (ev) {
                 if (ev.button === 0) { // left button
                     self.select(ev, {item: {facet: result.facet}});
@@ -225,6 +233,25 @@ return Widget.extend({
     },
     is_expandable: function () {
         return !!this.$('.o-selection-focus .o-expand').length;
+    },
+    is_expanded: function() {
+        return this.$el[0].style.display === "block";
+    },
+    /**
+     * Update search dropdown menu based on new input content.
+     *
+     * @private
+     */
+    _updateSearch: function () {
+        var search_string = this.get_search_string();
+        if (this.search_string !== search_string) {
+            if (search_string.length) {
+                this.search_string = search_string;
+                this.initiate_search(search_string);
+            } else {
+                this.close();
+            }
+        }
     },
 });
 });

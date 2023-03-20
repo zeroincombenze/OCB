@@ -81,34 +81,15 @@
 
     </data>
     <data noupdate="1">
-        <!-- notify all employees of module installation -->
-        <record model="mail.message" id="module_install_notification">
-            <field name="model">mail.channel</field>
-            <field name="res_id" ref="mail.channel_all_employees"/>
-            <field name="message_type">notification</field>
-            <field name="subtype_id" ref="mail.mt_comment"/>
-            <field name="subject">Inventory Management application installed!</field>
-            <field name="body"><![CDATA[<p>Manage your product inventory and stock locations: you can control stock moves history and planning,
-watch your stock valuation, and track production lots (based on serial numbers).</p>]]></field>
-        </record>
-
-
         <!--
-    Request link
-    -->
-        <record id="req_link_tracking" model="res.request.link">
-            <field name="name">Lot/Serial Number</field>
-            <field name="object">stock.production.lot</field>
-        </record>
-
-
-        <!--
-             Procurement rules
+             Stock rules
         -->
         
+        <!-- set a lower sequence on the mto route than on the resupply routes -->
         <record id="route_warehouse0_mto" model='stock.location.route'>
             <field name="name">Make To Order</field>
-            <field name="sequence">10</field>
+            <field name="company_id"></field>
+            <field name="sequence">5</field>
         </record>
 
         <!--
@@ -123,11 +104,6 @@ watch your stock valuation, and track production lots (based on serial numbers).
             <field name="name">property_stock_customer</field>
             <field name="fields_id" search="[('model','=','res.partner'),('name','=','property_stock_customer')]"/>
             <field eval="'stock.location,'+str(stock_location_customers)" name="value"/>
-        </record>
-        <record forcecreate="True" id="property_stock_procurement" model="ir.property">
-            <field name="name">property_stock_procurement</field>
-            <field name="fields_id" search="[('model','=','product.template'),('name','=','property_stock_procurement')]"/>
-            <field eval="'stock.location,'+str(location_procurement)" name="value"/>
         </record>
         <record forcecreate="True" id="property_stock_inventory" model="ir.property">
             <field name="name">property_stock_inventory</field>
@@ -169,5 +145,42 @@ watch your stock valuation, and track production lots (based on serial numbers).
             <field name="number_increment">1</field>
         </record>
 
+        <!-- create xml ids for demo data that are widely used in tests or in other codes, for more convenience -->
+        <function model="ir.model.data" name="_update_xmlids">
+            <value model="base" eval="[{
+                'xml_id': 'stock.stock_location_stock',
+                'record': obj().env.ref('stock.warehouse0').lot_stock_id,
+                'noupdate': True,
+            }, {
+                'xml_id': 'stock.stock_location_company',
+                'record': obj().env.ref('stock.warehouse0').wh_input_stock_loc_id,
+                'noupdate': True,
+            }, {
+                'xml_id': 'stock.stock_location_output',
+                'record': obj().env.ref('stock.warehouse0').wh_output_stock_loc_id,
+                'noupdate': True,
+            }, {
+                'xml_id': 'stock.location_pack_zone',
+                'record': obj().env.ref('stock.warehouse0').wh_pack_stock_loc_id,
+                'noupdate': True,
+            }, {
+                'xml_id': 'stock.picking_type_internal',
+                'record': obj().env.ref('stock.warehouse0').int_type_id,
+                'noupdate': True,
+            }, {
+                'xml_id': 'stock.picking_type_in',
+                'record': obj().env.ref('stock.warehouse0').in_type_id,
+                'noupdate': True,
+            }, {
+                'xml_id': 'stock.picking_type_out',
+                'record': obj().env.ref('stock.warehouse0').out_type_id,
+                'noupdate': True,
+            }]"/>
+        </function>
+
+        <!-- create the transit location for each company existing -->
+        <function model="res.company" name="create_transit_location">
+            <value model="res.company" eval="obj().search([('internal_transit_location_id', '=', False)]).ids"/>
+        </function>
     </data>
 </odoo>
