@@ -1,129 +1,182 @@
-# sphinx build directories
-_build/
+# [antoniov: 2022-11-09]
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.a
+*.obj
+*.exe
+/.venv
+/.pytest_cache
 
-# dotfiles
-.*
-!.gitignore
-# compiled python files
-*.py[co]
-# setup.py egg_info
-*.egg-info
-# emacs backup files
-*~
-# hg stuff
-*.orig
-status
-# odoo filestore
-openerp/filestore
-# maintenance migration scripts
-openerp/addons/base/maintenance
+# C extensions
+*.o
+*.so
+
+# Distribution / packaging
+.Python
+env/
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+*.eggs
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
 
 # generated for windows installer?
 install/win32/*.bat
-install/win32/meta.py
+install/win32/meta.py# needed only when building for win32
+setup/win32/static/less/
+setup/win32/static/wkhtmltopdf/
+setup/win32/static/postgresql*.exe
 
-# various virtualenv
-/bin/
-/build/
-/dist/
-/include/
-/lib/
-/man/
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+cover/
+
+# Node + Javascripts packages
+*.json
+
+# Translations
+*.mo
+
+# Pycharm
+.idea/
+
+# Eclipse
+.settings
+
+# Visual Studio cache/options directory
+.vs/
+.vscode
+
+# OSX Files
+.DS_Store
+
+# Django stuff:
+*.log
+
+# Komodo
+*.komodoproject
+.komodotools
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+
+# Rope
+.ropeproject
+
+# Sphinx documentation
+docs/_build/
+
+# Bazaar
+.bzr/
+
+# hg stuff
+*.orig
+
+# Backup files
+*~
+*.swp
+
+# Junks
+*.bak
+*.out
+*.conf
+.tmp
+.tracehis
+.tracehistory
+test*.pdf
+tmp.*
+example_*
+/.settings/
 /share/
-/src/
-account-invoicing/
-account-payment/
-partner-contact/
-account-financial-tools/
-knowledge/
-bank-payment/
-server-tools/
-web/
-website/
-l10n-italy/
-zeroincombenze/
-l10n-italy-supplemental/
-stock-logistics-workflow/
-webkit-tools/
-cscs_addons/
-account-closing/
-report-print-send/
-connector/
-product-attribute/
-stock-logistics-warehouse/
-stock-logistics-barcode/
-stock-logistics-tracking/
-account-financial-reporting/
-themes/
 stdout.log
 *.oca
 *.z0i
-reporting-engine/
-account_banking_cscs/
-crm/
-management-system/
-.gitrepname
-commission/
-account_invoice_create_payment/
-account_payment_approve_invoice/
-social/
-website-cms/
-event/
-pylint-odoo/
-operating-unit/
-sale-reporting/
-bank-statement-import/
-account-invoice-reporting/
-hr/
-hr-timesheet/
-manufacture/
-survey/
-margin-analysis/
-pos/
-rma/
-queue/
-e-commerce/
-delivery-carrier/
-contract/
-vertical-education/
-zerobug-test/
-profiles/
-uncovered/
-account-analytic/
-account-budgeting/
-account-consolidation/
-account-fiscal-rule/
-account-reconcile/
-community-data-files/
-connector-accountedge/
-connector-cmis/
-connector-ecommerce/
-connector-interfaces/
-connector-magento/
-connector-prestashop/
-connector-redmine/
-connector-sage/
-connector-salesforce/
-connector-telephony/
-department/
-geospatial/
-manufacture-reporting/
-mis-builder/
-multi-company/
-product-kitting/
-product-variant/
-program/
-project-reporting/
-project/
-purchase-reporting/
-purchase-workflow/
-sale-financial/
-sale-workflow/
-stock-logistics-reporting/
-stock-logistics-transport/
-timesheet/
-vertical-construction/
-vertical-hotel/
-vertical-isp/
-vertical-ngo/
-vertical-travel/
+#
+# tools building path
+#
+/clodoo/build/
+/clodoo/dist/
+/clodoo/clodoo/docs/_build/
+/lisa/lisa/build/
+/lisa/dist/
+/lisa/lisa/docs/_build/
+/odoo_score/build/
+/odoo_score/dist/
+/odoo_score/odoo_score/docs/_build/
+/python_plus/build/
+/python_plus/dist/
+/python_plus/python_plus/docs/_build/
+/travis_emulator/build/
+/travis_emulator/dist/
+/travis_emulator/travis_emulator/docs/_build/
+/wok_code/build/
+/wok_code/dist/
+/wok_code/wok_code/docs/_build/
+/z0bug_odoo/build/
+/z0bug_odoo/dist/
+/z0bug_odoo/z0bug_odoo/docs/_build/
+/z0lib/build/
+/z0lib/dist/
+/z0lib/z0lib/docs/_build/
+/zar/build/
+/zar/dist/
+/zar/zar/docs/_build/
+/zerobug/build/
+/zerobug/dist/
+/zerobug/zerobug/docs/_build
+#
+# odoo repositories
+!static/lib/
+/account-closing
+/account-financial-reporting
+/account-financial-tools
+/account-invoicing
+/account-payment
+/bank-payment
+/commission
+/connector
+/contract
+/crm
+/knowledge
+/l10n-italy
+/l10n-italy-supplemental
+/management-system
+/partner-contact
+/product-attribute
+/profiles
+/project
+/purchase-workflow
+/reporting-engine
+/report-print-send
+/sale-workflow
+/server-tools
+/stock-logistics-barcode
+/stock-logistics-tracking
+/stock-logistics-warehouse
+/stock-logistics-workflow
+/venv_odoo
+/web
+/webkit-tools
+/website-themes
+/zerobug-test
