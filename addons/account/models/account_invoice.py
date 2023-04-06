@@ -924,7 +924,20 @@ class AccountInvoice(models.Model):
             #refuse to validate a vendor bill/refund if there already exists one with the same reference for the same partner,
             #because it's probably a double encoding of the same bill/refund
             if invoice.type in ('in_invoice', 'in_refund') and invoice.reference:
-                if self.search([('type', '=', invoice.type), ('reference', '=', invoice.reference), ('company_id', '=', invoice.company_id.id), ('commercial_partner_id', '=', invoice.commercial_partner_id.id), ('id', '!=', invoice.id)]):
+                from_date = "%s-01-01" % invoice.date_invoice[0:4]
+                to_date = "%s-12-31" % invoice.date_invoice[0:4]
+                if (
+                        self.search([
+                            ('type', '=', invoice.type),
+                            ('reference', '=', invoice.reference),
+                            ('company_id', '=', invoice.company_id.id),
+                            ('commercial_partner_id',
+                             '=',
+                             invoice.commercial_partner_id.id),
+                            ("date_invoice", ">=", from_date),
+                            ("date_invoice", "<=", to_date),
+                            ('id', '!=', invoice.id)])
+                ):
                     raise UserError(_("Duplicated vendor reference detected. You probably encoded twice the same vendor bill/refund."))
 
     @api.multi
