@@ -1,4 +1,4 @@
-# [antoniov: 2022-05-19]
+# [antoniov: 2022-11-09]
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -34,6 +34,13 @@ var/
 pip-log.txt
 pip-delete-this-directory.txt
 
+# generated for windows installer?
+install/win32/*.bat
+install/win32/meta.py# needed only when building for win32
+setup/win32/static/less/
+setup/win32/static/wkhtmltopdf/
+setup/win32/static/postgresql*.exe
+
 # Unit test / coverage reports
 htmlcov/
 .tox/
@@ -42,13 +49,15 @@ htmlcov/
 nosetests.xml
 coverage.xml
 cover/
-/coverage/
+
+# Node + Javascripts packages
+*.json
 
 # Translations
 *.mo
 
 # Pycharm
-.idea
+.idea/
 
 # Eclipse
 .settings
@@ -67,7 +76,6 @@ cover/
 *.komodoproject
 .komodotools
 
-
 # Mr Developer
 .mr.developer.cfg
 .project
@@ -82,12 +90,12 @@ docs/_build/
 # Bazaar
 .bzr/
 
+# hg stuff
+*.orig
+
 # Backup files
 *~
 *.swp
-
-# OCA rules
-!static/lib/
 
 # Junks
 *.bak
@@ -98,12 +106,39 @@ docs/_build/
 .tracehistory
 test*.pdf
 tmp.*
+example_*
 /.settings/
+/share/
 stdout.log
 *.oca
 *.z0i
 #
+# tools building path
+#
+/clodoo/build/
+/clodoo/dist/
+/lisa/lisa/build/
+/lisa/dist/
+/odoo_score/build/
+/odoo_score/dist/
+/python_plus/build/
+/python_plus/dist/
+/travis_emulator/build/
+/travis_emulator/dist/
+/wok_code/build/
+/wok_code/dist/
+/z0bug_odoo/build/
+/z0bug_odoo/dist/
+/z0lib/build/
+/z0lib/dist/
+/zar/build/
+/zar/dist/
+/zerobug/build/
+/zerobug/dist/
+/zerobug/zerobug/docs/_build
+#
 # odoo repositories
+!static/lib/
 /account-analytic
 /account-budgeting
 /account-closing
@@ -115,6 +150,7 @@ stdout.log
 /account-invoicing
 /account-payment
 /account-reconcile
+/apps-store
 /bank-payment
 /bank-statement-import
 /business-requirement
@@ -129,11 +165,14 @@ stdout.log
 /currency
 /data-protection
 /delivery-carrier
+/donation
 /e-commerce
 /edi
+/event
 /geospatial
 /helpdesk
 /hr
+/infrastructure
 /intrastat-extrastat
 /knowledge
 /l10n-italy
@@ -147,6 +186,7 @@ stdout.log
 /mis-builder
 /mis-builder-contrib
 /multi-company
+/operating-unit
 /partner-contact
 /pos
 /product-attribute
