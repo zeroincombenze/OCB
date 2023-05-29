@@ -93,8 +93,11 @@ def xmlrpc_return(start_response, service, method, params, legacy_exceptions=Fal
                 return dict((str(key), fix(value)) for key, value in res.items())
             else:
                 return res
-            
-        result = fix(openerp.netsvc.dispatch_rpc(service, method, params))
+
+        if config.get('wsgi_xmlrpc_fix', True):
+            result = fix(openerp.netsvc.dispatch_rpc(service, method, params))
+        else:
+            result = openerp.netsvc.dispatch_rpc(service, method, params)
         response = xmlrpclib.dumps((result,), methodresponse=1, allow_none=False, encoding=None)
     except Exception, e:
         if legacy_exceptions:
@@ -400,7 +403,7 @@ def register_wsgi_handler(handler):
 def application_unproxied(environ, start_response):
     """ WSGI entry point."""
     # cleanup db/uid trackers - they're set at HTTP dispatch in
-    # web.session.OdooSession.send() and at RPC dispatch in
+    # web.session.OpenERPSession.send() and at RPC dispatch in
     # openerp.service.web_services.objects_proxy.dispatch().
     # /!\ The cleanup cannot be done at the end of this `application`
     # method because werkzeug still produces relevant logging afterwards 

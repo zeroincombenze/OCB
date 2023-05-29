@@ -8,28 +8,20 @@ class assertion_report(object):
     def __init__(self):
         self.successes = 0
         self.failures = 0
-        self.failures_details = []
 
     def record_success(self):
         self.successes += 1
 
-    def record_failure(self, details=None):
+    def record_failure(self):
         self.failures += 1
-        if details is not None:
-            self.failures_details.append(details)
 
-    def record_result(self, result, details=None):
-        """Record either success or failure, with the provided details in the latter case.
-
-        :param result: a boolean
-        :param details: a dict with keys ``'module'``, ``'testfile'``, ``'msg'``, ``'msg_args'``
-        """
+    def record_result(self, result):
         if result is None:
             pass
         elif result is True:
             self.record_success()
         elif result is False:
-            self.record_failure(details=details)
+            self.record_failure()
 
     def __str__(self):
         res = 'Assertions report: %s successes, %s failures' % (self.successes, self.failures)

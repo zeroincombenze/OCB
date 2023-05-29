@@ -27,10 +27,6 @@ from PIL import ImageEnhance
 from random import random
 
 # ----------------------------------------
-# Image.preinit()
-# Image._initialized = 2
-
-# ----------------------------------------
 # Image resizing
 # ----------------------------------------
 

@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-import os
 import threading
 import types
 import time # used to eval time.strftime expressions
 from datetime import datetime, timedelta
 import logging
 
-from copy import deepcopy
 import openerp.pooler as pooler
 import openerp.sql_db as sql_db
 import misc
@@ -195,13 +193,7 @@ class YamlInterpreter(object):
         return node
 
     def _log_assert_failure(self, msg, *args):
-        from openerp.modules import module  # cannot be made before (loop)
-        basepath = module.get_module_path(self.module)
-        self.assertion_report.record_failure(
-            details=dict(module=self.module,
-                         testfile=os.path.relpath(self.filename, basepath),
-                         msg=msg,
-                         msg_args=deepcopy(args)))
+        self.assertion_report.record_failure()
         _logger.error(msg, *args)
 
     def _get_assertion_id(self, assertion):

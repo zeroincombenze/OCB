@@ -197,21 +197,13 @@ def load_module_graph(cr, graph, status=None, perform_checks=True, skip_modules=
                 # 'data' section, but should probably not alter the data,
                 # as there is no rollback.
                 if tools.config.options['test_enable']:
-                    report.record_result(load_test(module_name, idref, mode),
-                                         details=(dict(module=module_name,
-                                                       msg="Exception during load of legacy "
-                                                       "data-based tests (yml...)")))
+                    report.record_result(load_test(module_name, idref, mode))
+
                     # Run the `fast_suite` and `checks` tests given by the module.
                     if module_name == 'base':
                         # Also run the core tests after the database is created.
-                        report.record_result(openerp.modules.module.run_unit_tests('openerp'),
-                                             details=dict(module='openerp',
-                                                          msg="Failure or error in server core "
-                                                          "unit tests"))
-                    report.record_result(openerp.modules.module.run_unit_tests(module_name),
-                                         details=dict(module=module_name,
-                                                      msg="Failure or error in unit tests, "
-                                                      "check logs for more details"))
+                        report.record_result(openerp.modules.module.run_unit_tests('openerp'))
+                    report.record_result(openerp.modules.module.run_unit_tests(module_name))
 
             processed_modules.append(package.name)
 

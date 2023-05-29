@@ -86,7 +86,7 @@ def _child_get(node, self=None, tagname=None):
                 n2.tag = tag
                 n2.attrib.update(attr or {})
                 yield n2
-                continue
+                tagname = ''
             except GeneratorExit:
                 pass
             except Exception, e:
