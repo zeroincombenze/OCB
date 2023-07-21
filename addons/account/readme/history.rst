@@ -1,4 +1,4 @@
-10.0.1.1.1 (2023-07-21)
+10.0.1.1.2 (2023-07-21)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 * [FIX] Avoid chrome 89 delegation / Miglioramento filtri ricerca
