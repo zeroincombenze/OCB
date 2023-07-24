@@ -9,23 +9,21 @@
 #
 {
     'name': 'profile common',
-    'version': '6.1.0.1.1',
-    'category': 'Technical Settings',
     'summary': 'Common setup for all profiles',
-    'author': 'SHS-AV s.r.l.',
-    'website': 'https://www.zeroincombenze.it/servizi-le-imprese/',
-    'development_status': 'Beta',
-    'license': 'AGPL-3',
+    'version': '6.1.0.1.0',
+    'category': 'Technical Settings',
+    'author': 'Odoo Community Association (OCA), SHS-AV s.r.l.',
+    'website': 'https://www.zeroincombenze.it/',
     'depends': [
         'account',
         'account_cancel',
         'purchase',
         'sale',
-        'stock',
     ],
     'data': ['data/initial_conf.xml'],
-    'maintainer': 'Antonio Maria Vigliotti',
     'installable': True,
+    'maintainer': 'Odoo Community Association (OCA)',
+    'development_status': 'Beta',
     'description': r'''
 Overview / Panoramica
 =====================
