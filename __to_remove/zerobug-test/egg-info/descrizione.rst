@@ -1,1 +1,0 @@
-Esempi di moduli Odoo
