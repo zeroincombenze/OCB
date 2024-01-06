@@ -1,119 +1,25 @@
-# -*- coding: utf-8 -*-
-##############################################################################
-#
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2004-2009 Tiny SPRL (<http://tiny.be>).
-#    Copyright (C) 2010-2012 OpenERP s.a. (<http://odoo.com>).
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as
-#    published by the Free Software Foundation, either version 3 of the
-#    License, or (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
-#
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
-{
-    "name": "Base",
-    "version": "7.0.1.3.1",
-    "category": "Hidden",
-    "summary": "Base",
-    "author": "OpenERP SA,SHS-AV s.r.l.",
-    "website": "http://odoo.com",
-    "development_status": "Alpha",
-    "license": "AGPL-3",
-    "data": [
-        "base_data.xml",
-        "currency_data.xml",
-        "res/res_country_data.xml",
-        "security/base_security.xml",
-        "base_menu.xml",
-        "res/res_security.xml",
-        "res/res_config.xml",
-        "data/res.country.state.csv",
-        "ir/wizard/wizard_menu_view.xml",
-        "ir/ir_actions.xml",
-        "ir/ir_attachment_view.xml",
-        "ir/ir_config_parameter_view.xml",
-        "ir/ir_cron_view.xml",
-        "ir/ir_filters.xml",
-        "ir/ir_mail_server_view.xml",
-        "ir/ir_model_view.xml",
-        "ir/ir_rule_view.xml",
-        "ir/ir_sequence_view.xml",
-        "ir/ir_translation_view.xml",
-        "ir/ir_ui_menu_view.xml",
-        "ir/ir_ui_view_view.xml",
-        "ir/ir_values_view.xml",
-        "ir/osv_memory_autovacuum.xml",
-        "ir/report/ir_report.xml",
-        "ir/workflow/workflow_view.xml",
-        "module/module_view.xml",
-        "module/module_data.xml",
-        "module/module_report.xml",
-        "module/wizard/base_module_import_view.xml",
-        "module/wizard/base_module_update_view.xml",
-        "module/wizard/base_language_install_view.xml",
-        "module/wizard/base_import_language_view.xml",
-        "module/wizard/base_module_upgrade_view.xml",
-        "module/wizard/base_module_configuration_view.xml",
-        "module/wizard/base_export_language_view.xml",
-        "module/wizard/base_update_translations_view.xml",
-        "module/wizard/base_module_immediate_install.xml",
-        "res/res_company_view.xml",
-        "res/res_request_view.xml",
-        "res/res_lang_view.xml",
-        "res/res_partner_report.xml",
-        "res/res_partner_view.xml",
-        "res/res_partner_shortcut_data.xml",
-        "res/res_bank_view.xml",
-        "res/res_country_view.xml",
-        "res/res_currency_view.xml",
-        "res/wizard/change_password_wizard_view.xml",
-        "res/res_users_view.xml",
-        "res/res_partner_data.xml",
-        "res/ir_property_view.xml",
-        "security/base_security.xml",
-        "security/ir.model.access.csv",
-    ],
-    "demo": [
-        "base_demo.xml",
-        "res/res_partner_demo.xml",
-        "res/res_partner_demo.yml",
-        "res/res_partner_image_demo.xml",
-    ],
-    "test": [
-        "test/base_test.yml",
-        "test/test_context.xml",
-        "test/bug_lp541545.xml",
-        "test/test_osv_expression.yml",
-        "test/test_ir_rule.yml",
-    ],
-    "maintainer": "Odoo SA",
-    "installable": True,
-    "auto_install": True,
-    "css": ["static/src/css/modules.css"],
-    "js": ["static/src/js/apps.js"],
-    'description': r'''Overview / Panoramica
+=====================
+|icon| Base 7.0.1.3.1
+=====================
+
+.. |icon| image:: https://raw.githubusercontent.com/zeroincombenze/addons/7.0/base/static/src/img/icon.png
+
+
+.. contents::
+
+
+
+Overview | Panoramica
 =====================
 
 |en| The kernel of Odoo (formerly OpenERP), needed for all installation.
 
 
-|
-
 |it| Il kernel di Odoo (già OpenERP), necessario per tutte le installazioni.
 
 
-|
 
-Features / Caratteristiche
+Features | Caratteristiche
 --------------------------
 
 +--------------------------------------+----------+---------+-------------------------------------------------+
@@ -125,19 +31,116 @@ Features / Caratteristiche
 +--------------------------------------+----------+---------+-------------------------------------------------+
 
 
-|
-|
 
-Support / Supporto
+Getting started | Primi passi
+=============================
+
+|Try Me|
+
+
+Prerequisites | Prerequisiti
+----------------------------
+
+* python 2.7+ (best 2.7.5+)
+* postgresql 9.2+ (best 9.5)
+
+::
+
+    cd $HOME
+    # Follow statements activate deployment, installation and upgrade tools
+    cd $HOME
+    [[ ! -d ./tools ]] && git clone https://github.com/zeroincombenze/tools.git
+    cd ./tools
+    ./install_tools.sh -pUT
+    source $HOME/devel/activate_tools
+
+
+
+Installation | Installazione
+----------------------------
+
++---------------------------------+------------------------------------------+
+| |en|                            | |it|                                     |
++---------------------------------+------------------------------------------+
+| These instructions are just an  | Istruzioni di esempio valide solo per    |
+| example; use on Linux CentOS 7+ | distribuzioni Linux CentOS 7+,           |
+| Ubuntu 14+ and Debian 8+        | Ubuntu 14+ e Debian 8+                   |
+|                                 |                                          |
+| Installation is built with:     | L'installazione è costruita con:         |
++---------------------------------+------------------------------------------+
+| `Zeroincombenze Tools <https://zeroincombenze-tools.readthedocs.io/>`__ |
++---------------------------------+------------------------------------------+
+| Suggested deployment is:        | Posizione suggerita per l'installazione: |
++---------------------------------+------------------------------------------+
+| $HOME/7.0 |
++----------------------------------------------------------------------------+
+
+::
+
+    # Odoo repository installation; OCB repository must be installed
+    deploy_odoo clone -r addons -b 7.0 -G zero -p $HOME/7.0
+    # Upgrade virtual environment
+    vem amend $HOME/7.0/venv_odoo
+
+
+
+Upgrade | Aggiornamento
+-----------------------
+
+::
+
+    deploy_odoo update -r addons -b 7.0 -G zero -p $HOME/7.0
+    vem amend $HOME/7.0/venv_odoo
+    # Adjust following statements as per your system
+    sudo systemctl restart odoo
+
+
+
+Support | Supporto
 ------------------
 
 |Zeroincombenze| This module is supported by the `SHS-AV s.r.l. <https://www.zeroincombenze.it/>`__
 
 
-|
-|
 
-Credits / Didascalie
+Get involved | Ci mettiamo in gioco
+===================================
+
+Bug reports are welcome! You can use the issue tracker to report bugs,
+and/or submit pull requests on `GitHub Issues
+<https://github.com/zeroincombenze/addons/issues>`_.
+
+In case of trouble, please check there if your issue has already been reported.
+
+
+
+Proposals for enhancement
+-------------------------
+
+|en| If you have a proposal to change this module, you may want to send an email to <cc@shs-av.com> for initial feedback.
+An Enhancement Proposal may be submitted if your idea gains ground.
+
+|it| Se hai proposte per migliorare questo modulo, puoi inviare una mail a <cc@shs-av.com> per un iniziale contatto.
+
+
+
+ChangeLog History | Cronologia modifiche
+----------------------------------------
+
+7.0.1.3.1 (2024-01-06)
+~~~~~~~~~~~~~~~~~~~~~~
+
+* [IMP] Postgres 10.0+ / Adattamento a postgres 10.0+
+* [QUA]
+
+7.0.0.1.0 (2013-10-03)
+~~~~~~~~~~~~~~~~~~~~~~
+
+* Initial implementation / Implementazione iniziale
+
+
+
+Credits | Didascalie
 ====================
 
 Copyright
@@ -146,22 +149,27 @@ Copyright
 Odoo is a trademark of `Odoo S.A. <https://www.odoo.com/>`__ (formerly OpenERP)
 
 
-|
-
-Authors / Autori
+Authors | Autori
 ----------------
 
-* `Odoo S.A. <https://www.odoo.com/>`__
+* OpenERP SA <False>
 * `SHS-AV s.r.l. <https://www.zeroincombenze.it>`__
 
 
-Contributors / Collaboratori
+
+Contributors | Contributi da
 ----------------------------
 
 * `Antonio Maria Vigliotti <antoniomaria.vigliotti@gmail.com>`__
 
 
-|
+
+Maintainer | Manutenzione
+-------------------------
+
+* OpenERP SA <False>
+
+
 
 ----------------
 
@@ -173,6 +181,7 @@ is mainly designed to cover Italian law and markeplace.
 |it| **zeroincombenze®** è un marchio registrato da `SHS-AV s.r.l. <https://www.shs-av.com/>`__
 che distribuisce e promuove **Odoo** pronto all'uso sulla propria infrastuttura.
 La distribuzione `Zeroincombenze® <https://www.zeroincombenze.it/>`__ è progettata per le esigenze del mercato italiano.
+
 
 |
 |
@@ -239,5 +248,3 @@ Last Update / Ultimo aggiornamento: 2024-01-06
    :target: https://github.com/zeroincombenze/grymb/blob/master/certificates/ade/scope/fatturapa.md
 .. |chat_with_us| image:: https://www.shs-av.com/wp-content/chat_with_us.gif
    :target: https://t.me/Assitenza_clienti_powERP
-''',
-}

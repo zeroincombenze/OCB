@@ -54,22 +54,31 @@ class ir_sequence(openerp.osv.osv.osv):
     """
     _name = 'ir.sequence'
     _order = 'name'
-    
+
     def _get_number_next_actual(self, cr, user, ids, field_name, arg, context=None):
         '''Return number from ir_sequence row when no_gap implementation,
         and number from postgres sequence when standard implementation.'''
         res = dict.fromkeys(ids)
         for element in self.browse(cr, user, ids, context=context):
-            if  element.implementation != 'standard':
+            if element.implementation != 'standard':
                 res[element.id] = element.number_next
             else:
                 # get number from postgres sequence. Cannot use
                 # currval, because that might give an error when
                 # not having used nextval before.
-                statement = (
-                    "SELECT last_value, increment_by, is_called"
-                    " FROM ir_sequence_%03d"
-                    % element.id)
+                # [antoniov: 2024-01-06] Upgrade to postgresql 10.0+
+                if cr._cnx.server_version < 100000:
+                    statement = (
+                        "SELECT last_value, increment_by, is_called"
+                        " FROM ir_sequence_%03d"
+                        % element.id)
+                else:
+                    statement = """SELECT last_value,
+                                      (SELECT increment_by
+                                       FROM pg_sequences
+                                       WHERE sequencename = 'ir_sequence_%03d'),
+                                      is_called
+                               FROM ir_sequence_%03d""" % (element.id, element.id)
                 cr.execute(statement)
                 (last_value, increment_by, is_called) = cr.fetchone()
                 if is_called:
