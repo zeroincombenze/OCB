@@ -493,11 +493,9 @@ class Users(models.Model):
                 try:
                     with cls.pool.cursor() as cr:
                         base = user_agent_env['base_location']
-                        # [antoniov: 2019-03-25] Avoid wrong url by JSON 
-                        if 'localhost' not in base:
-                            ICP = api.Environment(cr, uid, {})['ir.config_parameter']
-                            if not ICP.get_param('web.base.url.freeze'):
-                                ICP.set_param('web.base.url', base)
+		        ICP = api.Environment(cr, uid, {})['ir.config_parameter']
+		        if not ICP.get_param('web.base.url.freeze') and 'localhost' not in base: # [antoniov: 2019-03-25] Avoid wrong url by JSON 
+		            ICP.set_param('web.base.url', base)
                 except Exception:
                     _logger.exception("Failed to update web.base.url configuration parameter")
         return uid
