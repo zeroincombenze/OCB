@@ -148,9 +148,6 @@ instance.web.FormView = instance.web.View.extend(instance.web.form.FieldManagerM
             this.$el.off('.formBlur');
         }
         this._super();
-        if (this.$buttons) {
-            this.$buttons.remove();
-        }
     },
     load_form: function(data) {
         var self = this;

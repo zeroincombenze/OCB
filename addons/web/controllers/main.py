@@ -38,7 +38,7 @@ from .. import http
 openerpweb = http
 
 #----------------------------------------------------------
-# Odoo Web helpers
+# OpenERP Web helpers
 #----------------------------------------------------------
 
 def rjsmin(script):
@@ -360,7 +360,7 @@ def make_conditional(req, response, last_modified=None, etag=None):
     Uses Werkzeug's own :meth:`ETagResponseMixin.make_conditional`, after
     setting ``last_modified`` and ``etag`` correctly on the response object
 
-    :param req: Odoo request
+    :param req: OpenERP request
     :type req: web.common.http.WebRequest
     :param response: Werkzeug response
     :type response: werkzeug.wrappers.Response
@@ -447,7 +447,7 @@ def generate_views(action):
     action['views'] = [(view_id, view_modes[0])]
 
 def fix_view_modes(action):
-    """ For historical reasons, Odoo has weird dealings in relation to
+    """ For historical reasons, OpenERP has weird dealings in relation to
     view_mode and the view_type attribute (on window actions):
 
     * one of the view modes is ``tree``, which stands for both list views
@@ -533,7 +533,7 @@ def content_disposition(filename, req):
 
 
 #----------------------------------------------------------
-# Odoo Web web Controllers
+# OpenERP Web web Controllers
 #----------------------------------------------------------
 
 html_template = """<!DOCTYPE html>
@@ -541,7 +541,7 @@ html_template = """<!DOCTYPE html>
     <head>
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
         <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <title>Odoo</title>
+        <title>OpenERP</title>
         <link rel="shortcut icon" href="/web/static/src/img/favicon.ico" type="image/x-icon"/>
         <link rel="stylesheet" href="/web/static/src/css/full.css" />
         %(css)s
@@ -742,7 +742,7 @@ class Proxy(openerpweb.Controller):
         It is strongly recommended to not request binary files through this,
         as the result will be a binary data blob as well.
 
-        :param req: Odoo request
+        :param req: OpenERP request
         :param path: actual request path
         :return: file content
         """
@@ -790,7 +790,7 @@ class Database(openerpweb.Controller):
         password, db = operator.itemgetter(
             'drop_pwd', 'drop_db')(
                 dict(map(operator.itemgetter('name', 'value'), fields)))
-
+        
         try:
             if req.session.proxy("db").drop(password, db):return True
         except xmlrpclib.Fault, e:
@@ -956,7 +956,7 @@ class Menu(openerpweb.Controller):
     def get_user_roots(self, req):
         """ Return all root menu ids visible for the session user.
 
-        :param req: A request object, with an Odoo session attribute
+        :param req: A request object, with an OpenERP session attribute
         :type req: < session -> OpenERPSession >
         :return: the root menu ids
         :rtype: list(int)
@@ -980,7 +980,7 @@ class Menu(openerpweb.Controller):
     def load(self, req):
         """ Loads all menu items (all applications and their sub-menus).
 
-        :param req: A request object, with an Odoo session attribute
+        :param req: A request object, with an OpenERP session attribute
         :type req: < session -> OpenERPSession >
         :return: the menu root
         :rtype: dict('children': menu_nodes)
@@ -1267,7 +1267,7 @@ class Binary(openerpweb.Controller):
         binary field (via ``default_get``), otherwise fetches the field for
         that precise record.
 
-        :param req: Odoo request
+        :param req: OpenERP request
         :type req: :class:`web.common.http.HttpRequest`
         :param str model: name of the model to fetch the binary from
         :param str field: binary field
@@ -1277,14 +1277,10 @@ class Binary(openerpweb.Controller):
         """
         Model = req.session.model(model)
         fields = [field]
-        content_type = 'application/octet-stream'
         if filename_field:
             fields.append(filename_field)
         if id:
-            fields.append('file_type')
             res = Model.read([int(id)], fields, req.context)[0]
-            if res.get('file_type'):
-                content_type = res['file_type']
         else:
             res = Model.default_get(fields, req.context)
         filecontent = base64.b64decode(res.get(field, ''))
@@ -1307,7 +1303,6 @@ class Binary(openerpweb.Controller):
         id = jdata.get('id', None)
         filename_field = jdata.get('filename_field', None)
         context = jdata.get('context', {})
-        content_type = 'application/octet-stream'
 
         Model = req.session.model(model)
         fields = [field]
@@ -1316,10 +1311,7 @@ class Binary(openerpweb.Controller):
         if data:
             res = {field: data, filename_field: jdata.get('filename', None)}
         elif id:
-            fields.append('file_type')
             res = Model.read([int(id)], fields, context)[0]
-            if res.get('file_type'):
-                content_type = res['file_type']
         else:
             res = Model.default_get(fields, context)
         filecontent = base64.b64decode(res.get(field, ''))
@@ -1607,7 +1599,7 @@ class ExportFormat(object):
         raise NotImplementedError()
 
     def from_data(self, fields, rows):
-        """ Conversion method from Odoo's export data to whatever the
+        """ Conversion method from OpenERP's export data to whatever the
         current export class outputs
 
         :params list fields: a list of fields to export
@@ -1636,6 +1628,7 @@ class ExportFormat(object):
             columns_headers = field_names
         else:
             columns_headers = [val['label'].strip() for val in fields]
+
 
         return req.make_response(self.from_data(columns_headers, import_data),
             headers=[('Content-Disposition',
@@ -1765,32 +1758,16 @@ class Reports(openerpweb.Controller):
             report = zlib.decompress(report)
         report_mimetype = self.TYPES_MAPPING.get(
             report_struct['format'], 'octet-stream')
-        file_name = action['report_name']
-        # Try to get current object model and their ids from context
-        if 'context' in action:
-            action_context = action['context']
-            if (action_context.get('active_model') and
-                    action_context['active_ids']):
-                # Use built-in ORM method to get data from DB
-                m = req.session.model(action_context['active_model'])
-                r = []
-                try:
-                    r = m.name_get(action_context['active_ids'], context)
-                except xmlrpclib.Fault:
-                    # we assume this went wrong because of incorrect/missing
-                    #_rec_name. We don't have access to _columns here to do
-                    # a proper check
-                    pass
-                # Parse result to create a better filename
-                item_names = [item[1] or str(item[0]) for item in r]
-                if action.get('name'):
-                    item_names.insert(0, action['name'])
-                if item_names:
-                    file_name = '-'.join(item_names)[:251]
+        file_name = action.get('name', 'report')
+        if 'name' not in action:
+            reports = req.session.model('ir.actions.report.xml')
+            res_id = reports.search([('report_name', '=', action['report_name']),],
+                                    0, False, False, context)
+            if len(res_id) > 0:
+                file_name = reports.read(res_id[0], ['name'], context)['name']
+            else:
+                file_name = action['report_name']
         file_name = '%s.%s' % (file_name, report_struct['format'])
-        # Create safe filename
-        p = re.compile('[/:(")<>|?*]|(\\\)')
-        file_name = p.sub('_', file_name)
 
         return req.make_response(report,
              headers=[
