@@ -1,1 +1,0 @@
-* Odoo S.A. <www.odoo.com>

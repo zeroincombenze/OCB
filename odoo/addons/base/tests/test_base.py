@@ -507,6 +507,7 @@ class TestPartnerRecursion(TransactionCase):
         with self.assertRaises(ValidationError):
             (self.p3|self.p2).write({'parent_id': self.p1.id})
 
+
 class TestParentStore(TransactionCase):
     """ Verify that parent_store computation is done right """
 

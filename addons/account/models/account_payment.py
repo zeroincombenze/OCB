@@ -735,11 +735,6 @@ class account_payment(models.Model):
         aml_obj = self.env['account.move.line'].with_context(check_move_validity=False)
         debit, credit, amount_currency, currency_id = aml_obj.with_context(date=self.payment_date)._compute_amount_fields(amount, self.currency_id, self.company_id.currency_id)
 
-        # [antoniov: 2023-03-23] Get passed company amount, if passed
-        if hasattr(self, "company_currency_amount") and self.company_currency_amount:
-            debit = abs(self.company_currency_amount) if debit > 0.0 else 0.0
-            credit = abs(self.company_currency_amount) if credit > 0.0 else 0.0
-
         move = self.env['account.move'].create(self._get_move_vals())
 
         #Write line corresponding to invoice payment
