@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Odoo, Open Source Management Solution
-#    Copyright (C) 2004-2014 Odoo SA (<http://www.odoo.com>)
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2004-2014 OpenERP SA (<http://www.openerp.com>)
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -202,7 +202,7 @@ def init_logger():
         # Normal Handler on standard output
         handler = logging.StreamHandler(sys.stdout)
 
-    # Check that handler.stream has a fileno() method: when running Odoo
+    # Check that handler.stream has a fileno() method: when running OpenERP
     # behind Apache with mod_wsgi, handler.stream will have type mod_wsgi.Log,
     # which has no fileno() method. (mod_wsgi.Log is what is being bound to
     # sys.stderr when the logging.StreamHandler is being constructed above.)

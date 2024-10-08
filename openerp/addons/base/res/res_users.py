@@ -3,7 +3,7 @@
 #
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2009 Tiny SPRL (<http://tiny.be>).
-#    Copyright (C) 2010-2013 OpenERP s.a. (<http://odoo.com>).
+#    Copyright (C) 2010-2013 OpenERP s.a. (<http://openerp.com>).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -32,6 +32,7 @@ from openerp.osv import fields,osv, expression
 from openerp.osv.orm import browse_record
 from openerp.service.security import check_super
 from openerp.tools.translate import _
+from openerp.service.security import check_super
 
 _logger = logging.getLogger(__name__)
 
@@ -491,7 +492,7 @@ class res_users(osv.osv):
                 cr = pooler.get_db(db).cursor()
                 try:
                     base = user_agent_env['base_location']
-                    # [antoniov: 2019-03-25] Avoid wrong url by JSON 
+                    # [antoniov: 2019-03-25] Avoid wrong url by JSON
                     if base.find('localhost') < 0:
                         ICP = self.pool.get('ir.config_parameter')
                         if not ICP.get_param(cr, uid, 'web.base.url.freeze'):
@@ -534,7 +535,7 @@ class res_users(osv.osv):
         """
         self.check(cr.dbname, uid, old_passwd)
         if new_passwd:
-            return self.write(cr, uid, uid, {'password': new_passwd})
+            return self.write(cr, SUPERUSER_ID, uid, {'password': new_passwd})
         raise osv.except_osv(_('Warning!'), _("Setting empty passwords is not allowed for security reasons!"))
 
     def preference_save(self, cr, uid, ids, context=None):

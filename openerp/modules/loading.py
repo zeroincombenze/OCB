@@ -3,7 +3,7 @@
 #
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2009 Tiny SPRL (<http://tiny.be>).
-#    Copyright (C) 2010-2013 OpenERP s.a. (<http://odoo.com>).
+#    Copyright (C) 2010-2013 OpenERP s.a. (<http://openerp.com>).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -197,13 +197,21 @@ def load_module_graph(cr, graph, status=None, perform_checks=True, skip_modules=
                 # 'data' section, but should probably not alter the data,
                 # as there is no rollback.
                 if tools.config.options['test_enable']:
-                    report.record_result(load_test(module_name, idref, mode))
-
+                    report.record_result(load_test(module_name, idref, mode),
+                                         details=(dict(module=module_name,
+                                                       msg="Exception during load of legacy "
+                                                       "data-based tests (yml...)")))
                     # Run the `fast_suite` and `checks` tests given by the module.
                     if module_name == 'base':
                         # Also run the core tests after the database is created.
-                        report.record_result(openerp.modules.module.run_unit_tests('openerp'))
-                    report.record_result(openerp.modules.module.run_unit_tests(module_name))
+                        report.record_result(openerp.modules.module.run_unit_tests('openerp'),
+                                             details=dict(module='openerp',
+                                                          msg="Failure or error in server core "
+                                                          "unit tests"))
+                    report.record_result(openerp.modules.module.run_unit_tests(module_name),
+                                         details=dict(module=module_name,
+                                                      msg="Failure or error in unit tests, "
+                                                      "check logs for more details"))
 
             processed_modules.append(package.name)
 
@@ -225,7 +233,7 @@ def load_module_graph(cr, graph, status=None, perform_checks=True, skip_modules=
     # The query won't be valid for models created later (i.e. custom model
     # created after the registry has been loaded), so empty its result.
     pool.fields_by_model = None
-
+    
     cr.commit()
 
     return loaded_modules, processed_modules
@@ -308,9 +316,8 @@ def load_modules(db, force_demo=False, status=None, update_module=False):
         # STEP 2: Mark other modules to be loaded/updated
         if update_module:
             modobj = pool.get('ir.module.module')
-            if ('base' in tools.config['init']) or ('base' in tools.config['update']):
-                _logger.info('updating modules list')
-                modobj.update_list(cr, SUPERUSER_ID)
+            _logger.info('updating modules list')
+            modobj.update_list(cr, SUPERUSER_ID)
 
             _check_module_names(cr, itertools.chain(tools.config['init'].keys(), tools.config['update'].keys()))
 

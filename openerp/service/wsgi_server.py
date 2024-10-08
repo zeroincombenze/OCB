@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Odoo, Open Source Management Solution
-#    Copyright (C) 2011-2012 Odoo s.a. (<http://odoo.com>).
+#    OpenERP, Open Source Management Solution
+#    Copyright (C) 2011-2012 OpenERP s.a. (<http://openerp.com>).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -72,7 +72,7 @@ def xmlrpc_return(start_response, service, method, params, legacy_exceptions=Fal
     This is the place to look at to see the mapping between core exceptions
     and XML-RPC fault codes.
     """
-    # Map Odoo core exceptions to XML-RPC fault codes. Specific exceptions
+    # Map OpenERP core exceptions to XML-RPC fault codes. Specific exceptions
     # defined in ``openerp.exceptions`` are mapped to specific fault codes;
     # all the other exceptions are mapped to the generic
     # RPC_FAULT_CODE_APPLICATION_ERROR value.
@@ -93,11 +93,8 @@ def xmlrpc_return(start_response, service, method, params, legacy_exceptions=Fal
                 return dict((str(key), fix(value)) for key, value in res.items())
             else:
                 return res
-
-        if config.get('wsgi_xmlrpc_fix', True):
-            result = fix(openerp.netsvc.dispatch_rpc(service, method, params))
-        else:
-            result = openerp.netsvc.dispatch_rpc(service, method, params)
+            
+        result = fix(openerp.netsvc.dispatch_rpc(service, method, params))
         response = xmlrpclib.dumps((result,), methodresponse=1, allow_none=False, encoding=None)
     except Exception, e:
         if legacy_exceptions:
@@ -166,7 +163,7 @@ def xmlrpc_handle_exception_legacy(e):
     return response
 
 def wsgi_xmlrpc_1(environ, start_response):
-    """ The main Odoo WSGI handler."""
+    """ The main OpenERP WSGI handler."""
     if environ['REQUEST_METHOD'] == 'POST' and environ['PATH_INFO'].startswith(XML_RPC_PATH_1):
         length = int(environ['CONTENT_LENGTH'])
         data = environ['wsgi.input'].read(length)

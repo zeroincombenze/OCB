@@ -21,7 +21,7 @@
 
 from openerp.osv import fields, osv
 from openerp.tools.sql import drop_view_if_exists
-import decimal_precision as dp
+from openerp.addons.decimal_precision import decimal_precision as dp
 
 
 class res_country(osv.osv):

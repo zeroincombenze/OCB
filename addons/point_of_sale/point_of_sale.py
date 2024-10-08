@@ -32,7 +32,7 @@ from openerp import netsvc, tools
 from openerp.osv import fields, osv
 from openerp.tools.translate import _
 
-import decimal_precision as dp
+import openerp.addons.decimal_precision as dp
 import openerp.addons.product.product
 
 _logger = logging.getLogger(__name__)

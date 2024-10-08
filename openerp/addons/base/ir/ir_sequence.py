@@ -2,7 +2,7 @@
 ##############################################################################
 #
 #    OpenERP, Open Source Management Solution
-#    Copyright (C) 2004-TODAY OpenERP S.A. <http://odoo.com>
+#    Copyright (C) 2004-TODAY OpenERP S.A. <http://www.openerp.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -54,13 +54,13 @@ class ir_sequence(openerp.osv.osv.osv):
     """
     _name = 'ir.sequence'
     _order = 'name'
-
+    
     def _get_number_next_actual(self, cr, user, ids, field_name, arg, context=None):
         '''Return number from ir_sequence row when no_gap implementation,
         and number from postgres sequence when standard implementation.'''
         res = dict.fromkeys(ids)
         for element in self.browse(cr, user, ids, context=context):
-            if element.implementation != 'standard':
+            if  element.implementation != 'standard':
                 res[element.id] = element.number_next
             else:
                 # get number from postgres sequence. Cannot use

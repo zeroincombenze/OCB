@@ -3,7 +3,7 @@
 #
 #    OpenERP, Open Source Management Solution
 #    Copyright (C) 2004-2009 Tiny SPRL (<http://tiny.be>).
-#    Copyright (C) 2010-2013 OpenERP s.a. (<http://odoo.com>).
+#    Copyright (C) 2010-2013 OpenERP s.a. (<http://openerp.com>).
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -382,7 +382,8 @@ class Cursor(object):
         return getattr(self._obj, name)
 
 class PsycoConnection(psycopg2.extensions.connection):
-    pass
+    def lobject(*args, **kwargs):
+        pass
 
 class ConnectionPool(object):
     """ The pool of connections to database(s)

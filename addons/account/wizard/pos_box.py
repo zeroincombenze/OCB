@@ -1,5 +1,5 @@
 from openerp.osv import fields, osv
-import decimal_precision as dp
+import openerp.addons.decimal_precision as dp
 from openerp.tools.translate import _
 
 class CashBox(osv.osv_memory):
