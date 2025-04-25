@@ -790,7 +790,7 @@ class Database(openerpweb.Controller):
         password, db = operator.itemgetter(
             'drop_pwd', 'drop_db')(
                 dict(map(operator.itemgetter('name', 'value'), fields)))
-        
+
         try:
             if req.session.proxy("db").drop(password, db):return True
         except xmlrpclib.Fault, e:
@@ -1639,7 +1639,6 @@ class ExportFormat(object):
         else:
             columns_headers = [val['label'].strip() for val in fields]
 
-
         return req.make_response(self.from_data(columns_headers, import_data),
             headers=[('Content-Disposition',
                             content_disposition(self.filename(model), req)),
@@ -1780,7 +1779,7 @@ class Reports(openerpweb.Controller):
                 try:
                     r = m.name_get(action_context['active_ids'], context)
                 except xmlrpclib.Fault:
-                    #we assume this went wrong because of incorrect/missing
+                    # we assume this went wrong because of incorrect/missing
                     #_rec_name. We don't have access to _columns here to do
                     # a proper check
                     pass
